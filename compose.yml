@@ -1,7 +1,7 @@
 services:
   orb-slam3:
     build:
-      context: .
+      context: ${SRC_DIR:-.}
       target: runtime
       args:
         NPROC: ${NPROC:-}
@@ -21,8 +21,8 @@ services:
 
   orb-slam3-dev:
     build:
-      context: .
-      target: deps
+      context: ${SRC_DIR:-.}
+      target: dev
       args:
         NPROC: ${NPROC:-}
     image: orb-slam3:dev
@@ -34,7 +34,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.Xauthority:ro
       - ${DATASETS_DIR:-./datasets}:/datasets:ro
-      - .:/orb_slam3
+      - ${SRC_DIR:-.}:/orb-slam3
     ipc: host
     network_mode: host
     stdin_open: true
@@ -42,15 +42,17 @@ services:
 
   orb-slam3-evo:
     build:
-      context: .
+      context: ${SRC_DIR:-.}
       target: evo
+      args:
+        NPROC: ${NPROC:-}
     image: orb-slam3:evo
     environment:
       - LIBGL_ALWAYS_SOFTWARE=1
       - PYTHONUNBUFFERED=1
     volumes:
       - ${DATASETS_DIR:-./datasets}:/datasets:ro
-      - ./results:/orb_slam3/results
-      - ./evaluation:/orb_slam3/evaluation
+      - ${RESULTS_DIR:-./results}:/orb-slam3/results
+      - ${EVALUATION_DIR:-./evaluation}:/orb-slam3/evaluation
     stdin_open: true
     tty: true
