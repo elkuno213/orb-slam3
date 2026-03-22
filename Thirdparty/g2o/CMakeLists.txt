@@ -207,14 +207,14 @@ install(
 )
 install(
   DIRECTORY g2o/core g2o/types g2o/stuff g2o/solvers
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Thirdparty/g2o/g2o
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/g2o/g2o
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
 )
 # config.h: g2o core headers include it via "../../config.h" (11 files)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/config.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Thirdparty/g2o
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/g2o
 )
 install(
   EXPORT g2oTargets
