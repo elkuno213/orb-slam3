@@ -22,7 +22,7 @@
 #include <cmath>
 #include <numeric>
 #include <thread>
-#include <Thirdparty/DBoW2/DUtils/Random.h>
+#include <DBoW2/DUtils/Random.h>
 #include "GeometricTools.h"
 
 namespace ORB_SLAM3 {
