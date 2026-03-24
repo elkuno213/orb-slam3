@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SYSTEM_H
-#define SYSTEM_H
+#pragma once
 
 #include <memory>
 #include <mutex>
@@ -64,15 +63,14 @@ public:
     BINARY_FILE = 1,
   };
 
-public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
   System(
     const std::string& strVocFile,
     const std::string& strSettingsFile,
-    const eSensor      sensor,
-    const bool         bUseViewer  = true,
-    const int          initFr      = 0,
+    eSensor            sensor,
+    bool               bUseViewer  = true,
+    int                initFr      = 0,
     const std::string& strSequence = std::string()
   );
 
@@ -84,7 +82,7 @@ public:
     const cv::Mat&                 imRight,
     const double&                  timestamp,
     const std::vector<IMU::Point>& vImuMeas = std::vector<IMU::Point>(),
-    std::string                    filename = ""
+    std::string                    filename = {}
   );
 
   // Process the given rgbd frame. Depthmap must be registered to the RGB frame.
@@ -96,7 +94,7 @@ public:
     const cv::Mat&                 depthmap,
     const double&                  timestamp,
     const std::vector<IMU::Point>& vImuMeas = std::vector<IMU::Point>(),
-    std::string                    filename = ""
+    std::string                    filename = {}
   );
 
   // Proccess the given monocular frame and optionally imu data
@@ -106,7 +104,7 @@ public:
     const cv::Mat&                 im,
     const double&                  timestamp,
     const std::vector<IMU::Point>& vImuMeas = std::vector<IMU::Point>(),
-    std::string                    filename = ""
+    std::string                    filename = {}
   );
 
   // This stops local mapping thread (map building) and performs only camera tracking.
@@ -147,7 +145,7 @@ public:
   void SaveKeyFrameTrajectoryEuRoC(const std::string& filename, Map* pMap);
 
   // Save data used for initialization debug
-  void SaveDebugData(const int& iniIdx);
+  void SaveDebugData(const int& initIdx);
 
   // Save camera trajectory in the KITTI dataset format.
   // Only for stereo and RGB-D. This method does not work for monocular.
@@ -212,7 +210,7 @@ private:
   LoopClosing* mpLoopCloser;
 
   // The viewer draws the map and the current camera pose. It uses Pangolin.
-  Viewer* mpViewer;
+  Viewer* mpViewer{nullptr};
 
   FrameDrawer* mpFrameDrawer;
   MapDrawer*   mpMapDrawer;
@@ -225,16 +223,16 @@ private:
 
   // Reset flag
   std::mutex mMutexReset;
-  bool       mbReset;
-  bool       mbResetActiveMap;
+  bool       mbReset{false};
+  bool       mbResetActiveMap{false};
 
   // Change mode flags
   std::mutex mMutexMode;
-  bool       mbActivateLocalizationMode;
-  bool       mbDeactivateLocalizationMode;
+  bool       mbActivateLocalizationMode{false};
+  bool       mbDeactivateLocalizationMode{false};
 
   // Shutdown flag
-  bool mbShutDown;
+  bool mbShutDown{false};
 
   // Tracking state
   int                       mTrackingState;
@@ -254,5 +252,3 @@ private:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // SYSTEM_H
