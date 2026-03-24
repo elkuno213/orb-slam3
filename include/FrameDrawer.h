@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FRAMEDRAWER_H
-#define FRAMEDRAWER_H
+#pragma once
 
 #include <map>
 #include <mutex>
@@ -44,10 +43,10 @@ public:
   void Update(Tracking* pTracker);
 
   // Draw last processed frame.
-  cv::Mat DrawFrame(float imageScale = 1.f);
-  cv::Mat DrawRightFrame(float imageScale = 1.f);
+  cv::Mat DrawFrame(float imageScale = 1.F);
+  cv::Mat DrawRightFrame(float imageScale = 1.F);
 
-  bool both;
+  bool both{false};
 
 protected:
   void DrawTextInfo(cv::Mat& im, int nState, cv::Mat& imText);
@@ -82,5 +81,3 @@ protected:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // FRAMEDRAWER_H

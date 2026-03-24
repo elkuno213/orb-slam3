@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAPDRAWER_H
-#define MAPDRAWER_H
+#pragma once
 
 #include <memory>
 #include <mutex>
@@ -45,11 +44,9 @@ public:
 
   Atlas* mpAtlas;
 
-  void DrawMapPoints();
-  void DrawKeyFrames(
-    const bool bDrawKF, const bool bDrawGraph, const bool bDrawInertialGraph, const bool bDrawOptLba
-  );
-  void DrawCurrentCamera(pangolin::OpenGlMatrix& Twc);
+  void DrawMapPoints() const;
+  void DrawKeyFrames(bool bDrawKF, bool bDrawGraph, bool bDrawInertialGraph, bool bDrawOptLba);
+  void DrawCurrentCamera(pangolin::OpenGlMatrix& Twc) const;
   void SetCurrentCameraPose(const Sophus::SE3f& Tcw);
   void SetReferenceKeyFrame(KeyFrame* pKF);
   void GetCurrentOpenGLCameraMatrix(pangolin::OpenGlMatrix& M, pangolin::OpenGlMatrix& MOw);
@@ -69,17 +66,15 @@ private:
   std::mutex mMutexCamera;
 
   float mfFrameColors[6][3] = {
-    {0.0f, 0.0f, 1.0f},
-    {0.8f, 0.4f, 1.0f},
-    {1.0f, 0.2f, 0.4f},
-    {0.6f, 0.0f, 1.0f},
-    {1.0f, 1.0f, 0.0f},
-    {0.0f, 1.0f, 1.0f}
+    {0.0F, 0.0F, 1.0F},
+    {0.8F, 0.4F, 1.0F},
+    {1.0F, 0.2F, 0.4F},
+    {0.6F, 0.0F, 1.0F},
+    {1.0F, 1.0F, 0.0F},
+    {0.0F, 1.0F, 1.0F}
   };
 
   std::shared_ptr<spdlog::logger> _logger;
 };
 
 } // namespace ORB_SLAM3
-
-#endif // MAPDRAWER_H

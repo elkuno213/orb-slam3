@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VIEWER_H
-#define VIEWER_H
+#pragma once
 
 #include <memory>
 #include <mutex>
@@ -67,7 +66,7 @@ public:
 
   // void SetTrackingPause();
 
-  bool both;
+  bool both{false};
 
 private:
   bool ParseViewerParamFile(cv::FileStorage& fSettings);
@@ -88,12 +87,12 @@ private:
 
   bool       CheckFinish();
   void       SetFinish();
-  bool       mbFinishRequested;
-  bool       mbFinished;
+  bool       mbFinishRequested{false};
+  bool       mbFinished{true};
   std::mutex mMutexFinish;
 
-  bool       mbStopped;
-  bool       mbStopRequested;
+  bool       mbStopped{true};
+  bool       mbStopRequested{false};
   std::mutex mMutexStop;
 
   bool mbStopTrack;
@@ -102,5 +101,3 @@ private:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // VIEWER_H
