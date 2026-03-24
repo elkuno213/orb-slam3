@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OPTIMIZER_H
-#define OPTIMIZER_H
+#pragma once
 
 #include <map>
 #include <set>
@@ -40,28 +39,28 @@ public:
     const std::vector<KeyFrame*>& vpKF,
     const std::vector<MapPoint*>& vpMP,
     int                           nIterations = 5,
-    bool*                         pbStopFlag  = NULL,
-    const unsigned long           nLoopKF     = 0,
-    const bool                    bRobust     = true
+    bool*                         pbStopFlag  = nullptr,
+    unsigned long                 nLoopKF     = 0,
+    bool                          bRobust     = true
   );
   void static GlobalBundleAdjustemnt(
-    Map*                pMap,
-    int                 nIterations = 5,
-    bool*               pbStopFlag  = NULL,
-    const unsigned long nLoopKF     = 0,
-    const bool          bRobust     = true
+    Map*          pMap,
+    int           nIterations = 5,
+    bool*         pbStopFlag  = nullptr,
+    unsigned long nLoopKF     = 0,
+    bool          bRobust     = true
   );
   void static FullInertialBA(
-    Map*                pMap,
-    int                 its,
-    const bool          bFixLocal  = false,
-    const unsigned long nLoopKF    = 0,
-    bool*               pbStopFlag = NULL,
-    bool                bInit      = false,
-    float               priorG     = 1e2,
-    float               priorA     = 1e6,
-    Eigen::VectorXd*    vSingVal   = NULL,
-    bool*               bHess      = NULL
+    Map*             pMap,
+    int              its,
+    bool             bFixLocal  = false,
+    unsigned long    nLoopKF    = 0,
+    bool*            pbStopFlag = nullptr,
+    bool             bInit      = false,
+    float            priorG     = 1e2,
+    float            priorA     = 1e6,
+    Eigen::VectorXd* vSingVal   = nullptr,
+    bool*            bHess      = nullptr
   );
 
   void static LocalBundleAdjustment(
@@ -112,10 +111,10 @@ public:
     KeyFrame*                    pKF2,
     std::vector<MapPoint*>&      vpMatches1,
     g2o::Sim3&                   g2oS12,
-    const float                  th2,
-    const bool                   bFixScale,
+    float                        th2,
+    bool                         bFixScale,
     Eigen::Matrix<double, 7, 7>& mAcumHessian,
-    const bool                   bAllPoints = false
+    bool                         bAllPoints = false
   );
 
   // For inertial systems
@@ -141,10 +140,10 @@ public:
 
   // Local BA in welding area when two maps are merged
   void static LocalBundleAdjustment(
-    KeyFrame*              pMainKF,
-    std::vector<KeyFrame*> vpAdjustKF,
-    std::vector<KeyFrame*> vpFixedKF,
-    bool*                  pbStopFlag
+    KeyFrame*                     pMainKF,
+    std::vector<KeyFrame*>        vpAdjustKF,
+    const std::vector<KeyFrame*>& vpFixedKF,
+    bool*                         pbStopFlag
   );
 
   // Marginalize block element (start:end,start:end). Perform Schur complement.
@@ -174,5 +173,3 @@ public:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // OPTIMIZER_H
