@@ -1,7 +1,8 @@
 services:
   orb-slam3:
+    container_name: orb-slam3
     build:
-      context: ${SRC_DIR:-.}
+      context: .
       target: runtime
       args:
         NPROC: ${NPROC:-}
@@ -20,8 +21,9 @@ services:
     tty: true
 
   orb-slam3-dev:
+    container_name: orb-slam3-dev
     build:
-      context: ${SRC_DIR:-.}
+      context: .
       target: dev
       args:
         NPROC: ${NPROC:-}
@@ -41,8 +43,9 @@ services:
     tty: true
 
   orb-slam3-evo:
+    container_name: orb-slam3-evo
     build:
-      context: ${SRC_DIR:-.}
+      context: .
       target: evo
       args:
         NPROC: ${NPROC:-}
