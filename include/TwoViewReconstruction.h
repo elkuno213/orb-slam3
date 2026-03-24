@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TwoViewReconstruction_H
-#define TwoViewReconstruction_H
+#pragma once
 
 #include <utility>
 #include <vector>
@@ -29,7 +28,7 @@
 namespace ORB_SLAM3 {
 
 class TwoViewReconstruction {
-  typedef std::pair<int, int> Match;
+  using Match = std::pair<int, int>;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -140,4 +139,3 @@ private:
 
 } // namespace ORB_SLAM3
 
-#endif // TwoViewReconstruction_H
