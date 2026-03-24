@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
 #include <string>
 
@@ -34,7 +33,7 @@ class IMUConfig {};
 
 class ConfigParser {
 public:
-  bool ParseConfigFile(std::string& strConfigFile);
+  static bool ParseConfigFile(std::string& strConfigFile);
 
 private:
   ViewerConfig       mViewerConfig;
@@ -45,4 +44,3 @@ private:
 
 } // namespace ORB_SLAM3
 
-#endif // CONFIG_H

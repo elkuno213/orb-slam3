@@ -17,16 +17,14 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ORBVOCABULARY_H
-#define ORBVOCABULARY_H
+#pragma once
 
 #include <DBoW2/DBoW2/FORB.h>
 #include <DBoW2/DBoW2/TemplatedVocabulary.h>
 
 namespace ORB_SLAM3 {
 
-typedef DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB> ORBVocabulary;
+using ORBVocabulary = DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB>;
 
 } // namespace ORB_SLAM3
 
-#endif // ORBVOCABULARY_H
