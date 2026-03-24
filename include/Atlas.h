@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ATLAS_H
-#define ATLAS_H
+#pragma once
 
 #include <map>
 #include <memory>
@@ -50,22 +49,22 @@ class Atlas {
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
+  void serialize(Archive& ar, const unsigned int /* version */) {
     ar.template register_type<Pinhole>();
     ar.template register_type<KannalaBrandt8>();
 
     // Save/load a set structure, the set structure is broken in libboost 1.58 for ubuntu 16.04, a
     // vector is serializated
     // ar & mspMaps;
-    ar& mvpBackupMaps;
-    ar& mvpCameras;
+    ar & mvpBackupMaps;
+    ar & mvpCameras;
     // Need to save/load the static Id from Frame, KeyFrame, MapPoint and Map
     ar& Map::nNextId;
     ar& Frame::nNextId;
     ar& KeyFrame::nNextId;
     ar& MapPoint::nNextId;
     ar& GeometricCamera::nNextId;
-    ar& mnLastInitKFidMap;
+    ar & mnLastInitKFidMap;
   }
 
 public:
@@ -83,8 +82,8 @@ public:
   void SetViewer(Viewer* pViewer);
 
   // Method for change components in the current map
-  void AddKeyFrame(KeyFrame* pKF);
-  void AddMapPoint(MapPoint* pMP);
+  static void AddKeyFrame(KeyFrame* pKF);
+  static void AddMapPoint(MapPoint* pMP);
   // void EraseMapPoint(MapPoint* pMP);
   // void EraseKeyFrame(KeyFrame* pKF);
 
@@ -165,5 +164,3 @@ protected:
 }; // class Atlas
 
 } // namespace ORB_SLAM3
-
-#endif // ATLAS_H

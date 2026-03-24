@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_H
-#define MAP_H
+#pragma once
 
 #include <list>
 #include <map>
@@ -46,28 +45,28 @@ class Map {
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& mnId;
-    ar& mnInitKFid;
-    ar& mnMaxKFid;
-    ar& mnBigChangeIdx;
+  void serialize(Archive& ar, const unsigned int /* version */) {
+    ar & mnId;
+    ar & mnInitKFid;
+    ar & mnMaxKFid;
+    ar & mnBigChangeIdx;
 
     // Save/load a set structure, the set structure is broken in libboost 1.58 for ubuntu 16.04, a
     // vector is serializated
     // ar & mspKeyFrames;
     // ar & mspMapPoints;
-    ar& mvpBackupKeyFrames;
-    ar& mvpBackupMapPoints;
+    ar & mvpBackupKeyFrames;
+    ar & mvpBackupMapPoints;
 
-    ar& mvBackupKeyFrameOriginsId;
+    ar & mvBackupKeyFrameOriginsId;
 
-    ar& mnBackupKFinitialID;
-    ar& mnBackupKFlowerID;
+    ar & mnBackupKFinitialID;
+    ar & mnBackupKFlowerID;
 
-    ar& mbImuInitialized;
-    ar& mbIsInertial;
-    ar& mbIMU_BA1;
-    ar& mbIMU_BA2;
+    ar & mbImuInitialized;
+    ar & mbIsInertial;
+    ar & mbIMU_BA1;
+    ar & mbIMU_BA2;
   }
 
 public:
@@ -91,7 +90,7 @@ public:
   long unsigned int MapPointsInMap();
   long unsigned     KeyFramesInMap();
 
-  long unsigned int GetId();
+  long unsigned int GetId() const;
 
   long unsigned int GetInitKFid();
   void              SetInitKFid(long unsigned int initKFif);
@@ -103,10 +102,10 @@ public:
   void SetStoredMap();
 
   bool HasThumbnail();
-  bool IsInUse();
+  bool IsInUse() const;
 
   void SetBad();
-  bool IsBad();
+  bool IsBad() const;
 
   void clear();
 
@@ -118,7 +117,7 @@ public:
   void SetImuInitialized();
   bool isImuInitialized();
 
-  void ApplyScaledRotation(const Sophus::SE3f& T, const float s, const bool bScaledVel = false);
+  void ApplyScaledRotation(const Sophus::SE3f& T, float s, bool bScaledVel = false);
 
   void SetInertialSensor();
   bool IsInertial();
@@ -216,5 +215,3 @@ protected:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // MAP_H

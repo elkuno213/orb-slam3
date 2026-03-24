@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KEYFRAMEDATABASE_H
-#define KEYFRAMEDATABASE_H
+#pragma once
 
 #include <list>
 #include <mutex>
@@ -40,8 +39,8 @@ class KeyFrameDatabase {
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& mvBackupInvertedFileId;
+  void serialize(Archive& ar, const unsigned int /* version */) {
+    ar & mvBackupInvertedFileId;
   }
 
 public:
@@ -102,5 +101,3 @@ protected:
 };
 
 } // namespace ORB_SLAM3
-
-#endif

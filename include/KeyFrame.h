@@ -17,17 +17,16 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KEYFRAME_H
-#define KEYFRAME_H
+#pragma once
 
 #include <map>
 #include <memory>
 #include <mutex>
 #include <set>
 #include <vector>
-#include <Eigen/Core>
 #include <DBoW2/DBoW2/BowVector.h>
 #include <DBoW2/DBoW2/FeatureVector.h>
+#include <Eigen/Core>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/array_wrapper.hpp>
 #include <boost/serialization/map.hpp>
@@ -52,7 +51,7 @@ class KeyFrame {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& mnId;
+    ar & mnId;
     ar& const_cast<long unsigned int&>(mnFrameId);
     ar& const_cast<double&>(mTimeStamp);
     // Grid
@@ -102,7 +101,7 @@ class KeyFrame {
     // ar & mnBALocalForMerge;
 
     // Scale
-    ar& mfScale;
+    ar & mfScale;
     // Calibration parameters
     ar& const_cast<float&>(fx);
     ar& const_cast<float&>(fy);
@@ -123,8 +122,8 @@ class KeyFrame {
     ar& const_cast<std::vector<float>&>(mvDepth);
     serializeMatrix<Archive>(ar, mDescriptors, version);
     // BOW
-    ar& mBowVec;
-    ar& mFeatVec;
+    ar & mBowVec;
+    ar & mFeatVec;
     // Pose relative to parent
     serializeSophusSE3<Archive>(ar, mTcp, version);
     // Scale
@@ -143,49 +142,49 @@ class KeyFrame {
     // Pose
     serializeSophusSE3<Archive>(ar, mTcw, version);
     // MapPointsId associated to keypoints
-    ar& mvBackupMapPointsId;
+    ar & mvBackupMapPointsId;
     // Grid
-    ar& mGrid;
+    ar & mGrid;
     // Connected KeyFrameWeight
-    ar& mBackupConnectedKeyFrameIdWeights;
+    ar & mBackupConnectedKeyFrameIdWeights;
     // Spanning Tree and Loop Edges
-    ar& mbFirstConnection;
-    ar& mBackupParentId;
-    ar& mvBackupChildrensId;
-    ar& mvBackupLoopEdgesId;
-    ar& mvBackupMergeEdgesId;
+    ar & mbFirstConnection;
+    ar & mBackupParentId;
+    ar & mvBackupChildrensId;
+    ar & mvBackupLoopEdgesId;
+    ar & mvBackupMergeEdgesId;
     // Bad flags
-    ar& mbNotErase;
-    ar& mbToBeErased;
-    ar& mbBad;
+    ar & mbNotErase;
+    ar & mbToBeErased;
+    ar & mbBad;
 
-    ar& mHalfBaseline;
+    ar & mHalfBaseline;
 
-    ar& mnOriginMapId;
+    ar & mnOriginMapId;
 
     // Camera variables
-    ar& mnBackupIdCamera;
-    ar& mnBackupIdCamera2;
+    ar & mnBackupIdCamera;
+    ar & mnBackupIdCamera2;
 
     // Fisheye variables
-    ar& mvLeftToRightMatch;
-    ar& mvRightToLeftMatch;
+    ar & mvLeftToRightMatch;
+    ar & mvRightToLeftMatch;
     ar& const_cast<int&>(NLeft);
     ar& const_cast<int&>(NRight);
     serializeSophusSE3<Archive>(ar, mTlr, version);
     serializeVectorKeyPoints<Archive>(ar, mvKeysRight, version);
-    ar& mGridRight;
+    ar & mGridRight;
 
     // Inertial variables
-    ar& mImuBias;
-    ar& mBackupImuPreintegrated;
-    ar& mImuCalib;
-    ar& mBackupPrevKFId;
-    ar& mBackupNextKFId;
-    ar& bImu;
+    ar & mImuBias;
+    ar & mBackupImuPreintegrated;
+    ar & mImuCalib;
+    ar & mBackupPrevKFId;
+    ar & mBackupNextKFId;
+    ar & bImu;
     ar& boost::serialization::make_array(mVw.data(), mVw.size());
     ar& boost::serialization::make_array(mOwb.data(), mOwb.size());
-    ar& mbHasVelocity;
+    ar & mbHasVelocity;
   }
 
 public:
@@ -254,13 +253,13 @@ public:
   MapPoint*              GetMapPoint(const std::size_t& idx);
 
   // KeyPoint functions
-  std::vector<std::size_t> GetFeaturesInArea(
-    const float& x, const float& y, const float& r, const bool bRight = false
+  [[nodiscard]] std::vector<std::size_t> GetFeaturesInArea(
+    const float& x, const float& y, const float& r, bool bRight = false
   ) const;
   bool UnprojectStereo(int i, Eigen::Vector3f& x3D);
 
   // Image
-  bool IsInImage(const float& x, const float& y) const;
+  [[nodiscard]] bool IsInImage(const float& x, const float& y) const;
 
   // Enable/Disable bad flag changes
   void SetNotErase();
@@ -271,7 +270,7 @@ public:
   bool isBad();
 
   // Compute Scene Depth (q=2 median). Used in monocular.
-  float ComputeSceneMedianDepth(const int q);
+  float ComputeSceneMedianDepth(int q);
 
   static bool weightComp(int a, int b) {
     return a > b;
@@ -309,7 +308,7 @@ public:
   bool bImu;
 
   // The following variables are accesed from only 1 thread or never change (no mutex needed).
-public:
+
   static long unsigned int nNextId;
   long unsigned int        mnId;
   const long unsigned int  mnFrameId;
@@ -529,5 +528,3 @@ public:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // KEYFRAME_H
