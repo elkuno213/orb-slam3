@@ -1,0 +1,291 @@
+---
+# ORB-SLAM3 clang-tidy configuration
+#
+# Incremental approach: start with NO checks enabled. Each modernization phase
+# adds checks AFTER fixing all warnings, then promotes them to WarningsAsErrors.
+# This keeps the build green at every step.
+#
+# See docs/source/building/code-quality.md for the full check inventory.
+#
+# Permanent suppressions (never enabled):
+#   readability-identifier-length       — SLAM math uses short names legitimately
+#   readability-identifier-naming       — deferred to Phase 8 (~4,300 violations, requires unit tests first)
+#   readability-magic-numbers           — too noisy for math-heavy code
+#   readability-function-cognitive-complexity — legacy functions, not fixable without rewrite
+#   readability-function-size           — same rationale as cognitive-complexity
+#   readability-else-after-return       — style preference, not a defect
+#   readability-named-parameter         — conflicts with misc-unused-parameters convention
+#   readability-suspicious-call-argument — too noisy for SLAM pose variables (Tcw/Twc/Tlr)
+#   readability-use-anyofallof          — too noisy for complex SLAM loops
+#   readability-math-missing-parentheses — too noisy for math-heavy SLAM code
+#   readability-non-const-parameter     — conflicts with API design intent and pass-by-reference
+#   modernize-use-trailing-return-type  — style preference
+#   modernize-avoid-c-arrays            — used in serialization/legacy APIs
+#   bugprone-easily-swappable-parameters — too noisy for SLAM APIs
+#   bugprone-narrowing-conversions      — overlaps with compiler warnings
+#   bugprone-argument-comment           — convention not used in codebase
+#   misc-include-cleaner                — false positives with Eigen/OpenCV/g2o
+#   misc-misplaced-const               — enforces east-const; project uses west-const
+#   misc-non-private-member-variables-in-classes — 200+ violations, fundamental legacy design
+#   cppcoreguidelines-owning-memory     — 300+ violations, Phase 2 addresses this
+#   cppcoreguidelines-pro-bounds-array-to-pointer-decay — pervasive C API interop
+#   cppcoreguidelines-pro-bounds-constant-array-index   — core SLAM indexing patterns
+#   cppcoreguidelines-pro-bounds-pointer-arithmetic     — essential for math-heavy code
+#   cppcoreguidelines-pro-type-const-cast  — required by Boost.Serialization
+#   cppcoreguidelines-pro-type-static-cast-downcast — g2o guarantees type safety
+#   cppcoreguidelines-avoid-do-while      — style preference, not a defect
+#   cppcoreguidelines-macro-usage          — conflicts with EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+#   bugprone-bool-pointer-implicit-conversion — 11 false positives on intentional bool* null-checks in Optimizer
+#   bugprone-switch-missing-default-case    — switch-on-enum intentionally covers all values
+#   bugprone-unhandled-exception-at-new     — 157 raw new in Optimizer, Phase 2 smart-pointer migration
+#   bugprone-unchecked-optional-access      — heavy dataflow analysis, known false positives
+#   misc-no-recursion                       — MISRA-style restriction, too restrictive for SLAM
+#   hicpp-signed-bitwise                  — ~20 violations in ORB descriptor bit-packing, intentional
+#   google-readability-todo               — ~50+ legacy TODOs without owner format
+#   google-runtime-int                    — conflicts with OpenCV/g2o API signatures
+#   google-readability-casting            — ~51 C-style casts, deferred to Phase 3
+#   google-explicit-constructor           — ~30 violations, deferred to Phase 4
+#   llvm-header-guard                     — project uses #pragma once
+#   llvm-include-order                    — LLVM-specific ordering convention
+#   boost-use-ranges                      — project does not use Boost.Range
+#   boost-use-to-string                   — project uses fmt::format/std::to_string
+#   portability-simd-intrinsics           — no SIMD code, std::experimental::simd premature
+#   portability-restrict-system-includes  — too restrictive with Eigen/OpenCV/Boost/g2o
+#   cert-err58-cpp                        — static nNextId initializations, deferred to Phase 4
+#   concurrency-mt-unsafe                 — may false-positive on std::stod locale internals
+#
+# C++20 deferred (enable with Phase 6 C++20 feature work):
+#   modernize-use-constraints           — enable after Phase 6 adds concepts
+#   modernize-use-designated-initializers — noisy on legacy struct init, enable after Phase 4
+#   modernize-use-integer-sign-comparison — many signed/unsigned index comparisons, Phase 6
+#
+# C++23 deferred:
+#   modernize-use-std-print             — requires C++23
+
+Checks: >
+  -*,
+  modernize-use-override,
+  modernize-use-using,
+  modernize-use-equals-default,
+  modernize-use-emplace,
+  modernize-use-bool-literals,
+  modernize-use-default-member-init,
+  modernize-use-nodiscard,
+  modernize-return-braced-init-list,
+  modernize-concat-nested-namespaces,
+  modernize-use-auto,
+  modernize-loop-convert,
+  modernize-pass-by-value,
+  modernize-avoid-bind,
+  modernize-deprecated-headers,
+  modernize-deprecated-ios-base-aliases,
+  modernize-macro-to-enum,
+  modernize-make-shared,
+  modernize-make-unique,
+  modernize-redundant-void-arg,
+  modernize-replace-auto-ptr,
+  modernize-replace-disallow-copy-and-assign-macro,
+  modernize-replace-random-shuffle,
+  modernize-shrink-to-fit,
+  modernize-type-traits,
+  modernize-unary-static-assert,
+  modernize-use-equals-delete,
+  modernize-use-noexcept,
+  modernize-use-nullptr,
+  modernize-use-transparent-functors,
+  modernize-use-uncaught-exceptions,
+  readability-redundant-access-specifiers,
+  readability-uppercase-literal-suffix,
+  readability-redundant-inline-specifier,
+  readability-static-accessed-through-instance,
+  readability-container-contains,
+  readability-avoid-const-params-in-decls,
+  readability-isolate-declaration,
+  readability-make-member-function-const,
+  readability-implicit-bool-conversion,
+  readability-simplify-boolean-expr,
+  readability-avoid-nested-conditional-operator,
+  readability-avoid-unconditional-preprocessor-if,
+  readability-const-return-type,
+  readability-delete-null-pointer,
+  readability-duplicate-include,
+  readability-misleading-indentation,
+  readability-redundant-control-flow,
+  readability-redundant-declaration,
+  readability-redundant-smartptr-get,
+  readability-reference-to-constructed-temporary,
+  readability-uniqueptr-delete-release,
+  readability-avoid-return-with-void-value,
+  readability-container-data-pointer,
+  readability-container-size-empty,
+  readability-enum-initial-value,
+  readability-inconsistent-declaration-parameter-name,
+  readability-misplaced-array-index,
+  readability-operators-representation,
+  readability-redundant-casting,
+  readability-redundant-function-ptr-dereference,
+  readability-redundant-member-init,
+  readability-redundant-preprocessor,
+  readability-redundant-string-cstr,
+  readability-redundant-string-init,
+  readability-static-definition-in-anonymous-namespace,
+  readability-string-compare,
+  readability-use-concise-preprocessor-directives,
+  readability-use-std-min-max,
+  readability-braces-around-statements,
+  readability-convert-member-functions-to-static,
+  readability-qualified-auto,
+  readability-simplify-subscript-expr,
+  modernize-use-starts-ends-with,
+  modernize-use-std-numbers,
+  modernize-raw-string-literal,
+  modernize-min-max-use-initializer-list,
+  performance-avoid-endl,
+  performance-unnecessary-value-param,
+  performance-unnecessary-copy-initialization,
+  performance-faster-string-find,
+  performance-for-range-copy,
+  performance-implicit-conversion-in-loop,
+  performance-inefficient-algorithm,
+  performance-inefficient-string-concatenation,
+  performance-inefficient-vector-operation,
+  performance-move-const-arg,
+  performance-move-constructor-init,
+  performance-no-automatic-move,
+  performance-no-int-to-ptr,
+  performance-noexcept-destructor,
+  performance-noexcept-move-constructor,
+  performance-noexcept-swap,
+  performance-type-promotion-in-math-fn,
+  misc-unused-parameters,
+  misc-const-correctness,
+  misc-new-delete-overloads,
+  misc-redundant-expression,
+  misc-static-assert,
+  misc-throw-by-value-catch-by-reference,
+  misc-unconventional-assign-operator,
+  misc-uniqueptr-reset-release,
+  misc-confusable-identifiers,
+  misc-misleading-bidirectional,
+  misc-misleading-identifier,
+  misc-non-copyable-objects,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-avoid-goto,
+  cppcoreguidelines-missing-std-forward,
+  cppcoreguidelines-pro-type-union-access,
+  cppcoreguidelines-pro-type-vararg,
+  cppcoreguidelines-rvalue-reference-param-not-moved,
+  cppcoreguidelines-virtual-class-destructor,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-misleading-capture-default-by-value,
+  cppcoreguidelines-no-malloc,
+  cppcoreguidelines-interfaces-global-init,
+  cppcoreguidelines-avoid-capturing-lambda-coroutines,
+  cppcoreguidelines-avoid-reference-coroutine-parameters,
+  cppcoreguidelines-no-suspend-with-lock,
+  bugprone-implicit-widening-of-multiplication-result,
+  bugprone-assert-side-effect,
+  bugprone-assignment-in-if-condition,
+  bugprone-casting-through-void,
+  bugprone-chained-comparison,
+  bugprone-copy-constructor-init,
+  bugprone-dangling-handle,
+  bugprone-fold-init-type,
+  bugprone-forwarding-reference-overload,
+  bugprone-incorrect-roundings,
+  bugprone-infinite-loop,
+  bugprone-integer-division,
+  bugprone-misplaced-widening-cast,
+  bugprone-move-forwarding-reference,
+  bugprone-multi-level-implicit-pointer-conversion,
+  bugprone-parent-virtual-call,
+  bugprone-sizeof-expression,
+  bugprone-standalone-empty,
+  bugprone-string-constructor,
+  bugprone-suspicious-semicolon,
+  bugprone-swapped-arguments,
+  bugprone-unhandled-self-assignment,
+  bugprone-unused-raii,
+  bugprone-unused-return-value,
+  bugprone-use-after-move,
+  bugprone-virtual-near-miss,
+  bugprone-bad-signal-to-kill-thread,
+  bugprone-compare-pointer-to-member-virtual-function,
+  bugprone-dynamic-static-initializers,
+  bugprone-empty-catch,
+  bugprone-forward-declaration-namespace,
+  bugprone-inaccurate-erase,
+  bugprone-incorrect-enable-if,
+  bugprone-lambda-function-name,
+  bugprone-misplaced-operator-in-strlen-in-alloc,
+  bugprone-misplaced-pointer-arithmetic-in-alloc,
+  bugprone-multiple-new-in-one-expression,
+  bugprone-multiple-statement-macro,
+  bugprone-no-escape,
+  bugprone-non-zero-enum-to-bool-conversion,
+  bugprone-not-null-terminated-result,
+  bugprone-optional-value-conversion,
+  bugprone-posix-return,
+  bugprone-shared-ptr-array-mismatch,
+  bugprone-signal-handler,
+  bugprone-sizeof-container,
+  bugprone-spuriously-wake-up-functions,
+  bugprone-string-integer-assignment,
+  bugprone-string-literal-with-embedded-nul,
+  bugprone-stringview-nullptr,
+  bugprone-suspicious-include,
+  bugprone-suspicious-memory-comparison,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-missing-comma,
+  bugprone-suspicious-realloc-usage,
+  bugprone-suspicious-string-compare,
+  bugprone-suspicious-enum-usage,
+  bugprone-terminating-continue,
+  bugprone-throw-keyword-missing,
+  bugprone-undelegated-constructor,
+  bugprone-undefined-memory-manipulation,
+  bugprone-unique-ptr-array-mismatch,
+  bugprone-unsafe-functions,
+  cert-dcl58-cpp,
+  cert-env33-c,
+  cert-err33-c,
+  cert-err34-c,
+  cert-err52-cpp,
+  cert-err60-cpp,
+  cert-flp30-c,
+  cert-mem57-cpp,
+  cert-msc50-cpp,
+  cert-msc51-cpp,
+  hicpp-exception-baseclass,
+  hicpp-no-assembler,
+  google-build-explicit-make-pair,
+  google-build-namespaces,
+  google-build-using-namespace,
+  google-default-arguments,
+  google-global-names-in-headers,
+  google-runtime-operator,
+  concurrency-thread-canceltype-asynchronous,
+  portability-std-allocator-const,
+  llvm-namespace-comment,
+
+WarningsAsErrors: "*"
+
+HeaderFilterRegex: 'include/.*\.h$'
+
+FormatStyle: file
+
+CheckOptions:
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: '1'
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: true
+  - key: misc-const-correctness.AnalyzeValues
+    value: true
+  - key: misc-const-correctness.AnalyzeReferences
+    value: true
+  - key: misc-const-correctness.WarnPointersAsValues
+    value: false
