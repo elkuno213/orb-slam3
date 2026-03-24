@@ -18,6 +18,8 @@
  */
 
 #include "LoopClosing.h"
+#include <chrono>
+#include <thread>
 #include "Atlas.h"
 #include "Converter.h"
 #include "G2oTypes.h"
@@ -40,31 +42,14 @@ LoopClosing::LoopClosing(
   const bool        bFixScale,
   const bool        bActiveLC
 )
-  : mbResetRequested(false)
-  , mbResetActiveMapRequested(false)
-  , mbFinishRequested(false)
-  , mbFinished(true)
-  , mpAtlas(pAtlas)
+  : mpAtlas(pAtlas)
   , mpKeyFrameDB(pDB)
   , mpORBVocabulary(pVoc)
-  , mpMatchedKF(NULL)
-  , mLastLoopKFid(0)
-  , mbRunningGBA(false)
-  , mbFinishedGBA(true)
-  , mbStopGBA(false)
-  , mpThreadGBA(NULL)
   , mbFixScale(bFixScale)
-  , mnFullBAIdx(0)
-  , mnLoopNumCoincidences(0)
-  , mnMergeNumCoincidences(0)
-  , mbLoopDetected(false)
-  , mbMergeDetected(false)
-  , mnLoopNumNotFound(0)
-  , mnMergeNumNotFound(0)
   , mbActiveLC(bActiveLC)
   , _logger(logging::CreateModuleLogger("LoopClosing")) {
   mnCovisibilityConsistencyTh = 3;
-  mpLastCurrentKF             = static_cast<KeyFrame*>(NULL);
+  mpLastCurrentKF             = nullptr;
 
 #ifdef REGISTER_TIMES
   vdDataQuery_ms.clear();
@@ -110,7 +95,7 @@ void LoopClosing::SetLocalMapper(LocalMapping* pLocalMapper) {
 void LoopClosing::Run() {
   mbFinished = false;
 
-  while (1) {
+  while (true) {
     // NEW LOOP AND MERGE DETECTION ALGORITHM
     //----------------------------
 
@@ -123,7 +108,7 @@ void LoopClosing::Run() {
       std::chrono::steady_clock::time_point time_StartPR = std::chrono::steady_clock::now();
 #endif
 
-      bool bFindedRegion = NewDetectCommonRegions();
+      const bool bFindedRegion = NewDetectCommonRegions();
 
 #ifdef REGISTER_TIMES
       std::chrono::steady_clock::time_point time_EndPR = std::chrono::steady_clock::now();
@@ -136,15 +121,18 @@ void LoopClosing::Run() {
 #endif
       if (bFindedRegion) {
         if (mbMergeDetected) {
-          if ((mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO || mpTracker->mSensor == System::IMU_RGBD) && (!mpCurrentKF->GetMap()->isImuInitialized())) {
+          if ((mpTracker->mSensor == System::IMU_MONOCULAR
+               || mpTracker->mSensor == System::IMU_STEREO
+               || mpTracker->mSensor == System::IMU_RGBD)
+              && (!mpCurrentKF->GetMap()->isImuInitialized())) {
             _logger->warn("Merge aborted: IMU is not initialized");
           } else {
-            Sophus::SE3d mTmw = mpMergeMatchedKF->GetPose().cast<double>();
-            g2o::Sim3    gSmw2(mTmw.unit_quaternion(), mTmw.translation(), 1.0);
-            Sophus::SE3d mTcw = mpCurrentKF->GetPose().cast<double>();
-            g2o::Sim3    gScw1(mTcw.unit_quaternion(), mTcw.translation(), 1.0);
-            g2o::Sim3    gSw2c = mg2oMergeSlw.inverse();
-            g2o::Sim3    gSw1m = mg2oMergeSlw;
+            const Sophus::SE3d               mTmw = mpMergeMatchedKF->GetPose().cast<double>();
+            const g2o::Sim3                  gSmw2(mTmw.unit_quaternion(), mTmw.translation(), 1.0);
+            const Sophus::SE3d               mTcw = mpCurrentKF->GetPose().cast<double>();
+            const g2o::Sim3                  gScw1(mTcw.unit_quaternion(), mTcw.translation(), 1.0);
+            const g2o::Sim3                  gSw2c = mg2oMergeSlw.inverse();
+            [[maybe_unused]] const g2o::Sim3 gSw1m = mg2oMergeSlw;
 
             mSold_new = (gSw2c * gScw1);
 
@@ -164,7 +152,10 @@ void LoopClosing::Run() {
                 continue;
               }
               // If inertial, force only yaw
-              if ((mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO || mpTracker->mSensor == System::IMU_RGBD) && mpCurrentKF->GetMap()->GetIniertialBA1()) {
+              if ((mpTracker->mSensor == System::IMU_MONOCULAR
+                   || mpTracker->mSensor == System::IMU_STEREO
+                   || mpTracker->mSensor == System::IMU_RGBD)
+                  && mpCurrentKF->GetMap()->GetIniertialBA1()) {
                 Eigen::Vector3d phi = LogSO3(mSold_new.rotation().toRotationMatrix());
                 phi(0)              = 0;
                 phi(1)              = 0;
@@ -186,7 +177,9 @@ void LoopClosing::Run() {
             nMerges += 1;
 #endif
             // TODO UNCOMMENT
-            if (mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO || mpTracker->mSensor == System::IMU_RGBD) {
+            if (mpTracker->mSensor == System::IMU_MONOCULAR
+                || mpTracker->mSensor == System::IMU_STEREO
+                || mpTracker->mSensor == System::IMU_RGBD) {
               MergeLocal2();
             } else {
               MergeLocal();
@@ -240,9 +233,9 @@ void LoopClosing::Run() {
 
           mg2oLoopScw = mg2oLoopSlw; //*mvg2oSim3LoopTcw[nCurrentIndex];
           if (mpCurrentKF->GetMap()->IsInertial()) {
-            Sophus::SE3d Twc = mpCurrentKF->GetPoseInverse().cast<double>();
-            g2o::Sim3    g2oTwc(Twc.unit_quaternion(), Twc.translation(), 1.0);
-            g2o::Sim3    g2oSww_new = g2oTwc * mg2oLoopScw;
+            const Sophus::SE3d Twc = mpCurrentKF->GetPoseInverse().cast<double>();
+            const g2o::Sim3    g2oTwc(Twc.unit_quaternion(), Twc.translation(), 1.0);
+            g2o::Sim3          g2oSww_new = g2oTwc * mg2oLoopScw;
 
             Eigen::Vector3d phi = LogSO3(g2oSww_new.rotation().toRotationMatrix());
             {
@@ -251,10 +244,14 @@ void LoopClosing::Run() {
               _logger->info("phi: {}", oss.str());
             }
 
-            if (std::fabs(phi(0)) < 0.008f && std::fabs(phi(1)) < 0.008f && std::fabs(phi(2)) < 0.349f) {
+            if (std::fabs(phi(0)) < 0.008F && std::fabs(phi(1)) < 0.008F
+                && std::fabs(phi(2)) < 0.349F) {
               if (mpCurrentKF->GetMap()->IsInertial()) {
                 // If inertial, force only yaw
-                if ((mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO || mpTracker->mSensor == System::IMU_RGBD) && mpCurrentKF->GetMap()->GetIniertialBA2()) {
+                if ((mpTracker->mSensor == System::IMU_MONOCULAR
+                     || mpTracker->mSensor == System::IMU_STEREO
+                     || mpTracker->mSensor == System::IMU_RGBD)
+                    && mpCurrentKF->GetMap()->GetIniertialBA2()) {
                   phi(0)      = 0;
                   phi(1)      = 0;
                   g2oSww_new  = g2o::Sim3(ExpSO3(phi), g2oSww_new.translation(), 1.0);
@@ -272,7 +269,7 @@ void LoopClosing::Run() {
 
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_StartLoop = std::chrono::steady_clock::now();
-            nLoop                                                += 1;
+            nLoop += 1;
 #endif
             CorrectLoop();
 #ifdef REGISTER_TIMES
@@ -307,21 +304,21 @@ void LoopClosing::Run() {
       break;
     }
 
-    usleep(5000);
+    std::this_thread::sleep_for(std::chrono::microseconds(5000));
   }
 
   SetFinish();
 }
 
 void LoopClosing::InsertKeyFrame(KeyFrame* pKF) {
-  std::unique_lock<std::mutex> lock(mMutexLoopQueue);
+  const std::unique_lock<std::mutex> lock(mMutexLoopQueue);
   if (pKF->mnId != 0) {
     mlpLoopKeyFrameQueue.push_back(pKF);
   }
 }
 
 bool LoopClosing::CheckNewKeyFrames() {
-  std::unique_lock<std::mutex> lock(mMutexLoopQueue);
+  const std::unique_lock<std::mutex> lock(mMutexLoopQueue);
   return (!mlpLoopKeyFrameQueue.empty());
 }
 
@@ -332,7 +329,7 @@ bool LoopClosing::NewDetectCommonRegions() {
   }
 
   {
-    std::unique_lock<std::mutex> lock(mMutexLoopQueue);
+    const std::unique_lock<std::mutex> lock(mMutexLoopQueue);
     mpCurrentKF = mlpLoopKeyFrameQueue.front();
     mlpLoopKeyFrameQueue.pop_front();
     // Avoid that a keyframe can be erased while it is being process by this thread
@@ -372,8 +369,8 @@ bool LoopClosing::NewDetectCommonRegions() {
 
   // Check the last candidates with geometric validation
   //  Loop candidates
-  bool bLoopDetectedInKF = false;
-  bool bCheckSpatial     = false;
+  bool                  bLoopDetectedInKF = false;
+  [[maybe_unused]] bool bCheckSpatial     = false;
 
 #ifdef REGISTER_TIMES
   std::chrono::steady_clock::time_point time_StartEstSim3_1 = std::chrono::steady_clock::now();
@@ -383,11 +380,11 @@ bool LoopClosing::NewDetectCommonRegions() {
     // Find from the last KF candidates
     Sophus::SE3d mTcl
       = (mpCurrentKF->GetPose() * mpLoopLastCurrentKF->GetPoseInverse()).cast<double>();
-    g2o::Sim3              gScl(mTcl.unit_quaternion(), mTcl.translation(), 1.0);
+    const g2o::Sim3        gScl(mTcl.unit_quaternion(), mTcl.translation(), 1.0);
     g2o::Sim3              gScw           = gScl * mg2oLoopSlw;
     int                    numProjMatches = 0;
     std::vector<MapPoint*> vpMatchedMPs;
-    bool                   bCommonRegion = DetectAndReffineSim3FromLastKF(
+    const bool             bCommonRegion = DetectAndReffineSim3FromLastKF(
       mpCurrentKF,
       mpLoopMatchedKF,
       gScw,
@@ -429,11 +426,11 @@ bool LoopClosing::NewDetectCommonRegions() {
     Sophus::SE3d mTcl
       = (mpCurrentKF->GetPose() * mpMergeLastCurrentKF->GetPoseInverse()).cast<double>();
 
-    g2o::Sim3              gScl(mTcl.unit_quaternion(), mTcl.translation(), 1.0);
+    const g2o::Sim3        gScl(mTcl.unit_quaternion(), mTcl.translation(), 1.0);
     g2o::Sim3              gScw           = gScl * mg2oMergeSlw;
     int                    numProjMatches = 0;
     std::vector<MapPoint*> vpMatchedMPs;
-    bool                   bCommonRegion = DetectAndReffineSim3FromLastKF(
+    const bool             bCommonRegion = DetectAndReffineSim3FromLastKF(
       mpCurrentKF,
       mpMergeMatchedKF,
       gScw,
@@ -488,7 +485,8 @@ bool LoopClosing::NewDetectCommonRegions() {
   const std::vector<KeyFrame*> vpConnectedKeyFrames = mpCurrentKF->GetVectorCovisibleKeyFrames();
 
   // Extract candidates from the bag of words
-  std::vector<KeyFrame*> vpMergeBowCand, vpLoopBowCand;
+  std::vector<KeyFrame*> vpMergeBowCand;
+  std::vector<KeyFrame*> vpLoopBowCand;
   if (!bMergeDetectedInKF || !bLoopDetectedInKF) {
     // Search in BoW
 #ifdef REGISTER_TIMES
@@ -582,13 +580,13 @@ bool LoopClosing::DetectAndReffineSim3FromLastKF(
     vpMatchedMPs
   );
 
-  int nProjMatches    = 30;
-  int nProjOptMatches = 50;
-  int nProjMatchesRep = 100;
+  const int nProjMatches    = 30;
+  const int nProjOptMatches = 50;
+  const int nProjMatchesRep = 100;
 
   if (nNumProjMatches >= nProjMatches) {
-    Sophus::SE3d                mTwm = pMatchedKF->GetPoseInverse().cast<double>();
-    g2o::Sim3                   gSwm(mTwm.unit_quaternion(), mTwm.translation(), 1.0);
+    const Sophus::SE3d          mTwm = pMatchedKF->GetPoseInverse().cast<double>();
+    const g2o::Sim3             gSwm(mTwm.unit_quaternion(), mTwm.translation(), 1.0);
     g2o::Sim3                   gScm = gScw * gSwm;
     Eigen::Matrix<double, 7, 7> mHessian7x7;
 
@@ -596,7 +594,7 @@ bool LoopClosing::DetectAndReffineSim3FromLastKF(
     if (mpTracker->mSensor == System::IMU_MONOCULAR && !pCurrentKF->GetMap()->GetIniertialBA2()) {
       bFixedScale = false;
     }
-    int numOptMatches = Optimizer::OptimizeSim3(
+    const int numOptMatches = Optimizer::OptimizeSim3(
       mpCurrentKF,
       pMatchedKF,
       vpMatchedMPs,
@@ -611,7 +609,7 @@ bool LoopClosing::DetectAndReffineSim3FromLastKF(
       g2o::Sim3 gScw_estimation(gScw.rotation(), gScw.translation(), 1.0);
 
       std::vector<MapPoint*> vpMatchedMP;
-      vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), static_cast<MapPoint*>(NULL));
+      vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), nullptr);
 
       nNumProjMatches = FindMatchesByProjection(
         pCurrentKF,
@@ -639,28 +637,28 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
   std::vector<MapPoint*>& vpMPs,
   std::vector<MapPoint*>& vpMatchedMPs
 ) {
-  int nBoWMatches     = 20;
-  int nBoWInliers     = 15;
-  int nSim3Inliers    = 20;
-  int nProjMatches    = 50;
-  int nProjOptMatches = 80;
+  const int nBoWMatches     = 20;
+  const int nBoWInliers     = 15;
+  const int nSim3Inliers    = 20;
+  const int nProjMatches    = 50;
+  const int nProjOptMatches = 80;
 
   std::set<KeyFrame*> spConnectedKeyFrames = mpCurrentKF->GetConnectedKeyFrames();
 
-  int nNumCovisibles = 10;
+  const int nNumCovisibles = 10;
 
   ORBmatcher matcherBoW(0.9, true);
   ORBmatcher matcher(0.75, true);
 
   // Varibles to select the best numbe
-  KeyFrame*              pBestMatchedKF;
+  KeyFrame*              pBestMatchedKF       = nullptr;
   int                    nBestMatchesReproj   = 0;
   int                    nBestNumCoindicendes = 0;
   g2o::Sim3              g2oBestScw;
   std::vector<MapPoint*> vpBestMapPoints;
   std::vector<MapPoint*> vpBestMatchedMapPoints;
 
-  int              numCandidates = vpBowCand.size();
+  const int        numCandidates = vpBowCand.size();
   std::vector<int> vnStage(numCandidates, 0);
   std::vector<int> vnMatchesStage(numCandidates, 0);
 
@@ -682,8 +680,8 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
     }
 
     bool bAbortByNearKF = false;
-    for (int j = 0; j < vpCovKFi.size(); ++j) {
-      if (spConnectedKeyFrames.find(vpCovKFi[j]) != spConnectedKeyFrames.end()) {
+    for (auto* pKF : vpCovKFi) {
+      if (spConnectedKeyFrames.find(pKF) != spConnectedKeyFrames.end()) {
         bAbortByNearKF = true;
         break;
       }
@@ -701,30 +699,24 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
     KeyFrame* pMostBoWMatchesKF  = pKFi;
     int       nMostBoWNumMatches = 0;
 
-    std::vector<MapPoint*> vpMatchedPoints = std::vector<MapPoint*>(
-      mpCurrentKF->GetMapPointMatches().size(),
-      static_cast<MapPoint*>(NULL)
-    );
-    std::vector<KeyFrame*> vpKeyFrameMatchedMP = std::vector<KeyFrame*>(
-      mpCurrentKF->GetMapPointMatches().size(),
-      static_cast<KeyFrame*>(NULL)
-    );
+    std::vector<MapPoint*> vpMatchedPoints
+      = std::vector<MapPoint*>(mpCurrentKF->GetMapPointMatches().size(), nullptr);
+    std::vector<KeyFrame*> vpKeyFrameMatchedMP
+      = std::vector<KeyFrame*>(mpCurrentKF->GetMapPointMatches().size(), nullptr);
 
-    int nIndexMostBoWMatchesKF = 0;
-    for (int j = 0; j < vpCovKFi.size(); ++j) {
+    for (std::size_t j = 0; j < vpCovKFi.size(); ++j) {
       if (!vpCovKFi[j] || vpCovKFi[j]->isBad()) {
         continue;
       }
 
-      int num = matcherBoW.SearchByBoW(mpCurrentKF, vpCovKFi[j], vvpMatchedMPs[j]);
+      const int num = matcherBoW.SearchByBoW(mpCurrentKF, vpCovKFi[j], vvpMatchedMPs[j]);
       if (num > nMostBoWNumMatches) {
-        nMostBoWNumMatches     = num;
-        nIndexMostBoWMatchesKF = j;
+        nMostBoWNumMatches = num;
       }
     }
 
-    for (int j = 0; j < vpCovKFi.size(); ++j) {
-      for (int k = 0; k < vvpMatchedMPs[j].size(); ++k) {
+    for (std::size_t j = 0; j < vpCovKFi.size(); ++j) {
+      for (std::size_t k = 0; k < vvpMatchedMPs[j].size(); ++k) {
         MapPoint* pMPi_j = vvpMatchedMPs[j][k];
         if (!pMPi_j || pMPi_j->isBad()) {
           continue;
@@ -745,7 +737,8 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
     if (numBoWMatches >= nBoWMatches) { // TODO pick a good threshold
       // Geometric validation
       bool bFixedScale = mbFixScale;
-      if (mpTracker->mSensor == System::IMU_MONOCULAR && !mpCurrentKF->GetMap()->GetIniertialBA2()) {
+      if (mpTracker->mSensor == System::IMU_MONOCULAR
+          && !mpCurrentKF->GetMap()->GetIniertialBA2()) {
         bFixedScale = false;
       }
 
@@ -760,7 +753,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
 
       bool              bNoMore = false;
       std::vector<bool> vbInliers;
-      int               nInliers;
+      int               nInliers  = 0;
       bool              bConverge = false;
       Eigen::Matrix4f   mTcm;
       while (!bConverge && !bNoMore) {
@@ -777,7 +770,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
         vpCovKFi.clear();
         vpCovKFi = pMostBoWMatchesKF->GetBestCovisibilityKeyFrames(nNumCovisibles);
         vpCovKFi.push_back(pMostBoWMatchesKF);
-        std::set<KeyFrame*> spCheckKFs(vpCovKFi.begin(), vpCovKFi.end());
+        const std::set<KeyFrame*> spCheckKFs(vpCovKFi.begin(), vpCovKFi.end());
 
         _logger->debug("There are {} near key frames", vpCovKFi.size());
 
@@ -805,19 +798,19 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
           solver.GetEstimatedTranslation().cast<double>(),
           (double)solver.GetEstimatedScale()
         );
-        g2o::Sim3 gSmw(
+        const g2o::Sim3 gSmw(
           pMostBoWMatchesKF->GetRotation().cast<double>(),
           pMostBoWMatchesKF->GetTranslation().cast<double>(),
           1.0
         );
-        g2o::Sim3     gScw = gScm * gSmw; // Similarity matrix of current from the world position
-        Sophus::Sim3f mScw = Converter::toSophus(gScw);
+        const g2o::Sim3 gScw = gScm * gSmw; // Similarity matrix of current from the world position
+        Sophus::Sim3f   mScw = Converter::toSophus(gScw);
 
         std::vector<MapPoint*> vpMatchedMP;
-        vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), static_cast<MapPoint*>(NULL));
+        vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), nullptr);
         std::vector<KeyFrame*> vpMatchedKF;
-        vpMatchedKF.resize(mpCurrentKF->GetMapPointMatches().size(), static_cast<KeyFrame*>(NULL));
-        int numProjMatches = matcher.SearchByProjection(
+        vpMatchedKF.resize(mpCurrentKF->GetMapPointMatches().size(), nullptr);
+        const int numProjMatches = matcher.SearchByProjection(
           mpCurrentKF,
           mScw,
           vpMapPoints,
@@ -837,12 +830,16 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
           // Optimize Sim3 transformation with every matches
           Eigen::Matrix<double, 7, 7> mHessian7x7;
 
-          bool bFixedScale = mbFixScale;
-          if (mpTracker->mSensor == System::IMU_MONOCULAR && !mpCurrentKF->GetMap()->GetIniertialBA2()) {
+          // FIX(elkuno213): should pass bFixedScale (not mbFixScale) to OptimizeSim3,
+          // like the correct usage at line ~592. This means IMU_MONOCULAR pre-BA2
+          // never gets the unfixed scale override.
+          [[maybe_unused]] bool bFixedScale = mbFixScale;
+          if (mpTracker->mSensor == System::IMU_MONOCULAR
+              && !mpCurrentKF->GetMap()->GetIniertialBA2()) {
             bFixedScale = false;
           }
 
-          int numOptMatches = Optimizer::OptimizeSim3(
+          const int numOptMatches = Optimizer::OptimizeSim3(
             mpCurrentKF,
             pKFi,
             vpMatchedMP,
@@ -854,41 +851,41 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
           );
 
           if (numOptMatches >= nSim3Inliers) {
-            g2o::Sim3 gSmw(
+            const g2o::Sim3 gSmw(
               pMostBoWMatchesKF->GetRotation().cast<double>(),
               pMostBoWMatchesKF->GetTranslation().cast<double>(),
               1.0
             );
-            g2o::Sim3 gScw = gScm * gSmw; // Similarity matrix of current from the world position
+            const g2o::Sim3 gScw
+              = gScm * gSmw; // Similarity matrix of current from the world position
             Sophus::Sim3f mScw = Converter::toSophus(gScw);
 
             std::vector<MapPoint*> vpMatchedMP;
-            vpMatchedMP.resize(
-              mpCurrentKF->GetMapPointMatches().size(),
-              static_cast<MapPoint*>(NULL)
-            );
-            int numProjOptMatches
+            vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), nullptr);
+            const int numProjOptMatches
               = matcher.SearchByProjection(mpCurrentKF, mScw, vpMapPoints, vpMatchedMP, 5, 1.0);
 
             if (numProjOptMatches >= nProjOptMatches) {
-              int max_x = -1, min_x = 1000000;
-              int max_y = -1, min_y = 1000000;
+              int max_x = -1;
+              int min_x = 1000000;
+              int max_y = -1;
+              int min_y = 1000000;
               for (MapPoint* pMPi : vpMatchedMP) {
                 if (!pMPi || pMPi->isBad()) {
                   continue;
                 }
 
-                std::tuple<std::size_t, std::size_t> indexes = pMPi->GetIndexInKeyFrame(pKFi);
-                int                                  index   = get<0>(indexes);
+                const auto indexes = pMPi->GetIndexInKeyFrame(pKFi);
+                const int  index   = get<0>(indexes);
                 if (index >= 0) {
-                  int coord_x = pKFi->mvKeysUn[index].pt.x;
+                  const int coord_x = pKFi->mvKeysUn[index].pt.x;
                   if (coord_x < min_x) {
                     min_x = coord_x;
                   }
                   if (coord_x > max_x) {
                     max_x = coord_x;
                   }
-                  int coord_y = pKFi->mvKeysUn[index].pt.y;
+                  const int coord_y = pKFi->mvKeysUn[index].pt.y;
                   if (coord_y < min_y) {
                     min_y = coord_y;
                   }
@@ -906,15 +903,15 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
                 = mpCurrentKF->GetBestCovisibilityKeyFrames(nNumCovisibles);
 
               int j = 0;
-              while (nNumKFs < 3 && j < vpCurrentCovKFs.size()) {
+              while (nNumKFs < 3 && j < static_cast<int>(vpCurrentCovKFs.size())) {
                 KeyFrame*    pKFj = vpCurrentCovKFs[j];
                 Sophus::SE3d mTjc
                   = (pKFj->GetPose() * mpCurrentKF->GetPoseInverse()).cast<double>();
-                g2o::Sim3              gSjc(mTjc.unit_quaternion(), mTjc.translation(), 1.0);
+                const g2o::Sim3        gSjc(mTjc.unit_quaternion(), mTjc.translation(), 1.0);
                 g2o::Sim3              gSjw             = gSjc * gScw;
                 int                    numProjMatches_j = 0;
                 std::vector<MapPoint*> vpMatchedMPs_j;
-                bool                   bValid = DetectCommonRegionsFromLastKF(
+                const bool             bValid = DetectCommonRegionsFromLastKF(
                   pKFj,
                   pMostBoWMatchesKF,
                   gSjw,
@@ -924,10 +921,10 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
                 );
 
                 if (bValid) {
-                  Sophus::SE3f    Tc_w        = mpCurrentKF->GetPose();
-                  Sophus::SE3f    Tw_cj       = pKFj->GetPoseInverse();
-                  Sophus::SE3f    Tc_cj       = Tc_w * Tw_cj;
-                  Eigen::Vector3f vector_dist = Tc_cj.translation();
+                  const Sophus::SE3f           Tc_w        = mpCurrentKF->GetPose();
+                  const Sophus::SE3f           Tw_cj       = pKFj->GetPoseInverse();
+                  const Sophus::SE3f           Tc_cj       = Tc_w * Tw_cj;
+                  [[maybe_unused]] const auto& vector_dist = Tc_cj.translation();
                   nNumKFs++;
                 }
                 j++;
@@ -966,11 +963,9 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
     return nNumCoincidences >= 3;
   } else {
     int maxStage = -1;
-    int maxMatched;
-    for (int i = 0; i < vnStage.size(); ++i) {
-      if (vnStage[i] > maxStage) {
-        maxStage   = vnStage[i];
-        maxMatched = vnMatchesStage[i];
+    for (const auto& stage : vnStage) {
+      if (stage > maxStage) {
+        maxStage = stage;
       }
     }
   }
@@ -995,25 +990,21 @@ bool LoopClosing::DetectCommonRegionsFromLastKF(
     vpMatchedMPs
   );
 
-  int nProjMatches = 30;
-  if (nNumProjMatches >= nProjMatches) {
-    return true;
-  }
-
-  return false;
+  const int nProjMatches = 30;
+  return nNumProjMatches >= nProjMatches;
 }
 
 int LoopClosing::FindMatchesByProjection(
-  KeyFrame*               pCurrentKF,
-  KeyFrame*               pMatchedKFw,
-  g2o::Sim3&              g2oScw,
-  std::set<MapPoint*>&    spMatchedMPinOrigin,
+  KeyFrame*  pCurrentKF,
+  KeyFrame*  pMatchedKFw,
+  g2o::Sim3& g2oScw,
+  std::set<MapPoint*>& /*spMatchedMPinOrigin*/,
   std::vector<MapPoint*>& vpMapPoints,
   std::vector<MapPoint*>& vpMatchedMapPoints
 ) {
-  int                    nNumCovisibles = 10;
+  const int              nNumCovisibles = 10;
   std::vector<KeyFrame*> vpCovKFm       = pMatchedKFw->GetBestCovisibilityKeyFrames(nNumCovisibles);
-  int                    nInitialCov    = vpCovKFm.size();
+  const int              nInitialCov    = vpCovKFm.size();
   vpCovKFm.push_back(pMatchedKFw);
   std::set<KeyFrame*> spCheckKFs(vpCovKFm.begin(), vpCovKFm.end());
   std::set<KeyFrame*> spCurrentCovisbles = pCurrentKF->GetConnectedKeyFrames();
@@ -1022,9 +1013,9 @@ int LoopClosing::FindMatchesByProjection(
       std::vector<KeyFrame*> vpKFs     = vpCovKFm[i]->GetBestCovisibilityKeyFrames(nNumCovisibles);
       int                    nInserted = 0;
       int                    j         = 0;
-      while (j < vpKFs.size() && nInserted < nNumCovisibles) {
-        if(spCheckKFs.find(vpKFs[j]) == spCheckKFs.end() && spCurrentCovisbles.find(vpKFs[j]) == spCurrentCovisbles.end())
-                {
+      while (j < static_cast<int>(vpKFs.size()) && nInserted < nNumCovisibles) {
+        if (spCheckKFs.find(vpKFs[j]) == spCheckKFs.end()
+            && spCurrentCovisbles.find(vpKFs[j]) == spCurrentCovisbles.end()) {
           spCheckKFs.insert(vpKFs[j]);
           ++nInserted;
         }
@@ -1052,8 +1043,8 @@ int LoopClosing::FindMatchesByProjection(
   Sophus::Sim3f mScw = Converter::toSophus(g2oScw);
   ORBmatcher    matcher(0.9, true);
 
-  vpMatchedMapPoints.resize(pCurrentKF->GetMapPointMatches().size(), static_cast<MapPoint*>(NULL));
-  int num_matches
+  vpMatchedMapPoints.resize(pCurrentKF->GetMapPointMatches().size(), nullptr);
+  const int num_matches
     = matcher.SearchByProjection(pCurrentKF, mScw, vpMapPoints, vpMatchedMapPoints, 3, 1.5);
 
   return num_matches;
@@ -1071,7 +1062,7 @@ void LoopClosing::CorrectLoop() {
   // If a Global Bundle Adjustment is running, abort it
   if (isRunningGBA()) {
     _logger->info("CorrectLoop: global bundle adjustment is running, stop it now");
-    std::unique_lock<std::mutex> lock(mMutexGBA);
+    const std::unique_lock<std::mutex> lock(mMutexGBA);
     mbStopGBA = true;
 
     mnFullBAIdx++;
@@ -1085,7 +1076,7 @@ void LoopClosing::CorrectLoop() {
 
   // Wait until Local Mapping has effectively stopped
   while (!mpLocalMapper->isStopped()) {
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
   _logger->info("Local mapping stopped");
 
@@ -1101,15 +1092,20 @@ void LoopClosing::CorrectLoop() {
 
   _logger->info("CorrectLoop: there are {} connected key frames", mvpCurrentConnectedKFs.size());
 
-  KeyFrameAndPose CorrectedSim3, NonCorrectedSim3;
+  KeyFrameAndPose CorrectedSim3;
+  KeyFrameAndPose NonCorrectedSim3;
   CorrectedSim3[mpCurrentKF] = mg2oLoopScw;
-  Sophus::SE3f Twc           = mpCurrentKF->GetPoseInverse();
-  Sophus::SE3f Tcw           = mpCurrentKF->GetPose();
-  g2o::Sim3    g2oScw(Tcw.unit_quaternion().cast<double>(), Tcw.translation().cast<double>(), 1.0);
+  const Sophus::SE3f Twc     = mpCurrentKF->GetPoseInverse();
+  const Sophus::SE3f Tcw     = mpCurrentKF->GetPose();
+  const g2o::Sim3    g2oScw(
+    Tcw.unit_quaternion().cast<double>(),
+    Tcw.translation().cast<double>(),
+    1.0
+  );
   NonCorrectedSim3[mpCurrentKF] = g2oScw;
 
   // Update keyframe pose with corrected Sim3. First transform Sim3 to SE3 (scale translation)
-  Sophus::SE3d correctedTcw(
+  const Sophus::SE3d correctedTcw(
     mg2oLoopScw.rotation(),
     mg2oLoopScw.translation() / mg2oLoopScw.scale()
   );
@@ -1132,7 +1128,7 @@ void LoopClosing::CorrectLoop() {
 
   {
     // Get Map Mutex
-    std::unique_lock<std::mutex> lock(pLoopMap->mMutexMapUpdate);
+    const std::unique_lock<std::mutex> lock(pLoopMap->mMutexMapUpdate);
 
     const bool bImuInit = pLoopMap->isImuInitialized();
 
@@ -1140,29 +1136,24 @@ void LoopClosing::CorrectLoop() {
       "CorrectLoop: starting pose correction for {} connected keyframes",
       mvpCurrentConnectedKFs.size() - 1
     ); // -1 to exclude current key frame
-    for (std::vector<KeyFrame*>::iterator vit  = mvpCurrentConnectedKFs.begin(),
-                                          vend = mvpCurrentConnectedKFs.end();
-         vit != vend;
-         vit++) {
-      KeyFrame* pKFi = *vit;
-
+    for (auto* pKFi : mvpCurrentConnectedKFs) {
       if (pKFi != mpCurrentKF) {
-        Sophus::SE3f Tiw = pKFi->GetPose();
-        Sophus::SE3d Tic = (Tiw * Twc).cast<double>();
-        g2o::Sim3    g2oSic(Tic.unit_quaternion(), Tic.translation(), 1.0);
-        g2o::Sim3    g2oCorrectedSiw = g2oSic * mg2oLoopScw;
+        const Sophus::SE3f Tiw = pKFi->GetPose();
+        const Sophus::SE3d Tic = (Tiw * Twc).cast<double>();
+        const g2o::Sim3    g2oSic(Tic.unit_quaternion(), Tic.translation(), 1.0);
+        const g2o::Sim3    g2oCorrectedSiw = g2oSic * mg2oLoopScw;
         // Pose corrected with the Sim3 of the loop closure
         CorrectedSim3[pKFi] = g2oCorrectedSiw;
 
         // Update keyframe pose with corrected Sim3. First transform Sim3 to SE3 (scale translation)
-        Sophus::SE3d correctedTiw(
+        const Sophus::SE3d correctedTiw(
           g2oCorrectedSiw.rotation(),
           g2oCorrectedSiw.translation() / g2oCorrectedSiw.scale()
         );
         pKFi->SetPose(correctedTiw.cast<float>());
 
         // Pose without correction
-        g2o::Sim3 g2oSiw(
+        const g2o::Sim3 g2oSiw(
           Tiw.unit_quaternion().cast<double>(),
           Tiw.translation().cast<double>(),
           1.0
@@ -1176,14 +1167,10 @@ void LoopClosing::CorrectLoop() {
     _logger->info(
       "CorrectLoop: correcting map points observed by current key frames and it neighbors..."
     );
-    for (KeyFrameAndPose::iterator mit = CorrectedSim3.begin(), mend = CorrectedSim3.end();
-         mit != mend;
-         mit++) {
-      KeyFrame* pKFi            = mit->first;
-      g2o::Sim3 g2oCorrectedSiw = mit->second;
-      g2o::Sim3 g2oCorrectedSwi = g2oCorrectedSiw.inverse();
+    for (auto& [pKFi, g2oCorrectedSiw] : CorrectedSim3) {
+      const g2o::Sim3 g2oCorrectedSwi = g2oCorrectedSiw.inverse();
 
-      g2o::Sim3 g2oSiw = NonCorrectedSim3[pKFi];
+      const g2o::Sim3 g2oSiw = NonCorrectedSim3[pKFi];
 
       // Update keyframe pose with corrected Sim3. First transform Sim3 to SE3 (scale translation)
       /*Sophus::SE3d correctedTiw(g2oCorrectedSiw.rotation(),g2oCorrectedSiw.translation() /
@@ -1203,8 +1190,8 @@ void LoopClosing::CorrectLoop() {
         }
 
         // Project with non-corrected pose and project back with corrected pose
-        Eigen::Vector3d P3Dw             = pMPi->GetWorldPos().cast<double>();
-        Eigen::Vector3d eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oSiw.map(P3Dw));
+        const Eigen::Vector3d P3Dw             = pMPi->GetWorldPos().cast<double>();
+        const Eigen::Vector3d eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oSiw.map(P3Dw));
 
         pMPi->SetWorldPos(eigCorrectedP3Dw.cast<float>());
         pMPi->mnCorrectedByKF      = mpCurrentKF->mnId;
@@ -1214,7 +1201,7 @@ void LoopClosing::CorrectLoop() {
 
       // Correct velocity according to orientation correction
       if (bImuInit) {
-        Eigen::Quaternionf Rcor
+        const Eigen::Quaternionf Rcor
           = (g2oCorrectedSiw.rotation().inverse() * g2oSiw.rotation()).cast<float>();
         pKFi->SetVelocity(Rcor * pKFi->GetVelocity());
       }
@@ -1257,27 +1244,17 @@ void LoopClosing::CorrectLoop() {
   std::map<KeyFrame*, std::set<KeyFrame*>> LoopConnections;
 
   _logger->info("CorrectLoop: updating connections in covisibility graph...");
-  for (std::vector<KeyFrame*>::iterator vit  = mvpCurrentConnectedKFs.begin(),
-                                        vend = mvpCurrentConnectedKFs.end();
-       vit != vend;
-       vit++) {
-    KeyFrame*              pKFi                = *vit;
+  for (auto* pKFi : mvpCurrentConnectedKFs) {
     std::vector<KeyFrame*> vpPreviousNeighbors = pKFi->GetVectorCovisibleKeyFrames();
 
     // Update connections. Detect new links.
     pKFi->UpdateConnections();
     LoopConnections[pKFi] = pKFi->GetConnectedKeyFrames();
-    for (std::vector<KeyFrame*>::iterator vit_prev  = vpPreviousNeighbors.begin(),
-                                          vend_prev = vpPreviousNeighbors.end();
-         vit_prev != vend_prev;
-         vit_prev++) {
-      LoopConnections[pKFi].erase(*vit_prev);
+    for (auto* pKFprev : vpPreviousNeighbors) {
+      LoopConnections[pKFi].erase(pKFprev);
     }
-    for (std::vector<KeyFrame*>::iterator vit2  = mvpCurrentConnectedKFs.begin(),
-                                          vend2 = mvpCurrentConnectedKFs.end();
-         vit2 != vend2;
-         vit2++) {
-      LoopConnections[pKFi].erase(*vit2);
+    for (auto* pKFconn : mvpCurrentConnectedKFs) {
+      LoopConnections[pKFi].erase(pKFconn);
     }
   }
 
@@ -1336,7 +1313,8 @@ void LoopClosing::CorrectLoop() {
 
   // Launch a new thread to perform Global Bundle Adjustment (Only if few keyframes, if not it would
   // take too much time)
-  if (!pLoopMap->isImuInitialized() || (pLoopMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1)) {
+  if (!pLoopMap->isImuInitialized()
+      || (pLoopMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1)) {
     mbRunningGBA    = true;
     mbFinishedGBA   = false;
     mbStopGBA       = false;
@@ -1356,24 +1334,25 @@ void LoopClosing::CorrectLoop() {
 void LoopClosing::MergeLocal() {
   _logger->info("MergeLocal: starting to merge in local without IMU data");
 
-  int numTemporalKFs = 25; // Temporal KFs in the local window if the map is inertial.
+  const int numTemporalKFs = 25; // Temporal KFs in the local window if the map is inertial.
 
   // Relationship to rebuild the essential graph, it is used two times, first in the local window
   // and later in the rest of the map
-  KeyFrame* pNewChild;
-  KeyFrame* pNewParent;
+  KeyFrame* pNewChild  = nullptr;
+  KeyFrame* pNewParent = nullptr;
 
   std::vector<KeyFrame*> vpLocalCurrentWindowKFs;
   std::vector<KeyFrame*> vpMergeConnectedKFs;
 
   // Flag that is true only when we stopped a running BA, in this case we need relaunch at the end
   // of the merge
-  bool bRelaunchBA = false;
+  // TODO(elkuno213): remove [[maybe_unused]] — bRelaunchBA IS used at the end of this function
+  [[maybe_unused]] bool bRelaunchBA = false;
 
   //  If a Global Bundle Adjustment is running, abort it
   if (isRunningGBA()) {
     _logger->info("MergeLocal: stopping global bundle adjustment...");
-    std::unique_lock<std::mutex> lock(mMutexGBA);
+    const std::unique_lock<std::mutex> lock(mMutexGBA);
     mbStopGBA = true;
 
     mnFullBAIdx++;
@@ -1389,7 +1368,7 @@ void LoopClosing::MergeLocal() {
   mpLocalMapper->RequestStop();
   // Wait until Local Mapping has effectively stopped
   while (!mpLocalMapper->isStopped()) {
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
 
   mpLocalMapper->EmptyQueue();
@@ -1425,7 +1404,7 @@ void LoopClosing::MergeLocal() {
       pKFi = mpCurrentKF->mPrevKF;
       nInserted++;
 
-      std::set<MapPoint*> spMPi = pKFi->GetMapPoints();
+      const std::set<MapPoint*> spMPi = pKFi->GetMapPoints();
       spLocalWindowMPs.insert(spMPi.begin(), spMPi.end());
     }
 
@@ -1433,7 +1412,7 @@ void LoopClosing::MergeLocal() {
     while (pKFi) {
       spLocalWindowKFs.insert(pKFi);
 
-      std::set<MapPoint*> spMPi = pKFi->GetMapPoints();
+      const std::set<MapPoint*> spMPi = pKFi->GetMapPoints();
       spLocalWindowMPs.insert(spMPi.begin(), spMPi.end());
 
       pKFi = mpCurrentKF->mNextKF;
@@ -1447,13 +1426,16 @@ void LoopClosing::MergeLocal() {
   spLocalWindowKFs.insert(mpCurrentKF);
   const int nMaxTries = 5;
   int       nNumTries = 0;
-  while (spLocalWindowKFs.size() < numTemporalKFs && nNumTries < nMaxTries) {
+  while (spLocalWindowKFs.size() < static_cast<std::size_t>(numTemporalKFs)
+         && nNumTries < nMaxTries) {
     std::vector<KeyFrame*> vpNewCovKFs;
-    vpNewCovKFs.empty();
+    vpNewCovKFs.clear();
     for (KeyFrame* pKFi : spLocalWindowKFs) {
-      std::vector<KeyFrame*> vpKFiCov = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
+      const std::vector<KeyFrame*> vpKFiCov
+        = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
       for (KeyFrame* pKFcov : vpKFiCov) {
-        if (pKFcov && !pKFcov->isBad() && spLocalWindowKFs.find(pKFcov) == spLocalWindowKFs.end()) {
+        if (pKFcov != nullptr && !pKFcov->isBad()
+            && spLocalWindowKFs.find(pKFcov) == spLocalWindowKFs.end()) {
           vpNewCovKFs.push_back(pKFcov);
         }
       }
@@ -1468,7 +1450,7 @@ void LoopClosing::MergeLocal() {
       continue;
     }
 
-    std::set<MapPoint*> spMPs = pKFi->GetMapPoints();
+    const std::set<MapPoint*> spMPs = pKFi->GetMapPoints();
     spLocalWindowMPs.insert(spMPs.begin(), spMPs.end());
   }
 
@@ -1495,12 +1477,15 @@ void LoopClosing::MergeLocal() {
   spMergeConnectedKFs.insert(vpCovisibleKFs.begin(), vpCovisibleKFs.end());
   spMergeConnectedKFs.insert(mpMergeMatchedKF);
   nNumTries = 0;
-  while (spMergeConnectedKFs.size() < numTemporalKFs && nNumTries < nMaxTries) {
+  while (spMergeConnectedKFs.size() < static_cast<std::size_t>(numTemporalKFs)
+         && nNumTries < nMaxTries) {
     std::vector<KeyFrame*> vpNewCovKFs;
     for (KeyFrame* pKFi : spMergeConnectedKFs) {
-      std::vector<KeyFrame*> vpKFiCov = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
+      const std::vector<KeyFrame*> vpKFiCov
+        = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
       for (KeyFrame* pKFcov : vpKFiCov) {
-        if (pKFcov && !pKFcov->isBad() && spMergeConnectedKFs.find(pKFcov) == spMergeConnectedKFs.end()) {
+        if (pKFcov != nullptr && !pKFcov->isBad()
+            && spMergeConnectedKFs.find(pKFcov) == spMergeConnectedKFs.end()) {
           vpNewCovKFs.push_back(pKFcov);
         }
       }
@@ -1512,7 +1497,7 @@ void LoopClosing::MergeLocal() {
 
   std::set<MapPoint*> spMapPointMerge;
   for (KeyFrame* pKFi : spMergeConnectedKFs) {
-    std::set<MapPoint*> vpMPs = pKFi->GetMapPoints();
+    const std::set<MapPoint*> vpMPs = pKFi->GetMapPoints();
     spMapPointMerge.insert(vpMPs.begin(), vpMPs.end());
   }
 
@@ -1524,12 +1509,13 @@ void LoopClosing::MergeLocal() {
     std::back_inserter(vpCheckFuseMapPoint)
   );
 
-  Sophus::SE3d Twc = mpCurrentKF->GetPoseInverse().cast<double>();
-  g2o::Sim3    g2oNonCorrectedSwc(Twc.unit_quaternion(), Twc.translation(), 1.0);
-  g2o::Sim3    g2oNonCorrectedScw = g2oNonCorrectedSwc.inverse();
-  g2o::Sim3    g2oCorrectedScw    = mg2oMergeScw; // TODO Check the transformation
+  const Sophus::SE3d Twc = mpCurrentKF->GetPoseInverse().cast<double>();
+  const g2o::Sim3    g2oNonCorrectedSwc(Twc.unit_quaternion(), Twc.translation(), 1.0);
+  const g2o::Sim3    g2oNonCorrectedScw = g2oNonCorrectedSwc.inverse();
+  const g2o::Sim3    g2oCorrectedScw    = mg2oMergeScw; // TODO Check the transformation
 
-  KeyFrameAndPose vCorrectedSim3, vNonCorrectedSim3;
+  KeyFrameAndPose vCorrectedSim3;
+  KeyFrameAndPose vNonCorrectedSim3;
   vCorrectedSim3[mpCurrentKF]    = g2oCorrectedScw;
   vNonCorrectedSim3[mpCurrentKF] = g2oNonCorrectedScw;
 
@@ -1549,13 +1535,13 @@ void LoopClosing::MergeLocal() {
     g2o::Sim3 g2oCorrectedSiw;
 
     if (pKFi != mpCurrentKF) {
-      Sophus::SE3d Tiw = (pKFi->GetPose()).cast<double>();
-      g2o::Sim3    g2oSiw(Tiw.unit_quaternion(), Tiw.translation(), 1.0);
+      const Sophus::SE3d Tiw = (pKFi->GetPose()).cast<double>();
+      const g2o::Sim3    g2oSiw(Tiw.unit_quaternion(), Tiw.translation(), 1.0);
       // Pose without correction
       vNonCorrectedSim3[pKFi] = g2oSiw;
 
-      Sophus::SE3d Tic = Tiw * Twc;
-      g2o::Sim3    g2oSic(Tic.unit_quaternion(), Tic.translation(), 1.0);
+      const Sophus::SE3d Tic = Tiw * Twc;
+      const g2o::Sim3    g2oSic(Tic.unit_quaternion(), Tic.translation(), 1.0);
       g2oCorrectedSiw      = g2oSic * mg2oMergeScw;
       vCorrectedSim3[pKFi] = g2oCorrectedSiw;
     } else {
@@ -1564,14 +1550,14 @@ void LoopClosing::MergeLocal() {
     pKFi->mTcwMerge = pKFi->GetPose();
 
     // Update keyframe pose with corrected Sim3. First transform Sim3 to SE3 (scale translation)
-    double s      = g2oCorrectedSiw.scale();
-    pKFi->mfScale = s;
-    Sophus::SE3d correctedTiw(g2oCorrectedSiw.rotation(), g2oCorrectedSiw.translation() / s);
+    const double s = g2oCorrectedSiw.scale();
+    pKFi->mfScale  = s;
+    const Sophus::SE3d correctedTiw(g2oCorrectedSiw.rotation(), g2oCorrectedSiw.translation() / s);
 
     pKFi->mTcwMerge = correctedTiw.cast<float>();
 
     if (pCurrentMap->isImuInitialized()) {
-      Eigen::Quaternionf Rcor
+      const Eigen::Quaternionf Rcor
         = (g2oCorrectedSiw.rotation().inverse() * vNonCorrectedSim3[pKFi].rotation()).cast<float>();
       pKFi->mVwbMerge = Rcor * pKFi->GetVelocity();
     }
@@ -1579,10 +1565,8 @@ void LoopClosing::MergeLocal() {
     // TODO DEBUG to know which are the KFs that had been moved to the other map
   }
 
-  int numPointsWithCorrection = 0;
-
   // for(MapPoint* pMPi : spLocalWindowMPs)
-  std::set<MapPoint*>::iterator itMP = spLocalWindowMPs.begin();
+  auto itMP = spLocalWindowMPs.begin();
   while (itMP != spLocalWindowMPs.end()) {
     MapPoint* pMPi = *itMP;
     if (!pMPi || pMPi->isBad()) {
@@ -1593,35 +1577,28 @@ void LoopClosing::MergeLocal() {
     KeyFrame* pKFref = pMPi->GetReferenceKeyFrame();
     if (vCorrectedSim3.find(pKFref) == vCorrectedSim3.end()) {
       itMP = spLocalWindowMPs.erase(itMP);
-      numPointsWithCorrection++;
       continue;
     }
-    g2o::Sim3 g2oCorrectedSwi    = vCorrectedSim3[pKFref].inverse();
-    g2o::Sim3 g2oNonCorrectedSiw = vNonCorrectedSim3[pKFref];
+    const g2o::Sim3 g2oCorrectedSwi    = vCorrectedSim3[pKFref].inverse();
+    const g2o::Sim3 g2oNonCorrectedSiw = vNonCorrectedSim3[pKFref];
 
     // Project with non-corrected pose and project back with corrected pose
-    Eigen::Vector3d    P3Dw             = pMPi->GetWorldPos().cast<double>();
-    Eigen::Vector3d    eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oNonCorrectedSiw.map(P3Dw));
-    Eigen::Quaterniond Rcor = g2oCorrectedSwi.rotation() * g2oNonCorrectedSiw.rotation();
+    const Eigen::Vector3d    P3Dw             = pMPi->GetWorldPos().cast<double>();
+    const Eigen::Vector3d    eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oNonCorrectedSiw.map(P3Dw));
+    const Eigen::Quaterniond Rcor = g2oCorrectedSwi.rotation() * g2oNonCorrectedSiw.rotation();
 
     pMPi->mPosMerge          = eigCorrectedP3Dw.cast<float>();
     pMPi->mNormalVectorMerge = Rcor.cast<float>() * pMPi->GetNormal();
 
     itMP++;
   }
-  /*if (numPointsWithCorrection > 0) {
-    _logger->info(
-      "[Merge]: Removed {} points from Ma (reference KF not in welding area)",
-      numPointsWithCorrection
-    );
-    _logger->info("[Merge]: Ma now contains {} points after correction", spLocalWindowMPs.size());
-  }*/
-
   _logger->info("MergeLocal: updating current map...");
   {
-    std::unique_lock<std::mutex> currentLock(pCurrentMap->mMutexMapUpdate
+    const std::unique_lock<std::mutex> currentLock(
+      pCurrentMap->mMutexMapUpdate
     ); // We update the current map with the Merge information
-    std::unique_lock<std::mutex> mergeLock(pMergeMap->mMutexMapUpdate
+    const std::unique_lock<std::mutex> mergeLock(
+      pMergeMap->mMutexMapUpdate
     ); // We remove the Kfs and MPs in the merged area from the old map
 
     for (KeyFrame* pKFi : spLocalWindowKFs) {
@@ -1671,7 +1648,8 @@ void LoopClosing::MergeLocal() {
                             // eliminate this KF from children list in its old parent)
   mpCurrentKF->ChangeParent(mpMergeMatchedKF);
   while (pNewChild) {
-    pNewChild->EraseChild(pNewParent
+    pNewChild->EraseChild(
+      pNewParent
     ); // We remove the relation between the old parent and the new for avoid loop
     KeyFrame* pOldParent = pNewChild->GetParent();
 
@@ -1735,8 +1713,8 @@ void LoopClosing::MergeLocal() {
     spMergeConnectedKFs.end(),
     std::back_inserter(vpMergeConnectedKFs)
   );
-  if (mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO || mpTracker->mSensor == System::IMU_RGBD)
-    {
+  if (mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO
+      || mpTracker->mSensor == System::IMU_RGBD) {
     Optimizer::MergeInertialBA(mpCurrentKF, mpMergeMatchedKF, &bStop, pCurrentMap, vCorrectedSim3);
   } else {
     Optimizer::LocalBundleAdjustment(
@@ -1764,10 +1742,11 @@ void LoopClosing::MergeLocal() {
   std::vector<KeyFrame*> vpCurrentMapKFs = pCurrentMap->GetAllKeyFrames();
   std::vector<MapPoint*> vpCurrentMapMPs = pCurrentMap->GetAllMapPoints();
 
-  if (vpCurrentMapKFs.size() == 0) {
+  if (vpCurrentMapKFs.empty()) {
   } else {
     if (mpTracker->mSensor == System::MONOCULAR) {
-      std::unique_lock<std::mutex> currentLock(pCurrentMap->mMutexMapUpdate
+      const std::unique_lock<std::mutex> currentLock(
+        pCurrentMap->mMutexMapUpdate
       ); // We update the current map with the Merge information
 
       for (KeyFrame* pKFi : vpCurrentMapKFs) {
@@ -1777,22 +1756,25 @@ void LoopClosing::MergeLocal() {
 
         g2o::Sim3 g2oCorrectedSiw;
 
-        Sophus::SE3d Tiw = (pKFi->GetPose()).cast<double>();
-        g2o::Sim3    g2oSiw(Tiw.unit_quaternion(), Tiw.translation(), 1.0);
+        const Sophus::SE3d Tiw = (pKFi->GetPose()).cast<double>();
+        const g2o::Sim3    g2oSiw(Tiw.unit_quaternion(), Tiw.translation(), 1.0);
         // Pose without correction
         vNonCorrectedSim3[pKFi] = g2oSiw;
 
-        Sophus::SE3d Tic = Tiw * Twc;
-        g2o::Sim3    g2oSim(Tic.unit_quaternion(), Tic.translation(), 1.0);
+        const Sophus::SE3d Tic = Tiw * Twc;
+        const g2o::Sim3    g2oSim(Tic.unit_quaternion(), Tic.translation(), 1.0);
         g2oCorrectedSiw      = g2oSim * mg2oMergeScw;
         vCorrectedSim3[pKFi] = g2oCorrectedSiw;
 
         // Update keyframe pose with corrected Sim3. First transform Sim3 to SE3 (scale translation)
-        double s = g2oCorrectedSiw.scale();
+        const double s = g2oCorrectedSiw.scale();
 
         pKFi->mfScale = s;
 
-        Sophus::SE3d correctedTiw(g2oCorrectedSiw.rotation(), g2oCorrectedSiw.translation() / s);
+        const Sophus::SE3d correctedTiw(
+          g2oCorrectedSiw.rotation(),
+          g2oCorrectedSiw.translation() / s
+        );
 
         pKFi->mTcwBefMerge = pKFi->GetPose();
         pKFi->mTwcBefMerge = pKFi->GetPoseInverse();
@@ -1800,7 +1782,7 @@ void LoopClosing::MergeLocal() {
         pKFi->SetPose(correctedTiw.cast<float>());
 
         if (pCurrentMap->isImuInitialized()) {
-          Eigen::Quaternionf Rcor
+          const Eigen::Quaternionf Rcor
             = (g2oCorrectedSiw.rotation().inverse() * vNonCorrectedSim3[pKFi].rotation())
                 .cast<float>();
           pKFi->SetVelocity(Rcor * pKFi->GetVelocity()); // TODO: should add here scale s
@@ -1811,13 +1793,13 @@ void LoopClosing::MergeLocal() {
           continue;
         }
 
-        KeyFrame* pKFref             = pMPi->GetReferenceKeyFrame();
-        g2o::Sim3 g2oCorrectedSwi    = vCorrectedSim3[pKFref].inverse();
-        g2o::Sim3 g2oNonCorrectedSiw = vNonCorrectedSim3[pKFref];
+        KeyFrame*       pKFref             = pMPi->GetReferenceKeyFrame();
+        const g2o::Sim3 g2oCorrectedSwi    = vCorrectedSim3[pKFref].inverse();
+        const g2o::Sim3 g2oNonCorrectedSiw = vNonCorrectedSim3[pKFref];
 
         // Project with non-corrected pose and project back with corrected pose
-        Eigen::Vector3d P3Dw             = pMPi->GetWorldPos().cast<double>();
-        Eigen::Vector3d eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oNonCorrectedSiw.map(P3Dw));
+        const Eigen::Vector3d P3Dw             = pMPi->GetWorldPos().cast<double>();
+        const Eigen::Vector3d eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oNonCorrectedSiw.map(P3Dw));
         pMPi->SetWorldPos(eigCorrectedP3Dw.cast<float>());
 
         pMPi->UpdateNormalAndDepth();
@@ -1828,7 +1810,7 @@ void LoopClosing::MergeLocal() {
     mpLocalMapper->RequestStop();
     // Wait until Local Mapping has effectively stopped
     while (!mpLocalMapper->isStopped()) {
-      usleep(1000);
+      std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
     _logger->info("MergeLocal: local mapping stopped");
 
@@ -1845,9 +1827,11 @@ void LoopClosing::MergeLocal() {
 
     {
       // Get Merge Map Mutex
-      std::unique_lock<std::mutex> currentLock(pCurrentMap->mMutexMapUpdate
+      const std::unique_lock<std::mutex> currentLock(
+        pCurrentMap->mMutexMapUpdate
       ); // We update the current map with the Merge information
-      std::unique_lock<std::mutex> mergeLock(pMergeMap->mMutexMapUpdate
+      const std::unique_lock<std::mutex> mergeLock(
+        pMergeMap->mMutexMapUpdate
       ); // We remove the Kfs and MPs in the merged area from the old map
 
       // Merge outside key frames
@@ -1886,7 +1870,8 @@ void LoopClosing::MergeLocal() {
   _logger->info("MergeLocal: releasing local mapping...");
   mpLocalMapper->Release();
 
-  if (bRelaunchBA && (!pCurrentMap->isImuInitialized() || (pCurrentMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1))) {
+  if (bRelaunchBA
+      && (!pCurrentMap->isImuInitialized() || (pCurrentMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1))) {
     // Launch a new thread to perform Global Bundle Adjustment
     mbRunningGBA  = true;
     mbFinishedGBA = false;
@@ -1912,28 +1897,32 @@ void LoopClosing::MergeLocal() {
 void LoopClosing::MergeLocal2() {
   _logger->info("MergeLocal: starting to merge in local with IMU data");
 
-  int numTemporalKFs
+  [[maybe_unused]] const int numTemporalKFs
     = 11; // TODO (set by parameter): Temporal KFs in the local window if the map is inertial.
 
   // Relationship to rebuild the essential graph, it is used two times, first in the local window
   // and later in the rest of the map
-  KeyFrame* pNewChild;
-  KeyFrame* pNewParent;
+  KeyFrame* pNewChild  = nullptr;
+  KeyFrame* pNewParent = nullptr;
 
-  std::vector<KeyFrame*> vpLocalCurrentWindowKFs;
-  std::vector<KeyFrame*> vpMergeConnectedKFs;
+  const std::vector<KeyFrame*> vpLocalCurrentWindowKFs;
+  const std::vector<KeyFrame*> vpMergeConnectedKFs;
 
-  KeyFrameAndPose CorrectedSim3, NonCorrectedSim3;
+  KeyFrameAndPose CorrectedSim3;
+  KeyFrameAndPose NonCorrectedSim3;
   // NonCorrectedSim3[mpCurrentKF]=mg2oLoopScw;
 
   // Flag that is true only when we stopped a running BA, in this case we need relaunch at the end
   // of the merge
-  bool bRelaunchBA = false;
+  // TODO(elkuno213): bRelaunchBA is set but never read in MergeLocal2 — missing relaunch logic
+  // at the end of this function (compare with MergeLocal which checks bRelaunchBA before
+  // relaunching GBA)
+  [[maybe_unused]] bool bRelaunchBA = false;
 
   //  If a Global Bundle Adjustment is running, abort it
   if (isRunningGBA()) {
     _logger->info("MergeLocal: stopping global bundle adjustment...");
-    std::unique_lock<std::mutex> lock(mMutexGBA);
+    const std::unique_lock<std::mutex> lock(mMutexGBA);
     mbStopGBA = true;
 
     mnFullBAIdx++;
@@ -1949,7 +1938,7 @@ void LoopClosing::MergeLocal2() {
   mpLocalMapper->RequestStop();
   // Wait until Local Mapping has effectively stopped
   while (!mpLocalMapper->isStopped()) {
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
 
   Map* pCurrentMap = mpCurrentKF->GetMap();
@@ -1961,34 +1950,38 @@ void LoopClosing::MergeLocal2() {
   );
 
   {
-    float        s_on = mSold_new.scale();
-    Sophus::SE3f T_on(mSold_new.rotation().cast<float>(), mSold_new.translation().cast<float>());
+    const float        s_on = mSold_new.scale();
+    const Sophus::SE3f T_on(
+      mSold_new.rotation().cast<float>(),
+      mSold_new.translation().cast<float>()
+    );
 
-    std::unique_lock<std::mutex> lock(mpAtlas->GetCurrentMap()->mMutexMapUpdate);
+    const std::unique_lock<std::mutex> lock(mpAtlas->GetCurrentMap()->mMutexMapUpdate);
 
     mpLocalMapper->EmptyQueue();
 
-    std::chrono::steady_clock::time_point t2        = std::chrono::steady_clock::now();
-    bool                                  bScaleVel = false;
+    bool bScaleVel = false;
     if (s_on != 1) {
       bScaleVel = true;
     }
     mpAtlas->GetCurrentMap()->ApplyScaledRotation(T_on, s_on, bScaleVel);
     mpTracker->UpdateFrameIMU(s_on, mpCurrentKF->GetImuBias(), mpTracker->GetLastKeyFrame());
-    std::chrono::steady_clock::time_point t3 = std::chrono::steady_clock::now();
   }
 
   const int numKFnew = pCurrentMap->KeyFramesInMap();
 
-  if ((mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO || mpTracker->mSensor == System::IMU_RGBD) && !pCurrentMap->GetIniertialBA2()) {
+  if ((mpTracker->mSensor == System::IMU_MONOCULAR || mpTracker->mSensor == System::IMU_STEREO
+       || mpTracker->mSensor == System::IMU_RGBD)
+      && !pCurrentMap->GetIniertialBA2()) {
     // Map is not completly initialized
-    Eigen::Vector3d bg, ba;
+    Eigen::Vector3d bg;
+    Eigen::Vector3d ba;
     bg << 0., 0., 0.;
     ba << 0., 0., 0.;
     Optimizer::InertialOptimization(pCurrentMap, bg, ba);
-    IMU::Bias                    b(ba[0], ba[1], ba[2], bg[0], bg[1], bg[2]);
-    std::unique_lock<std::mutex> lock(mpAtlas->GetCurrentMap()->mMutexMapUpdate);
-    mpTracker->UpdateFrameIMU(1.0f, b, mpTracker->GetLastKeyFrame());
+    const IMU::Bias                    b(ba[0], ba[1], ba[2], bg[0], bg[1], bg[2]);
+    const std::unique_lock<std::mutex> lock(mpAtlas->GetCurrentMap()->mMutexMapUpdate);
+    mpTracker->UpdateFrameIMU(1.0F, b, mpTracker->GetLastKeyFrame());
 
     // Set map initialized
     pCurrentMap->SetIniertialBA2();
@@ -2000,13 +1993,15 @@ void LoopClosing::MergeLocal2() {
   _logger->info("MergeLocal: updating current map...");
   {
     // Get Merge Map Mutex (This section stops tracking!!)
-    std::unique_lock<std::mutex> currentLock(pCurrentMap->mMutexMapUpdate
+    const std::unique_lock<std::mutex> currentLock(
+      pCurrentMap->mMutexMapUpdate
     ); // We update the current map with the Merge information
-    std::unique_lock<std::mutex> mergeLock(pMergeMap->mMutexMapUpdate
+    const std::unique_lock<std::mutex> mergeLock(
+      pMergeMap->mMutexMapUpdate
     ); // We remove the Kfs and MPs in the merged area from the old map
 
-    std::vector<KeyFrame*> vpMergeMapKFs = pMergeMap->GetAllKeyFrames();
-    std::vector<MapPoint*> vpMergeMapMPs = pMergeMap->GetAllMapPoints();
+    const std::vector<KeyFrame*> vpMergeMapKFs = pMergeMap->GetAllKeyFrames();
+    const std::vector<MapPoint*> vpMergeMapMPs = pMergeMap->GetAllMapPoints();
 
     for (KeyFrame* pKFi : vpMergeMapKFs) {
       if (!pKFi || pKFi->isBad() || pKFi->GetMap() != pMergeMap) {
@@ -2030,10 +2025,10 @@ void LoopClosing::MergeLocal2() {
     }
 
     // Save non corrected poses (already merged maps)
-    std::vector<KeyFrame*> vpKFs = pCurrentMap->GetAllKeyFrames();
+    const std::vector<KeyFrame*> vpKFs = pCurrentMap->GetAllKeyFrames();
     for (KeyFrame* pKFi : vpKFs) {
-      Sophus::SE3d Tiw = (pKFi->GetPose()).cast<double>();
-      g2o::Sim3    g2oSiw(Tiw.unit_quaternion(), Tiw.translation(), 1.0);
+      const Sophus::SE3d Tiw = (pKFi->GetPose()).cast<double>();
+      const g2o::Sim3    g2oSiw(Tiw.unit_quaternion(), Tiw.translation(), 1.0);
       NonCorrectedSim3[pKFi] = g2oSiw;
     }
   }
@@ -2046,7 +2041,8 @@ void LoopClosing::MergeLocal2() {
                                  // eliminate this KF from children list in its old parent)
   mpMergeMatchedKF->ChangeParent(mpCurrentKF);
   while (pNewChild) {
-    pNewChild->EraseChild(pNewParent
+    pNewChild->EraseChild(
+      pNewParent
     ); // We remove the relation between the old parent and the new for avoid loop
     KeyFrame* pOldParent = pNewChild->GetParent();
     pNewChild->ChangeParent(pNewParent);
@@ -2080,7 +2076,7 @@ void LoopClosing::MergeLocal2() {
 
   std::set<MapPoint*> spMapPointMerge;
   for (KeyFrame* pKFi : mvpMergeConnectedKFs) {
-    std::set<MapPoint*> vpMPs = pKFi->GetMapPoints();
+    const std::set<MapPoint*> vpMPs = pKFi->GetMapPoints();
     spMapPointMerge.insert(vpMPs.begin(), vpMPs.end());
     if (spMapPointMerge.size() > 1000) {
       break;
@@ -2126,16 +2122,14 @@ void LoopClosing::MergeLocal2() {
 
   _logger->info("MergeLocal: releasing local mapping...");
   mpLocalMapper->Release();
-
-  return;
 }
 
 void LoopClosing::CheckObservations(
   std::set<KeyFrame*>& spKFsMap1, std::set<KeyFrame*>& spKFsMap2
 ) {
   for (KeyFrame* pKFi1 : spKFsMap1) {
-    std::map<KeyFrame*, int> mMatchedMP;
-    std::set<MapPoint*>      spMPs = pKFi1->GetMapPoints();
+    std::map<KeyFrame*, int>  mMatchedMP;
+    const std::set<MapPoint*> spMPs = pKFi1->GetMapPoints();
 
     for (MapPoint* pMPij : spMPs) {
       if (!pMPij || pMPij->isBad()) {
@@ -2154,7 +2148,7 @@ void LoopClosing::CheckObservations(
       }
     }
 
-    if (mMatchedMP.size() == 0) {
+    if (mMatchedMP.empty()) {
       _logger->info(
         "CheckObservations: key frame {} has no matched map point with the other map",
         pKFi1->mnId
@@ -2177,34 +2171,23 @@ void LoopClosing::SearchAndFuse(
 ) {
   ORBmatcher matcher(0.8);
 
-  int total_replaces = 0;
+  for (const auto& [pKFi, g2oScw] : CorrectedPosesMap) {
+    Map* pMap = pKFi->GetMap();
 
-  for (KeyFrameAndPose::const_iterator mit  = CorrectedPosesMap.begin(),
-                                       mend = CorrectedPosesMap.end();
-       mit != mend;
-       mit++) {
-    int       num_replaces = 0;
-    KeyFrame* pKFi         = mit->first;
-    Map*      pMap         = pKFi->GetMap();
+    Sophus::Sim3f Scw = Converter::toSophus(g2oScw);
 
-    g2o::Sim3     g2oScw = mit->second;
-    Sophus::Sim3f Scw    = Converter::toSophus(g2oScw);
-
-    std::vector<MapPoint*> vpReplacePoints(vpMapPoints.size(), static_cast<MapPoint*>(NULL));
-    int                    numFused = matcher.Fuse(pKFi, Scw, vpMapPoints, 4, vpReplacePoints);
+    std::vector<MapPoint*> vpReplacePoints(vpMapPoints.size(), nullptr);
+    matcher.Fuse(pKFi, Scw, vpMapPoints, 4, vpReplacePoints);
 
     // Get Map Mutex
-    std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
-    const int                    nLP = vpMapPoints.size();
+    const std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
+    const int                          nLP = vpMapPoints.size();
     for (int i = 0; i < nLP; i++) {
       MapPoint* pRep = vpReplacePoints[i];
       if (pRep) {
-        num_replaces += 1;
         pRep->Replace(vpMapPoints[i]);
       }
     }
-
-    total_replaces += num_replaces;
   }
 }
 
@@ -2213,28 +2196,23 @@ void LoopClosing::SearchAndFuse(
 ) {
   ORBmatcher matcher(0.8);
 
-  int total_replaces = 0;
-
-  for (auto mit = vConectedKFs.begin(), mend = vConectedKFs.end(); mit != mend; mit++) {
-    int           num_replaces = 0;
-    KeyFrame*     pKF          = (*mit);
-    Map*          pMap         = pKF->GetMap();
-    Sophus::SE3f  Tcw          = pKF->GetPose();
+  for (auto* pKF : vConectedKFs) {
+    Map*          pMap = pKF->GetMap();
+    Sophus::SE3f  Tcw  = pKF->GetPose();
     Sophus::Sim3f Scw(Tcw.unit_quaternion(), Tcw.translation());
-    Scw.setScale(1.f);
+    Scw.setScale(1.F);
     // TODO(elkuno213): assert Scw.rotationMatrix() = Tcw.rotationMatrix()
     //              Scw.translation()    = Tcw.translation()
     //              Scw.scale()          = 1
-    std::vector<MapPoint*> vpReplacePoints(vpMapPoints.size(), static_cast<MapPoint*>(NULL));
+    std::vector<MapPoint*> vpReplacePoints(vpMapPoints.size(), nullptr);
     matcher.Fuse(pKF, Scw, vpMapPoints, 4, vpReplacePoints);
 
     // Get Map Mutex
-    std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
-    const int                    nLP = vpMapPoints.size();
+    const std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
+    const int                          nLP = vpMapPoints.size();
     for (int i = 0; i < nLP; i++) {
       MapPoint* pRep = vpReplacePoints[i];
       if (pRep) {
-        num_replaces += 1;
         pRep->Replace(vpMapPoints[i]);
       }
     }
@@ -2243,43 +2221,43 @@ void LoopClosing::SearchAndFuse(
 
 void LoopClosing::RequestReset() {
   {
-    std::unique_lock<std::mutex> lock(mMutexReset);
+    const std::unique_lock<std::mutex> lock(mMutexReset);
     mbResetRequested = true;
   }
 
-  while (1) {
+  while (true) {
     {
-      std::unique_lock<std::mutex> lock2(mMutexReset);
+      const std::unique_lock<std::mutex> lock2(mMutexReset);
       if (!mbResetRequested) {
         break;
       }
     }
-    usleep(5000);
+    std::this_thread::sleep_for(std::chrono::microseconds(5000));
   }
   _logger->info("Reset completed successfully");
 }
 
 void LoopClosing::RequestResetActiveMap(Map* pMap) {
   {
-    std::unique_lock<std::mutex> lock(mMutexReset);
+    const std::unique_lock<std::mutex> lock(mMutexReset);
     mbResetActiveMapRequested = true;
     mpMapToReset              = pMap;
   }
 
-  while (1) {
+  while (true) {
     {
-      std::unique_lock<std::mutex> lock2(mMutexReset);
+      const std::unique_lock<std::mutex> lock2(mMutexReset);
       if (!mbResetActiveMapRequested) {
         break;
       }
     }
-    usleep(3000);
+    std::this_thread::sleep_for(std::chrono::microseconds(3000));
   }
   _logger->info("Active map reset completed successfully");
 }
 
 void LoopClosing::ResetIfRequested() {
-  std::unique_lock<std::mutex> lock(mMutexReset);
+  const std::unique_lock<std::mutex> lock(mMutexReset);
   if (mbResetRequested) {
     _logger->info("Requesting to reset loop closing...");
     mlpLoopKeyFrameQueue.clear();
@@ -2287,8 +2265,7 @@ void LoopClosing::ResetIfRequested() {
     mbResetRequested          = false;
     mbResetActiveMapRequested = false;
   } else if (mbResetActiveMapRequested) {
-    for (std::list<KeyFrame*>::const_iterator it = mlpLoopKeyFrameQueue.begin();
-         it != mlpLoopKeyFrameQueue.end();) {
+    for (auto it = mlpLoopKeyFrameQueue.begin(); it != mlpLoopKeyFrameQueue.end();) {
       KeyFrame* pKFi = *it;
       if (pKFi->GetMap() == mpMapToReset) {
         it = mlpLoopKeyFrameQueue.erase(it);
@@ -2307,7 +2284,7 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
   _logger->info("Starting global bundle adjustment...");
 
 #ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_StartFGBA = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point time_StartFGBA  = std::chrono::steady_clock::now();
   nFGBA_exec                                           += 1;
   vnGBAKFs.push_back(pActiveMap->GetAllKeyFrames().size());
   vnGBAMPs.push_back(pActiveMap->GetAllMapPoints().size());
@@ -2334,7 +2311,7 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
   }
 #endif
 
-  int idx = mnFullBAIdx;
+  const int idx = mnFullBAIdx;
   // Optimizer::GlobalBundleAdjustemnt(mpMap,10,&mbStopGBA,nLoopKF,false);
 
   // Update all MapPoints and KeyFrames
@@ -2342,7 +2319,7 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
   // not included in the Global BA and they are not consistent with the updated map.
   // We need to propagate the correction through the spanning tree
   {
-    std::unique_lock<std::mutex> lock(mMutexGBA);
+    const std::unique_lock<std::mutex> lock(mMutexGBA);
     if (idx != mnFullBAIdx) {
       return;
     }
@@ -2358,11 +2335,11 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
       // Wait until Local Mapping has effectively stopped
 
       while (!mpLocalMapper->isStopped() && !mpLocalMapper->isFinished()) {
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::microseconds(1000));
       }
 
       // Get Map Mutex
-      std::unique_lock<std::mutex> lock(pActiveMap->mMutexMapUpdate);
+      const std::unique_lock<std::mutex> lock(pActiveMap->mMutexMapUpdate);
 
       // pActiveMap->PrintEssentialGraph();
       //  Correct keyframes starting at map first keyframe
@@ -2374,20 +2351,18 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
       while (!lpKFtoCheck.empty()) {
         KeyFrame*                 pKF     = lpKFtoCheck.front();
         const std::set<KeyFrame*> sChilds = pKF->GetChilds();
-        Sophus::SE3f              Twc     = pKF->GetPoseInverse();
+        const Sophus::SE3f        Twc     = pKF->GetPoseInverse();
         // Correct key frames
-        for (std::set<KeyFrame*>::const_iterator sit = sChilds.begin(); sit != sChilds.end();
-             sit++) {
-          KeyFrame* pChild = *sit;
+        for (auto* pChild : sChilds) {
           if (!pChild || pChild->isBad()) {
             continue;
           }
 
           if (pChild->mnBAGlobalForKF != nLoopKF) {
-            Sophus::SE3f Tchildc = pChild->GetPose() * Twc;
-            pChild->mTcwGBA      = Tchildc * pKF->mTcwGBA; //*Tcorc*pKF->mTcwGBA;
+            const Sophus::SE3f Tchildc = pChild->GetPose() * Twc;
+            pChild->mTcwGBA            = Tchildc * pKF->mTcwGBA; //*Tcorc*pKF->mTcwGBA;
 
-            Sophus::SO3f Rcor = pChild->mTcwGBA.so3().inverse() * pChild->GetPose().so3();
+            const Sophus::SO3f Rcor = pChild->mTcwGBA.so3().inverse() * pChild->GetPose().so3();
             if (pChild->isVelocitySet()) {
               pChild->mVwbGBA = Rcor * pChild->GetVelocity();
             } else {
@@ -2502,7 +2477,7 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
           // Map to non-corrected camera
           // cv::Mat Rcw = pRefKF->mTcwBefGBA.rowRange(0,3).colRange(0,3);
           // cv::Mat tcw = pRefKF->mTcwBefGBA.rowRange(0,3).col(3);
-          Eigen::Vector3f Xc = pRefKF->mTcwBefGBA * pMP->GetWorldPos();
+          const Eigen::Vector3f Xc = pRefKF->mTcwBefGBA * pMP->GetWorldPos();
 
           // Backproject using corrected camera
           pMP->SetWorldPos(pRefKF->GetPoseInverse() * Xc);
@@ -2540,22 +2515,22 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
 }
 
 void LoopClosing::RequestFinish() {
-  std::unique_lock<std::mutex> lock(mMutexFinish);
+  const std::unique_lock<std::mutex> lock(mMutexFinish);
   mbFinishRequested = true;
 }
 
 bool LoopClosing::CheckFinish() {
-  std::unique_lock<std::mutex> lock(mMutexFinish);
+  const std::unique_lock<std::mutex> lock(mMutexFinish);
   return mbFinishRequested;
 }
 
 void LoopClosing::SetFinish() {
-  std::unique_lock<std::mutex> lock(mMutexFinish);
+  const std::unique_lock<std::mutex> lock(mMutexFinish);
   mbFinished = true;
 }
 
 bool LoopClosing::isFinished() {
-  std::unique_lock<std::mutex> lock(mMutexFinish);
+  const std::unique_lock<std::mutex> lock(mMutexFinish);
   return mbFinished;
 }
 

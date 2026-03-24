@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOOPCLOSING_H
-#define LOOPCLOSING_H
+#pragma once
 
 #include <functional>
 #include <list>
@@ -48,21 +47,15 @@ class Viewer;
 
 class LoopClosing {
 public:
-  typedef std::pair<std::set<KeyFrame*>, int> ConsistentGroup;
-  typedef std::map<
+  using ConsistentGroup = std::pair<std::set<KeyFrame*>, int>;
+  using KeyFrameAndPose = std::map<
     KeyFrame*,
     g2o::Sim3,
-    std::less<KeyFrame*>,
-    Eigen::aligned_allocator<std::pair<KeyFrame* const, g2o::Sim3>>>
-    KeyFrameAndPose;
+    std::less<>,
+    Eigen::aligned_allocator<std::pair<KeyFrame* const, g2o::Sim3>>>;
 
-public:
   LoopClosing(
-    Atlas*            pAtlas,
-    KeyFrameDatabase* pDB,
-    ORBVocabulary*    pVoc,
-    const bool        bFixScale,
-    const bool        bActiveLC
+    Atlas* pAtlas, KeyFrameDatabase* pDB, ORBVocabulary* pVoc, bool bFixScale, bool bActiveLC
   );
 
   void SetTracker(Tracking* pTracker);
@@ -81,11 +74,11 @@ public:
   void RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoopKF);
 
   bool isRunningGBA() {
-    std::unique_lock<std::mutex> lock(mMutexGBA);
+    const std::unique_lock<std::mutex> lock(mMutexGBA);
     return mbRunningGBA;
   }
   bool isFinishedGBA() {
-    std::unique_lock<std::mutex> lock(mMutexGBA);
+    const std::unique_lock<std::mutex> lock(mMutexGBA);
     return mbFinishedGBA;
   }
 
@@ -179,15 +172,15 @@ protected:
   void CheckObservations(std::set<KeyFrame*>& spKFsMap1, std::set<KeyFrame*>& spKFsMap2);
 
   void       ResetIfRequested();
-  bool       mbResetRequested;
-  bool       mbResetActiveMapRequested;
+  bool       mbResetRequested{false};
+  bool       mbResetActiveMapRequested{false};
   Map*       mpMapToReset;
   std::mutex mMutexReset;
 
   bool       CheckFinish();
   void       SetFinish();
-  bool       mbFinishRequested;
-  bool       mbFinished;
+  bool       mbFinishRequested{false};
+  bool       mbFinished{true};
   std::mutex mMutexFinish;
 
   Atlas*    mpAtlas;
@@ -208,7 +201,7 @@ protected:
   // Loop detector variables
   KeyFrame*                    mpCurrentKF;
   KeyFrame*                    mpLastCurrentKF;
-  KeyFrame*                    mpMatchedKF;
+  KeyFrame*                    mpMatchedKF{nullptr};
   std::vector<ConsistentGroup> mvConsistentGroups;
   std::vector<KeyFrame*>       mvpEnoughConsistentCandidates;
   std::vector<KeyFrame*>       mvpCurrentConnectedKFs;
@@ -220,18 +213,18 @@ protected:
   //-------
   Map* mpLastMap;
 
-  bool                   mbLoopDetected;
-  int                    mnLoopNumCoincidences;
-  int                    mnLoopNumNotFound;
+  bool                   mbLoopDetected{false};
+  int                    mnLoopNumCoincidences{0};
+  int                    mnLoopNumNotFound{0};
   KeyFrame*              mpLoopLastCurrentKF;
   g2o::Sim3              mg2oLoopSlw;
   g2o::Sim3              mg2oLoopScw;
   KeyFrame*              mpLoopMatchedKF;
   std::vector<MapPoint*> mvpLoopMPs;
   std::vector<MapPoint*> mvpLoopMatchedMPs;
-  bool                   mbMergeDetected;
-  int                    mnMergeNumCoincidences;
-  int                    mnMergeNumNotFound;
+  bool                   mbMergeDetected{false};
+  int                    mnMergeNumCoincidences{0};
+  int                    mnMergeNumNotFound{0};
   KeyFrame*              mpMergeLastCurrentKF;
   g2o::Sim3              mg2oMergeSlw;
   g2o::Sim3              mg2oMergeSmw;
@@ -244,19 +237,19 @@ protected:
   g2o::Sim3 mSold_new;
   //-------
 
-  long unsigned int mLastLoopKFid;
+  long unsigned int mLastLoopKFid{0};
 
   // Variables related to Global Bundle Adjustment
-  bool         mbRunningGBA;
-  bool         mbFinishedGBA;
-  bool         mbStopGBA;
+  bool         mbRunningGBA{false};
+  bool         mbFinishedGBA{true};
+  bool         mbStopGBA{false};
   std::mutex   mMutexGBA;
-  std::thread* mpThreadGBA;
+  std::thread* mpThreadGBA{nullptr};
 
   // Fix scale in the stereo/RGB-D case
   bool mbFixScale;
 
-  int mnFullBAIdx;
+  int mnFullBAIdx{0};
 
   std::vector<double> vdPR_CurrentTime;
   std::vector<double> vdPR_MatchedTime;
@@ -278,5 +271,3 @@ protected:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // LOOPCLOSING_H

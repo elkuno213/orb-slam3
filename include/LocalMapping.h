@@ -17,8 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOCALMAPPING_H
-#define LOCALMAPPING_H
+#pragma once
 
 #include <fstream>
 #include <list>
@@ -45,7 +44,7 @@ public:
   LocalMapping(
     System*            pSys,
     Atlas*             pAtlas,
-    const float        bMonocular,
+    float              bMonocular,
     bool               bInertial,
     const std::string& _strSeqName = std::string()
   );
@@ -78,11 +77,11 @@ public:
   bool isFinished();
 
   int KeyframesInQueue() {
-    std::unique_lock<std::mutex> lock(mMutexNewKFs);
+    const std::unique_lock<std::mutex> lock(mMutexNewKFs);
     return mlNewKeyFrames.size();
   }
 
-  bool      IsInitializing();
+  bool      IsInitializing() const;
   double    GetCurrKFTime();
   KeyFrame* GetCurrKF();
 
@@ -92,23 +91,23 @@ public:
   Eigen::Matrix3d mRwg;
   Eigen::Vector3d mbg;
   Eigen::Vector3d mba;
-  double          mScale;
+  double          mScale{1.0};
   double          mInitTime;
   double          mCostTime;
 
-  unsigned int mInitSect;
-  unsigned int mIdxInit;
+  unsigned int mInitSect{0};
+  unsigned int mIdxInit{0};
   unsigned int mnKFs;
   double       mFirstTs;
   int          mnMatchesInliers;
 
   // For debugging (erase in normal mode)
   int         mInitFr;
-  int         mIdxIteration;
+  int         mIdxIteration{0};
   std::string strSequence;
 
-  bool mbNotBA1;
-  bool mbNotBA2;
+  bool mbNotBA1{true};
+  bool mbNotBA2{true};
   bool mbBadImu;
 
   bool mbWriteStats;
@@ -149,15 +148,15 @@ protected:
   bool mbInertial;
 
   void       ResetIfRequested();
-  bool       mbResetRequested;
-  bool       mbResetRequestedActiveMap;
+  bool       mbResetRequested{false};
+  bool       mbResetRequestedActiveMap{false};
   Map*       mpMapToReset;
   std::mutex mMutexReset;
 
   bool       CheckFinish();
   void       SetFinish();
-  bool       mbFinishRequested;
-  bool       mbFinished;
+  bool       mbFinishRequested{false};
+  bool       mbFinished{true};
   std::mutex mMutexFinish;
 
   Atlas* mpAtlas;
@@ -173,20 +172,20 @@ protected:
 
   std::mutex mMutexNewKFs;
 
-  bool mbAbortBA;
+  bool mbAbortBA{false};
 
-  bool       mbStopped;
-  bool       mbStopRequested;
-  bool       mbNotStop;
+  bool       mbStopped{false};
+  bool       mbStopRequested{false};
+  bool       mbNotStop{false};
   std::mutex mMutexStop;
 
-  bool       mbAcceptKeyFrames;
+  bool       mbAcceptKeyFrames{true};
   std::mutex mMutexAccept;
 
-  void InitializeIMU(float priorG = 1e2, float priorA = 1e6, bool bFirst = false);
+  void InitializeIMU(float priorG = 1e2F, float priorA = 1e6F, bool bFIBA = false);
   void ScaleRefinement();
 
-  bool bInitializing;
+  bool bInitializing{false};
 
   Eigen::MatrixXd infoInertial;
   int             mNumLM;
@@ -203,5 +202,3 @@ protected:
 };
 
 } // namespace ORB_SLAM3
-
-#endif // LOCALMAPPING_H
