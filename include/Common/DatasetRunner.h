@@ -183,7 +183,7 @@ protected:
   ///
   /// Sets Sequence::first_imu to the IMU sample just before the first camera frame.
   /// Called by inertial runners (EuRoCRunner, TumViRunner) after loading IMU data.
-  void syncImu(Sequence& seq);
+  static void syncImu(Sequence& seq);
 };
 
 /// @brief Factory: create the appropriate DatasetRunner for the given configuration.
