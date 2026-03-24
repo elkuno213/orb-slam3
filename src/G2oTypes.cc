@@ -161,7 +161,7 @@ void ImuCamPose::SetParam(
   Rcb.resize(num_cams);
   tcb.resize(num_cams);
 
-  for (int i = 0; i < tcb.size(); i++) {
+  for (std::size_t i = 0; i < tcb.size(); i++) {
     Rcb[i] = Rbc[i].transpose();
     tcb[i] = -Rcb[i] * tbc[i];
   }
@@ -191,7 +191,8 @@ bool ImuCamPose::isDepthPositive(const Eigen::Vector3d& Xw, int cam_idx) const {
 }
 
 void ImuCamPose::Update(const double* pu) {
-  Eigen::Vector3d ur, ut;
+  Eigen::Vector3d ur;
+  Eigen::Vector3d ut;
   ur << pu[0], pu[1], pu[2];
   ut << pu[3], pu[4], pu[5];
 
@@ -210,14 +211,15 @@ void ImuCamPose::Update(const double* pu) {
   const Eigen::Matrix3d Rbw = Rwb.transpose();
   const Eigen::Vector3d tbw = -Rbw * twb;
 
-  for (int i = 0; i < pCamera.size(); i++) {
+  for (std::size_t i = 0; i < pCamera.size(); i++) {
     Rcw[i] = Rcb[i] * Rbw;
     tcw[i] = Rcb[i] * tbw + tcb[i];
   }
 }
 
 void ImuCamPose::UpdateW(const double* pu) {
-  Eigen::Vector3d ur, ut;
+  Eigen::Vector3d ur;
+  Eigen::Vector3d ut;
   ur << pu[0], pu[1], pu[2];
   ut << pu[3], pu[4], pu[5];
 
@@ -242,16 +244,16 @@ void ImuCamPose::UpdateW(const double* pu) {
   const Eigen::Matrix3d Rbw = Rwb.transpose();
   const Eigen::Vector3d tbw = -Rbw * twb;
 
-  for (int i = 0; i < pCamera.size(); i++) {
+  for (std::size_t i = 0; i < pCamera.size(); i++) {
     Rcw[i] = Rcb[i] * Rbw;
     tcw[i] = Rcb[i] * tbw + tcb[i];
   }
 }
 
 InvDepthPoint::InvDepthPoint(double _rho, double _u, double _v, KeyFrame* pHostKF)
-  : u(_u)
+  : rho(_rho)
+  , u(_u)
   , v(_v)
-  , rho(_rho)
   , fx(pHostKF->fx)
   , fy(pHostKF->fy)
   , cx(pHostKF->cx)
@@ -290,7 +292,7 @@ bool VertexPose::read(std::istream& is) {
     }
 
     float nextParam;
-    for (size_t i = 0; i < _estimate.pCamera[idx]->size(); i++) {
+    for (std::size_t i = 0; i < _estimate.pCamera[idx]->size(); i++) {
       is >> nextParam;
       _estimate.pCamera[idx]->setParameter(nextParam, i);
     }
@@ -332,7 +334,7 @@ bool VertexPose::write(std::ostream& os) const {
       os << tbc[idx](i) << " ";
     }
 
-    for (size_t i = 0; i < _estimate.pCamera[idx]->size(); i++) {
+    for (std::size_t i = 0; i < _estimate.pCamera[idx]->size(); i++) {
       os << _estimate.pCamera[idx]->getParameter(i) << " ";
     }
   }
@@ -798,7 +800,7 @@ Eigen::Matrix3d ExpSO3(const Eigen::Vector3d& w) {
 
 Eigen::Matrix3d ExpSO3(const double x, const double y, const double z) {
   const double    d2 = x * x + y * y + z * z;
-  const double    d  = sqrt(d2);
+  const double    d  = std::sqrt(d2);
   Eigen::Matrix3d W;
   W << 0.0, -z, y, z, 0.0, -x, -y, x, 0.0;
   if (d < 1e-5) {
@@ -806,7 +808,7 @@ Eigen::Matrix3d ExpSO3(const double x, const double y, const double z) {
     return NormalizeRotation(res);
   } else {
     Eigen::Matrix3d res
-      = Eigen::Matrix3d::Identity() + W * sin(d) / d + W * W * (1.0 - cos(d)) / d2;
+      = Eigen::Matrix3d::Identity() + W * std::sin(d) / d + W * W * (1.0 - std::cos(d)) / d2;
     return NormalizeRotation(res);
   }
 }
@@ -815,13 +817,13 @@ Eigen::Vector3d LogSO3(const Eigen::Matrix3d& R) {
   const double    tr = R(0, 0) + R(1, 1) + R(2, 2);
   Eigen::Vector3d w;
   w << (R(2, 1) - R(1, 2)) / 2, (R(0, 2) - R(2, 0)) / 2, (R(1, 0) - R(0, 1)) / 2;
-  const double costheta = (tr - 1.0) * 0.5f;
+  const double costheta = (tr - 1.0) * 0.5F;
   if (costheta > 1 || costheta < -1) {
     return w;
   }
-  const double theta = acos(costheta);
-  const double s     = sin(theta);
-  if (fabs(s) < 1e-5) {
+  const double theta = std::acos(costheta);
+  const double s     = std::sin(theta);
+  if (std::abs(s) < 1e-5) {
     return w;
   } else {
     return theta * w / s;
@@ -834,7 +836,7 @@ Eigen::Matrix3d InverseRightJacobianSO3(const Eigen::Vector3d& v) {
 
 Eigen::Matrix3d InverseRightJacobianSO3(const double x, const double y, const double z) {
   const double d2 = x * x + y * y + z * z;
-  const double d  = sqrt(d2);
+  const double d  = std::sqrt(d2);
 
   Eigen::Matrix3d W;
   W << 0.0, -z, y, z, 0.0, -x, -y, x, 0.0;
@@ -842,7 +844,7 @@ Eigen::Matrix3d InverseRightJacobianSO3(const double x, const double y, const do
     return Eigen::Matrix3d::Identity();
   } else {
     return Eigen::Matrix3d::Identity() + W / 2
-         + W * W * (1.0 / d2 - (1.0 + cos(d)) / (2.0 * d * sin(d)));
+         + W * W * (1.0 / d2 - (1.0 + std::cos(d)) / (2.0 * d * std::sin(d)));
   }
 }
 
@@ -852,14 +854,14 @@ Eigen::Matrix3d RightJacobianSO3(const Eigen::Vector3d& v) {
 
 Eigen::Matrix3d RightJacobianSO3(const double x, const double y, const double z) {
   const double d2 = x * x + y * y + z * z;
-  const double d  = sqrt(d2);
+  const double d  = std::sqrt(d2);
 
   Eigen::Matrix3d W;
   W << 0.0, -z, y, z, 0.0, -x, -y, x, 0.0;
   if (d < 1e-5) {
     return Eigen::Matrix3d::Identity();
   } else {
-    return Eigen::Matrix3d::Identity() - W * (1.0 - cos(d)) / d2 + W * W * (d - sin(d)) / (d2 * d);
+    return Eigen::Matrix3d::Identity() - W * (1.0 - std::cos(d)) / d2 + W * W * (d - std::sin(d)) / (d2 * d);
   }
 }
 
