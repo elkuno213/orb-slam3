@@ -688,7 +688,7 @@ int ORBmatcher::SearchForInitialization(
     }
 
     if (bestDist <= TH_LOW) {
-      if (bestDist < (float)bestDist2 * mfNNratio) {
+      if (bestDist < static_cast<float>(bestDist2) * mfNNratio) {
         if (vnMatches21[bestIdx2] >= 0) {
           vnMatches12[vnMatches21[bestIdx2]] = -1;
           nmatches--;
@@ -1991,10 +1991,10 @@ void ORBmatcher::ComputeThreeMaxima(
     }
   }
 
-  if (max2 < 0.1F * (float)max1) {
+  if (max2 < 0.1F * static_cast<float>(max1)) {
     ind2 = -1;
     ind3 = -1;
-  } else if (max3 < 0.1F * (float)max1) {
+  } else if (max3 < 0.1F * static_cast<float>(max1)) {
     ind3 = -1;
   }
 }

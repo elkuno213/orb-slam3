@@ -124,12 +124,12 @@ GeometricCamera* Atlas::AddCamera(GeometricCamera* pCam) {
     }
 
     if (pCam->GetType() == GeometricCamera::CAM_PINHOLE) {
-      if (((Pinhole*)pCam_i)->IsEqual(pCam)) {
+      if (static_cast<Pinhole*>(pCam_i)->IsEqual(pCam)) {
         bAlreadyInMap = true;
         index_cam     = i;
       }
     } else if (pCam->GetType() == GeometricCamera::CAM_FISHEYE) {
-      if (((KannalaBrandt8*)pCam_i)->IsEqual(pCam)) {
+      if (static_cast<KannalaBrandt8*>(pCam_i)->IsEqual(pCam)) {
         bAlreadyInMap = true;
         index_cam     = i;
       }

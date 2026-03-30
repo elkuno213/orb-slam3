@@ -1002,7 +1002,7 @@ int TwoViewReconstruction::CheckRT(
   if (nGood > 0) {
     std::sort(vCosParallax.begin(), vCosParallax.end());
 
-    const std::size_t idx = std::min(50, int(vCosParallax.size() - 1));
+    const std::size_t idx = std::min(50, static_cast<int>(vCosParallax.size() - 1));
     parallax        = std::acos(vCosParallax[idx]) * 180 / CV_PI;
   } else {
     parallax = 0;

@@ -796,7 +796,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
         g2o::Sim3 gScm(
           solver.GetEstimatedRotation().cast<double>(),
           solver.GetEstimatedTranslation().cast<double>(),
-          (double)solver.GetEstimatedScale()
+          static_cast<double>(solver.GetEstimatedScale())
         );
         const g2o::Sim3 gSmw(
           pMostBoWMatchesKF->GetRotation().cast<double>(),

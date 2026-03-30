@@ -176,7 +176,7 @@ void MapDrawer::DrawKeyFrames(
 
       glPushMatrix();
 
-      glMultMatrixf((GLfloat*)Twc.data());
+      glMultMatrixf(static_cast<GLfloat*>(Twc.data()));
 
       if (!pKF->GetParent()) // It is the first KF in the map
       {
@@ -305,7 +305,7 @@ void MapDrawer::DrawKeyFrames(
 
         glPushMatrix();
 
-        glMultMatrixf((GLfloat*)Twc.data());
+        glMultMatrixf(static_cast<GLfloat*>(Twc.data()));
 
         if (!pKF->GetParent()) // It is the first KF in the map
         {

@@ -102,8 +102,9 @@ void serializeMatrix(Archive& ar, const cv::Mat& mat, const unsigned int /*versi
 
   serializeMatrix(ar, matAux, 0);
 
+  // TODO: refactor so load path takes non-const ref, removing const_cast.
   if (Archive::is_loading::value) {
-    auto* ptr = (cv::Mat*)(&mat);
+    auto* ptr = const_cast<cv::Mat*>(&mat);
     *ptr = matAux;
   }
 }
@@ -149,8 +150,9 @@ void serializeVectorKeyPoints(
     }
   }
 
+  // TODO: refactor so load path takes non-const ref, removing const_cast.
   if (Archive::is_loading::value) {
-    auto* ptr = (std::vector<cv::KeyPoint>*)(&vKP);
+    auto* ptr = const_cast<std::vector<cv::KeyPoint>*>(&vKP);
     *ptr = vKPaux;
   }
 }

@@ -708,9 +708,7 @@ std::vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame* F
 }
 
 void KeyFrameDatabase::SetORBVocabulary(ORBVocabulary* pORBVoc) {
-  ORBVocabulary** ptr = nullptr;
-  ptr                 = (ORBVocabulary**)(&mpVoc);
-  *ptr                = pORBVoc;
+  mpVoc = pORBVoc;
 
   mvInvertedFile.clear();
   mvInvertedFile.resize(mpVoc->size());

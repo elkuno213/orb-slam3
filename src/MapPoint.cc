@@ -109,8 +109,8 @@ MapPoint::MapPoint(
   , mpMap(pMap)
   , _logger(logging::CreateModuleLogger("MapPoint")) {
   mInvDepth = invDepth;
-  mInitU    = (double)uv_init.x;
-  mInitV    = (double)uv_init.y;
+  mInitU    = static_cast<double>(uv_init.x);
+  mInitV    = static_cast<double>(uv_init.y);
   mpHostKF  = pHostKF;
 
   mNormalVector.setZero();

@@ -133,7 +133,7 @@ void Sim3Solver::SetRansacParameters(double probability, int minInliers, int max
   mvbInliersi.resize(N);
 
   // Adjust Parameters according to number of correspondences
-  const float epsilon = (float)mRansacMinInliers / N;
+  const float epsilon = static_cast<float>(mRansacMinInliers) / N;
 
   // Set RANSAC iterations according to probability, epsilon, and max iterations
   int nIterations = 0;

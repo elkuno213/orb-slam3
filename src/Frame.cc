@@ -1082,7 +1082,7 @@ void Frame::ComputeStereoMatches() {
       }
 
       // Re-scaled coordinate
-      float bestuR = mvScaleFactors[kpL.octave] * ((float)scaleduR0 + (float)bestincR + deltaR);
+      float bestuR = mvScaleFactors[kpL.octave] * (scaleduR0 + static_cast<float>(bestincR) + deltaR);
 
       float disparity = (uL - bestuR);
 

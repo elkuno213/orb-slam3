@@ -230,7 +230,7 @@ private:
 
     } else {
       found = true;
-      return (T)node;
+      return static_cast<T>(node);
     }
   }
 

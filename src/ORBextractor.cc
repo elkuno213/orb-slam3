@@ -137,7 +137,7 @@ static void computeOrbDescriptor(
     t1       = GET_VALUE(15);
     val     |= static_cast<int>(t0 < t1) << 7;
 
-    desc[i] = (uchar)val;
+    desc[i] = static_cast<uchar>(val);
   }
 
 #undef GET_VALUE
@@ -433,7 +433,7 @@ ORBextractor::ORBextractor(
   mnFeaturesPerLevel.resize(nlevels);
   const float factor = 1.0F / scaleFactor;
   float       nDesiredFeaturesPerScale
-    = nfeatures * (1 - factor) / (1 - (float)std::pow((double)factor, (double)nlevels));
+    = nfeatures * (1 - factor) / (1 - static_cast<float>(std::pow(static_cast<double>(factor), static_cast<double>(nlevels))));
 
   int sumFeatures = 0;
   for (int level = 0; level < nlevels - 1; level++) {
@@ -667,9 +667,9 @@ std::vector<cv::KeyPoint> ORBextractor::DistributeOctTree(
 
     // Finish if there are more nodes than required features
     // or all nodes contain just one point
-    if ((int)lNodes.size() >= N || (int)lNodes.size() == prevSize) {
+    if (static_cast<int>(lNodes.size()) >= N || static_cast<int>(lNodes.size()) == prevSize) {
       bFinish = true;
-    } else if (((int)lNodes.size() + nToExpand * 3) > N) {
+    } else if ((static_cast<int>(lNodes.size()) + nToExpand * 3) > N) {
       while (!bFinish) {
         prevSize = lNodes.size();
 
@@ -717,12 +717,12 @@ std::vector<cv::KeyPoint> ORBextractor::DistributeOctTree(
 
           lNodes.erase(vPrevSizeAndPointerToNode[j].second->lit);
 
-          if ((int)lNodes.size() >= N) {
+          if (static_cast<int>(lNodes.size()) >= N) {
             break;
           }
         }
 
-        if ((int)lNodes.size() >= N || (int)lNodes.size() == prevSize) {
+        if (static_cast<int>(lNodes.size()) >= N || static_cast<int>(lNodes.size()) == prevSize) {
           bFinish = true;
         }
       }
@@ -880,12 +880,12 @@ void ORBextractor::ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint>
 void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>>& allKeypoints) {
   allKeypoints.resize(nlevels);
 
-  const float imageRatio = (float)mvImagePyramid[0].cols / mvImagePyramid[0].rows;
+  const float imageRatio = static_cast<float>(mvImagePyramid[0].cols) / mvImagePyramid[0].rows;
 
   for (int level = 0; level < nlevels; ++level) {
     const int nDesiredFeatures = mnFeaturesPerLevel[level];
 
-    const int levelCols = std::sqrt((float)nDesiredFeatures / (5 * imageRatio));
+    const int levelCols = std::sqrt(static_cast<float>(nDesiredFeatures) / (5 * imageRatio));
     const int levelRows = imageRatio * levelCols;
 
     const int minBorderX = EDGE_THRESHOLD;
@@ -895,11 +895,11 @@ void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>>& a
 
     const int W     = maxBorderX - minBorderX;
     const int H     = maxBorderY - minBorderY;
-    const int cellW = std::ceil((float)W / levelCols);
-    const int cellH = std::ceil((float)H / levelRows);
+    const int cellW = std::ceil(static_cast<float>(W) / levelCols);
+    const int cellH = std::ceil(static_cast<float>(H) / levelRows);
 
     const int nCells        = levelRows * levelCols;
-    const int nfeaturesCell = std::ceil((float)nDesiredFeatures / nCells);
+    const int nfeaturesCell = std::ceil(static_cast<float>(nDesiredFeatures) / nCells);
 
     std::vector<std::vector<std::vector<cv::KeyPoint>>> cellKeyPoints(
       levelRows,
@@ -978,7 +978,7 @@ void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>>& a
 
     while (nToDistribute > 0 && nNoMore < nCells) {
       const int nNewFeaturesCell
-        = nfeaturesCell + std::ceil((float)nToDistribute / (nCells - nNoMore));
+        = nfeaturesCell + std::ceil(static_cast<float>(nToDistribute) / (nCells - nNoMore));
       nToDistribute = 0;
 
       for (int i = 0; i < levelRows; i++) {
@@ -1008,7 +1008,7 @@ void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>>& a
       for (int j = 0; j < levelCols; j++) {
         std::vector<cv::KeyPoint>& keysCell = cellKeyPoints[i][j];
         cv::KeyPointsFilter::retainBest(keysCell, nToRetain[i][j]);
-        if ((int)keysCell.size() > nToRetain[i][j]) {
+        if (static_cast<int>(keysCell.size()) > nToRetain[i][j]) {
           keysCell.resize(nToRetain[i][j]);
         }
 
@@ -1022,7 +1022,7 @@ void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>>& a
       }
     }
 
-    if ((int)keypoints.size() > nDesiredFeatures) {
+    if (static_cast<int>(keypoints.size()) > nDesiredFeatures) {
       cv::KeyPointsFilter::retainBest(keypoints, nDesiredFeatures);
       keypoints.resize(nDesiredFeatures);
     }
@@ -1040,10 +1040,10 @@ static void computeDescriptors(
   cv::Mat&                      descriptors,
   const std::vector<cv::Point>& pattern
 ) {
-  descriptors = cv::Mat::zeros((int)keypoints.size(), 32, CV_8UC1);
+  descriptors = cv::Mat::zeros(static_cast<int>(keypoints.size()), 32, CV_8UC1);
 
   for (std::size_t i = 0; i < keypoints.size(); i++) {
-    computeOrbDescriptor(keypoints[i], image, pattern.data(), descriptors.ptr((int)i));
+    computeOrbDescriptor(keypoints[i], image, pattern.data(), descriptors.ptr(static_cast<int>(i)));
   }
 }
 
@@ -1073,7 +1073,7 @@ int ORBextractor::operator()(
 
   int nkeypoints = 0;
   for (int level = 0; level < nlevels; ++level) {
-    nkeypoints += (int)allKeypoints[level].size();
+    nkeypoints += static_cast<int>(allKeypoints[level].size());
   }
   if (nkeypoints == 0) {
     _descriptors.release();
@@ -1091,7 +1091,7 @@ int ORBextractor::operator()(
   int stereoIndex = nkeypoints - 1;
   for (int level = 0; level < nlevels; ++level) {
     std::vector<cv::KeyPoint>& keypoints       = allKeypoints[level];
-    const int                  nkeypointsLevel = (int)keypoints.size();
+    const int                  nkeypointsLevel = static_cast<int>(keypoints.size());
 
     if (nkeypointsLevel == 0) {
       continue;
@@ -1132,7 +1132,7 @@ int ORBextractor::operator()(
 void ORBextractor::ComputePyramid(const cv::Mat& image) {
   for (int level = 0; level < nlevels; ++level) {
     const float    scale = mvInvScaleFactor[level];
-    const cv::Size sz(cvRound((float)image.cols * scale), cvRound((float)image.rows * scale));
+    const cv::Size sz(cvRound(static_cast<float>(image.cols) * scale), cvRound(static_cast<float>(image.rows) * scale));
     const cv::Size wholeSize(sz.width + EDGE_THRESHOLD * 2, sz.height + EDGE_THRESHOLD * 2);
     cv::Mat        temp(wholeSize, image.type());
     const cv::Mat  masktemp;

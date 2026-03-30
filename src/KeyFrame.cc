@@ -343,7 +343,7 @@ std::vector<KeyFrame*> KeyFrame::GetVectorCovisibleKeyFrames() {
 
 std::vector<KeyFrame*> KeyFrame::GetBestCovisibilityKeyFrames(const int& N) {
   const std::unique_lock<std::mutex> lock(mMutexConnections);
-  if ((int)mvpOrderedConnectedKeyFrames.size() < N) {
+  if (static_cast<int>(mvpOrderedConnectedKeyFrames.size()) < N) {
     return mvpOrderedConnectedKeyFrames;
   } else {
     return {mvpOrderedConnectedKeyFrames.begin(), mvpOrderedConnectedKeyFrames.begin() + N};
@@ -753,26 +753,26 @@ std::vector<std::size_t> KeyFrame::GetFeaturesInArea(
   const float factorY = r;
 
   const int nMinCellX
-    = std::max(0, (int)std::floor((x - mnMinX - factorX) * mfGridElementWidthInv));
+    = std::max(0, static_cast<int>(std::floor((x - mnMinX - factorX) * mfGridElementWidthInv)));
   if (nMinCellX >= mnGridCols) {
     return vIndices;
   }
 
   const int nMaxCellX
-    = std::min((int)mnGridCols - 1, (int)std::ceil((x - mnMinX + factorX) * mfGridElementWidthInv));
+    = std::min(mnGridCols - 1, static_cast<int>(std::ceil((x - mnMinX + factorX) * mfGridElementWidthInv)));
   if (nMaxCellX < 0) {
     return vIndices;
   }
 
   const int nMinCellY
-    = std::max(0, (int)std::floor((y - mnMinY - factorY) * mfGridElementHeightInv));
+    = std::max(0, static_cast<int>(std::floor((y - mnMinY - factorY) * mfGridElementHeightInv)));
   if (nMinCellY >= mnGridRows) {
     return vIndices;
   }
 
   const int nMaxCellY = std::min(
-    (int)mnGridRows - 1,
-    (int)std::ceil((y - mnMinY + factorY) * mfGridElementHeightInv)
+    mnGridRows - 1,
+    static_cast<int>(std::ceil((y - mnMinY + factorY) * mfGridElementHeightInv))
   );
   if (nMaxCellY < 0) {
     return vIndices;

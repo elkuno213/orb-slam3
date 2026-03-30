@@ -345,7 +345,7 @@ void Settings::readImageInfo(cv::FileStorage& fSettings) {
 
     if (!bNeedToRectify_) {
       // Update calibration
-      const float scaleRowFactor = (float)newImSize_.height / (float)originalImSize_.height;
+      const float scaleRowFactor = static_cast<float>(newImSize_.height) / static_cast<float>(originalImSize_.height);
       calibration1_->setParameter(calibration1_->getParameter(1) * scaleRowFactor, 1);
       calibration1_->setParameter(calibration1_->getParameter(3) * scaleRowFactor, 3);
 
@@ -364,7 +364,7 @@ void Settings::readImageInfo(cv::FileStorage& fSettings) {
 
     if (!bNeedToRectify_) {
       // Update calibration
-      const float scaleColFactor = (float)newImSize_.width / (float)originalImSize_.width;
+      const float scaleColFactor = static_cast<float>(newImSize_.width) / static_cast<float>(originalImSize_.width);
       calibration1_->setParameter(calibration1_->getParameter(0) * scaleColFactor, 0);
       calibration1_->setParameter(calibration1_->getParameter(2) * scaleColFactor, 2);
 
@@ -385,7 +385,7 @@ void Settings::readImageInfo(cv::FileStorage& fSettings) {
   }
 
   fps_  = readParameter<int>(fSettings, "Camera.fps", found);
-  bRGB_ = (bool)readParameter<int>(fSettings, "Camera.RGB", found);
+  bRGB_ = static_cast<bool>(readParameter<int>(fSettings, "Camera.RGB", found));
 }
 
 void Settings::readIMU(cv::FileStorage& fSettings) {
@@ -401,7 +401,7 @@ void Settings::readIMU(cv::FileStorage& fSettings) {
 
   readParameter<int>(fSettings, "IMU.InsertKFsWhenLost", found, false);
   if (found) {
-    insertKFsWhenLost_ = (bool)readParameter<int>(fSettings, "IMU.InsertKFsWhenLost", found, false);
+    insertKFsWhenLost_ = static_cast<bool>(readParameter<int>(fSettings, "IMU.InsertKFsWhenLost", found, false));
   } else {
     insertKFsWhenLost_ = true;
   }

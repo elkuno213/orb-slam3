@@ -282,6 +282,7 @@ Checks: >
   google-build-using-namespace,
   google-default-arguments,
   google-global-names-in-headers,
+  google-readability-casting,
   google-runtime-operator,
   concurrency-thread-canceltype-asynchronous,
   portability-std-allocator-const,

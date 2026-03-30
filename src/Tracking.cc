@@ -1228,7 +1228,7 @@ bool Tracking::ParseIMUParamFile(cv::FileStorage& fSettings) {
   node           = fSettings["InsertKFsWhenLost"];
   mInsertKFsLost = true;
   if (!node.empty() && node.isInt()) {
-    mInsertKFsLost = (bool)node.operator int();
+    mInsertKFsLost = static_cast<bool>(node.operator int());
   }
   msg += fmt::format("- Insert keyframes when lost visual tracking: {}\n", mInsertKFsLost);
 
@@ -2384,7 +2384,7 @@ void Tracking::MonocularInitialization() {
       return;
     }
   } else {
-    if (((int)mCurrentFrame.mvKeys.size() <= 100)
+    if ((static_cast<int>(mCurrentFrame.mvKeys.size()) <= 100)
         || ((mSensor == System::IMU_MONOCULAR) && (mLastFrame.mTimeStamp - mInitialFrame.mTimeStamp > 1.0))) {
       mbReadyToInitializate = false;
 

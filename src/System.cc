@@ -97,12 +97,12 @@ System::System(
     settings_         = nullptr;
     cv::FileNode node = fsSettings["System.LoadAtlasFromFile"];
     if (!node.empty() && node.isString()) {
-      mStrLoadAtlasFromFile = (std::string)node;
+      mStrLoadAtlasFromFile = std::string(node);
     }
 
     node = fsSettings["System.SaveAtlasToFile"];
     if (!node.empty() && node.isString()) {
-      mStrSaveAtlasToFile = (std::string)node;
+      mStrSaveAtlasToFile = std::string(node);
     }
   }
 

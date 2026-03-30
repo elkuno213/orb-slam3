@@ -2278,7 +2278,7 @@ void Optimizer::LocalInertialBA(
     maxOpt = 25;
     opt_it = 4;
   }
-  const int           Nd      = std::min((int)pCurrentMap->KeyFramesInMap() - 2, maxOpt);
+  const int           Nd      = std::min(static_cast<int>(pCurrentMap->KeyFramesInMap()) - 2, maxOpt);
   const unsigned long maxKFid = pKF->mnId;
 
   std::vector<KeyFrame*>       vpOptimizableKFs;
