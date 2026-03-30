@@ -5,11 +5,10 @@
 # adds checks AFTER fixing all warnings, then promotes them to WarningsAsErrors.
 # This keeps the build green at every step.
 #
-# See docs/source/building/code-quality.md for the full check inventory.
+# See docs/src/building/code-quality.md for the full check inventory.
 #
 # Permanent suppressions (never enabled):
 #   readability-identifier-length       — SLAM math uses short names legitimately
-#   readability-identifier-naming       — deferred to Phase 8 (~4,300 violations, requires unit tests first)
 #   readability-magic-numbers           — too noisy for math-heavy code
 #   readability-function-cognitive-complexity — legacy functions, not fixable without rewrite
 #   readability-function-size           — same rationale as cognitive-complexity
@@ -24,40 +23,50 @@
 #   bugprone-easily-swappable-parameters — too noisy for SLAM APIs
 #   bugprone-narrowing-conversions      — overlaps with compiler warnings
 #   bugprone-argument-comment           — convention not used in codebase
+#   bugprone-switch-missing-default-case — switch-on-enum intentionally covers all values
+#   bugprone-unchecked-optional-access  — heavy dataflow analysis, known false positives
 #   misc-include-cleaner                — false positives with Eigen/OpenCV/g2o
 #   misc-misplaced-const               — enforces east-const; project uses west-const
-#   misc-non-private-member-variables-in-classes — 200+ violations, fundamental legacy design
-#   cppcoreguidelines-owning-memory     — 300+ violations, Phase 2 addresses this
+#   misc-no-recursion                   — MISRA-style restriction, too restrictive for SLAM
 #   cppcoreguidelines-pro-bounds-array-to-pointer-decay — pervasive C API interop
 #   cppcoreguidelines-pro-bounds-constant-array-index   — core SLAM indexing patterns
 #   cppcoreguidelines-pro-bounds-pointer-arithmetic     — essential for math-heavy code
 #   cppcoreguidelines-pro-type-const-cast  — required by Boost.Serialization
 #   cppcoreguidelines-pro-type-static-cast-downcast — g2o guarantees type safety
-#   cppcoreguidelines-avoid-do-while      — style preference, not a defect
-#   cppcoreguidelines-macro-usage          — conflicts with EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-#   bugprone-bool-pointer-implicit-conversion — 11 false positives on intentional bool* null-checks in Optimizer
-#   bugprone-switch-missing-default-case    — switch-on-enum intentionally covers all values
-#   bugprone-unhandled-exception-at-new     — 157 raw new in Optimizer, Phase 2 smart-pointer migration
-#   bugprone-unchecked-optional-access      — heavy dataflow analysis, known false positives
-#   misc-no-recursion                       — MISRA-style restriction, too restrictive for SLAM
-#   hicpp-signed-bitwise                  — ~20 violations in ORB descriptor bit-packing, intentional
-#   google-readability-todo               — ~50+ legacy TODOs without owner format
-#   google-runtime-int                    — conflicts with OpenCV/g2o API signatures
-#   google-readability-casting            — ~51 C-style casts, deferred to Phase 3
-#   google-explicit-constructor           — ~30 violations, deferred to Phase 4
-#   llvm-header-guard                     — project uses #pragma once
-#   llvm-include-order                    — LLVM-specific ordering convention
-#   boost-use-ranges                      — project does not use Boost.Range
-#   boost-use-to-string                   — project uses fmt::format/std::to_string
-#   portability-simd-intrinsics           — no SIMD code, std::experimental::simd premature
-#   portability-restrict-system-includes  — too restrictive with Eigen/OpenCV/Boost/g2o
-#   cert-err58-cpp                        — static nNextId initializations, deferred to Phase 4
-#   concurrency-mt-unsafe                 — may false-positive on std::stod locale internals
+#   cppcoreguidelines-avoid-do-while    — style preference, not a defect
+#   cppcoreguidelines-macro-usage       — conflicts with EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+#   google-runtime-int                  — conflicts with OpenCV/g2o API signatures
+#   llvm-header-guard                   — project uses #pragma once
+#   llvm-include-order                  — LLVM-specific ordering convention
+#   boost-use-ranges                    — project does not use Boost.Range
+#   boost-use-to-string                 — project uses fmt::format/std::to_string
+#   portability-simd-intrinsics         — no SIMD code, std::experimental::simd premature
+#   portability-restrict-system-includes — too restrictive with Eigen/OpenCV/Boost/g2o
+#   cert-dcl21-cpp                      — deprecated CERT rule for postfix operator return type
 #
-# C++20 deferred (enable with Phase 6 C++20 feature work):
-#   modernize-use-constraints           — enable after Phase 6 adds concepts
-#   modernize-use-designated-initializers — noisy on legacy struct init, enable after Phase 4
-#   modernize-use-integer-sign-comparison — many signed/unsigned index comparisons, Phase 6
+# Phase-deferred (enable after prerequisites met):
+#   google-readability-casting          — ~51 C-style casts, deferred to Phase 3
+#   bugprone-bool-pointer-implicit-conversion — 11 false positives in Optimizer, deferred to Phase 4
+#   hicpp-signed-bitwise               — ~20 violations in ORB descriptor bit-packing, deferred to Phase 3
+#   google-explicit-constructor         — ~30 violations, deferred to Phase 3
+#   cert-err58-cpp                      — static nNextId initializations, deferred to Phase 3
+#   bugprone-unhandled-exception-at-new — 157 raw new in Optimizer, deferred to Phase 5
+#   cppcoreguidelines-owning-memory     — 300+ violations, deferred to Phase 5
+#   misc-non-private-member-variables-in-classes — 200+ violations, deferred to Phase 5d
+#   readability-identifier-naming       — ~4,300 violations, deferred to Phase 9
+#   google-readability-todo             — ~50+ legacy TODOs, cleanup pass
+#   bugprone-nondeterministic-pointer-iteration-order — 10-30 violations, deferred to Phase 3
+#   bugprone-return-const-ref-from-parameter — 5-15 violations, deferred to Phase 3
+#   cert-oop57-cpp                      — 5-15 violations, deferred to Phase 3
+#   cert-oop58-cpp                      — 0-5 violations, deferred to Phase 3
+#   misc-use-internal-linkage           — 5-20 violations, deferred to Phase 3
+#   concurrency-mt-unsafe               — may false-positive on locale internals, deferred to Phase 8b
+#
+# C++20 deferred (enable with Phase 8c C++20 feature work):
+#   modernize-use-constraints           — enable after Phase 8c adds concepts
+#   modernize-use-designated-initializers — noisy on legacy struct init, enable after Phase 5
+#   modernize-use-integer-sign-comparison — many signed/unsigned index comparisons, Phase 8c
+#   modernize-use-ranges                — enable after Phase 8c adopts std::ranges
 #
 # C++23 deferred:
 #   modernize-use-std-print             — requires C++23
@@ -158,6 +167,7 @@ Checks: >
   performance-noexcept-swap,
   performance-type-promotion-in-math-fn,
   misc-unused-parameters,
+  misc-coroutine-hostile-raii,
   misc-const-correctness,
   misc-new-delete-overloads,
   misc-redundant-expression,
@@ -183,6 +193,10 @@ Checks: >
   cppcoreguidelines-avoid-capturing-lambda-coroutines,
   cppcoreguidelines-avoid-reference-coroutine-parameters,
   cppcoreguidelines-no-suspend-with-lock,
+  bugprone-crtp-constructor-accessibility,
+  bugprone-inc-dec-in-conditions,
+  bugprone-suspicious-stringview-data-usage,
+  bugprone-tagged-union-member-count,
   bugprone-implicit-widening-of-multiplication-result,
   bugprone-assert-side-effect,
   bugprone-assignment-in-if-condition,
@@ -246,6 +260,10 @@ Checks: >
   bugprone-undefined-memory-manipulation,
   bugprone-unique-ptr-array-mismatch,
   bugprone-unsafe-functions,
+  cert-oop57-cpp,
+  cert-oop58-cpp,
+  cert-dcl50-cpp,
+  cert-dcl51-cpp,
   cert-dcl58-cpp,
   cert-env33-c,
   cert-err33-c,
@@ -254,6 +272,7 @@ Checks: >
   cert-err60-cpp,
   cert-flp30-c,
   cert-mem57-cpp,
+  cert-msc32-c,
   cert-msc50-cpp,
   cert-msc51-cpp,
   hicpp-exception-baseclass,
