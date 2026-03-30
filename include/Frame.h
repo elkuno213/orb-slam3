@@ -370,7 +370,7 @@ public:
   std::vector<int> mvLeftToRightMatch, mvRightToLeftMatch;
 
   // For stereo fisheye matching
-  static cv::BFMatcher BFmatcher;
+  static cv::BFMatcher& getBFmatcher();
 
   // Triangulated stereo observations using as reference the left camera. These are
   // computed during ComputeStereoFishEyeMatches

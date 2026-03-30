@@ -40,8 +40,11 @@ float             Frame::cx, Frame::cy, Frame::fx, Frame::fy, Frame::invfx, Fram
 float             Frame::mnMinX, Frame::mnMinY, Frame::mnMaxX, Frame::mnMaxY;
 float             Frame::mfGridElementWidthInv, Frame::mfGridElementHeightInv;
 
-// For stereo fisheye matching
-cv::BFMatcher Frame::BFmatcher = cv::BFMatcher(cv::NORM_HAMMING);
+// For stereo fisheye matching — lazy init avoids cert-err58-cpp
+cv::BFMatcher& Frame::getBFmatcher() {
+  static cv::BFMatcher matcher(cv::NORM_HAMMING);
+  return matcher;
+}
 
 Frame::Frame()
   : mpcpi(nullptr)
@@ -1317,7 +1320,7 @@ void Frame::ComputeStereoFishEyeMatches() {
   // Perform a brute force between Keypoint in the left and right image
   std::vector<std::vector<cv::DMatch>> matches;
 
-  BFmatcher.knnMatch(stereoDescLeft, stereoDescRight, matches, 2);
+  getBFmatcher().knnMatch(stereoDescLeft, stereoDescRight, matches, 2);
 
   // Check matches using Lowe's ratio
   for (auto& match : matches) {
