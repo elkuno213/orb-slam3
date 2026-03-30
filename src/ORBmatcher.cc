@@ -18,6 +18,7 @@
  */
 
 #include "ORBmatcher.h"
+#include <cstdint>
 #include <utility>
 #include <DBoW2/DBoW2/FeatureVector.h>
 #include "Frame.h"
@@ -2002,19 +2003,19 @@ void ORBmatcher::ComputeThreeMaxima(
 // Bit set count operation from
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
 int ORBmatcher::DescriptorDistance(const cv::Mat& a, const cv::Mat& b) {
-  const int* pa = a.ptr<int32_t>();
-  const int* pb = b.ptr<int32_t>();
+  const auto* pa = a.ptr<std::uint32_t>();
+  const auto* pb = b.ptr<std::uint32_t>();
 
-  int dist = 0;
+  unsigned int dist = 0;
 
   for (int i = 0; i < 8; i++, pa++, pb++) {
     unsigned int v  = *pa ^ *pb;
-    v               = v - ((v >> 1) & 0x55555555);
-    v               = (v & 0x33333333) + ((v >> 2) & 0x33333333);
-    dist           += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+    v               = v - ((v >> 1U) & 0x55555555U);
+    v               = (v & 0x33333333U) + ((v >> 2U) & 0x33333333U);
+    dist           += (((v + (v >> 4U)) & 0xF0F0F0FU) * 0x1010101U) >> 24U;
   }
 
-  return dist;
+  return static_cast<int>(dist);
 }
 
 } // namespace ORB_SLAM3

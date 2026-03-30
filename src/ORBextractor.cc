@@ -109,33 +109,33 @@ static void computeOrbDescriptor(
      + cvRound(pattern[idx].x * a - pattern[idx].y * b)]
 
   for (int i = 0; i < 32; ++i, pattern += 16) {
-    int t0   = 0;
-    int t1   = 0;
-    int val  = 0;
-    t0       = GET_VALUE(0);
-    t1       = GET_VALUE(1);
-    val      = static_cast<int>(t0 < t1);
-    t0       = GET_VALUE(2);
-    t1       = GET_VALUE(3);
-    val     |= static_cast<int>(t0 < t1) << 1;
-    t0       = GET_VALUE(4);
-    t1       = GET_VALUE(5);
-    val     |= static_cast<int>(t0 < t1) << 2;
-    t0       = GET_VALUE(6);
-    t1       = GET_VALUE(7);
-    val     |= static_cast<int>(t0 < t1) << 3;
-    t0       = GET_VALUE(8);
-    t1       = GET_VALUE(9);
-    val     |= static_cast<int>(t0 < t1) << 4;
-    t0       = GET_VALUE(10);
-    t1       = GET_VALUE(11);
-    val     |= static_cast<int>(t0 < t1) << 5;
-    t0       = GET_VALUE(12);
-    t1       = GET_VALUE(13);
-    val     |= static_cast<int>(t0 < t1) << 6;
-    t0       = GET_VALUE(14);
-    t1       = GET_VALUE(15);
-    val     |= static_cast<int>(t0 < t1) << 7;
+    unsigned int t0  = 0;
+    unsigned int t1  = 0;
+    unsigned int val = 0;
+    t0           = GET_VALUE(0);
+    t1           = GET_VALUE(1);
+    val          = static_cast<unsigned int>(t0 < t1);
+    t0           = GET_VALUE(2);
+    t1           = GET_VALUE(3);
+    val         |= static_cast<unsigned int>(t0 < t1) << 1U;
+    t0           = GET_VALUE(4);
+    t1           = GET_VALUE(5);
+    val         |= static_cast<unsigned int>(t0 < t1) << 2U;
+    t0           = GET_VALUE(6);
+    t1           = GET_VALUE(7);
+    val         |= static_cast<unsigned int>(t0 < t1) << 3U;
+    t0           = GET_VALUE(8);
+    t1           = GET_VALUE(9);
+    val         |= static_cast<unsigned int>(t0 < t1) << 4U;
+    t0           = GET_VALUE(10);
+    t1           = GET_VALUE(11);
+    val         |= static_cast<unsigned int>(t0 < t1) << 5U;
+    t0           = GET_VALUE(12);
+    t1           = GET_VALUE(13);
+    val         |= static_cast<unsigned int>(t0 < t1) << 6U;
+    t0           = GET_VALUE(14);
+    t1           = GET_VALUE(15);
+    val         |= static_cast<unsigned int>(t0 < t1) << 7U;
 
     desc[i] = static_cast<uchar>(val);
   }
