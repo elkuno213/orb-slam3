@@ -72,7 +72,7 @@ class Map {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Map();
-  Map(int initKFid);
+  explicit Map(int initKFid);
   ~Map();
 
   void AddKeyFrame(KeyFrame* pKF);

@@ -72,8 +72,8 @@ class ImuCamPose {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   ImuCamPose() = default;
-  ImuCamPose(KeyFrame* pKF);
-  ImuCamPose(Frame* pF);
+  explicit ImuCamPose(KeyFrame* pKF);
+  explicit ImuCamPose(Frame* pF);
   ImuCamPose(Eigen::Matrix3d& _Rwc, Eigen::Vector3d& _twc, KeyFrame* pKF);
 
   void SetParam(
@@ -131,10 +131,10 @@ class VertexPose : public g2o::BaseVertex<6, ImuCamPose> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexPose() = default;
-  VertexPose(KeyFrame* pKF) {
+  explicit VertexPose(KeyFrame* pKF) {
     setEstimate(ImuCamPose(pKF));
   }
-  VertexPose(Frame* pF) {
+  explicit VertexPose(Frame* pF) {
     setEstimate(ImuCamPose(pF));
   }
 
@@ -155,10 +155,10 @@ class VertexPose4DoF : public g2o::BaseVertex<4, ImuCamPose> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexPose4DoF() = default;
-  VertexPose4DoF(KeyFrame* pKF) {
+  explicit VertexPose4DoF(KeyFrame* pKF) {
     setEstimate(ImuCamPose(pKF));
   }
-  VertexPose4DoF(Frame* pF) {
+  explicit VertexPose4DoF(Frame* pF) {
     setEstimate(ImuCamPose(pF));
   }
   VertexPose4DoF(Eigen::Matrix3d& _Rwc, Eigen::Vector3d& _twc, KeyFrame* pKF) {
@@ -192,8 +192,8 @@ class VertexVelocity : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexVelocity() = default;
-  VertexVelocity(KeyFrame* pKF);
-  VertexVelocity(Frame* pF);
+  explicit VertexVelocity(KeyFrame* pKF);
+  explicit VertexVelocity(Frame* pF);
 
   bool read(std::istream& is) override {
     return false;
@@ -216,8 +216,8 @@ class VertexGyroBias : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexGyroBias() = default;
-  VertexGyroBias(KeyFrame* pKF);
-  VertexGyroBias(Frame* pF);
+  explicit VertexGyroBias(KeyFrame* pKF);
+  explicit VertexGyroBias(Frame* pF);
 
   bool read(std::istream& is) override {
     return false;
@@ -240,8 +240,8 @@ class VertexAccBias : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexAccBias() = default;
-  VertexAccBias(KeyFrame* pKF);
-  VertexAccBias(Frame* pF);
+  explicit VertexAccBias(KeyFrame* pKF);
+  explicit VertexAccBias(Frame* pF);
 
   bool read(std::istream& is) override {
     return false;
@@ -266,7 +266,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   GDirection() : its(0) {
   }
-  GDirection(const Eigen::Matrix3d& pRwg) : Rwg(pRwg), its(0) {
+  explicit GDirection(const Eigen::Matrix3d& pRwg) : Rwg(pRwg), its(0) {
   }
 
   void Update(const double* pu) {
@@ -282,7 +282,7 @@ class VertexGDir : public g2o::BaseVertex<2, GDirection> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexGDir() = default;
-  VertexGDir(const Eigen::Matrix3d& pRwg) {
+  explicit VertexGDir(const Eigen::Matrix3d& pRwg) {
     setEstimate(GDirection(pRwg));
   }
 
@@ -309,7 +309,7 @@ public:
   VertexScale() {
     setEstimate(1.0);
   }
-  VertexScale(double ps) {
+  explicit VertexScale(double ps) {
     setEstimate(ps);
   }
 
@@ -359,7 +359,7 @@ class EdgeMono
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgeMono(int cam_idx_ = 0) : cam_idx(cam_idx_) {
+  explicit EdgeMono(int cam_idx_ = 0) : cam_idx(cam_idx_) {
   }
 
   bool read(std::istream& is) override {
@@ -407,7 +407,7 @@ class EdgeMonoOnlyPose : public g2o::BaseUnaryEdge<2, Eigen::Vector2d, VertexPos
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgeMonoOnlyPose(const Eigen::Vector3f& Xw_, int cam_idx_ = 0)
+  explicit EdgeMonoOnlyPose(const Eigen::Vector3f& Xw_, int cam_idx_ = 0)
     : Xw(Xw_.cast<double>()), cam_idx(cam_idx_) {
   }
 
@@ -445,7 +445,7 @@ class EdgeStereo
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgeStereo(int cam_idx_ = 0) : cam_idx(cam_idx_) {
+  explicit EdgeStereo(int cam_idx_ = 0) : cam_idx(cam_idx_) {
   }
 
   bool read(std::istream& is) override {
@@ -487,7 +487,7 @@ class EdgeStereoOnlyPose : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, VertexP
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgeStereoOnlyPose(const Eigen::Vector3f& Xw_, int cam_idx_ = 0)
+  explicit EdgeStereoOnlyPose(const Eigen::Vector3f& Xw_, int cam_idx_ = 0)
     : Xw(Xw_.cast<double>()), cam_idx(cam_idx_) {
   }
 
@@ -519,7 +519,7 @@ class EdgeInertial : public g2o::BaseMultiEdge<9, Vector9d> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgeInertial(IMU::Preintegrated* pInt);
+  explicit EdgeInertial(IMU::Preintegrated* pInt);
 
   bool read(std::istream& is) override {
     return false;
@@ -576,7 +576,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   // EdgeInertialGS(IMU::Preintegrated* pInt);
-  EdgeInertialGS(IMU::Preintegrated* pInt);
+  explicit EdgeInertialGS(IMU::Preintegrated* pInt);
 
   bool read(std::istream& is) override {
     return false;
@@ -768,7 +768,7 @@ public:
 class EdgePriorPoseImu : public g2o::BaseMultiEdge<15, Vector15d> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  EdgePriorPoseImu(ConstraintPoseImu* c);
+  explicit EdgePriorPoseImu(ConstraintPoseImu* c);
 
   bool read(std::istream& is) override {
     return false;
@@ -808,7 +808,7 @@ class EdgePriorAcc : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, VertexAccBias
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgePriorAcc(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
+  explicit EdgePriorAcc(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
   }
 
   bool read(std::istream& is) override {
@@ -836,7 +836,7 @@ class EdgePriorGyro : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, VertexGyroBi
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgePriorGyro(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
+  explicit EdgePriorGyro(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
   }
 
   bool read(std::istream& is) override {
@@ -864,7 +864,7 @@ class Edge4DoF : public g2o::BaseBinaryEdge<6, Vector6d, VertexPose4DoF, VertexP
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  Edge4DoF(const Eigen::Matrix4d& deltaT) {
+  explicit Edge4DoF(const Eigen::Matrix4d& deltaT) {
     dTij = deltaT;
     dRij = deltaT.block<3, 3>(0, 0);
     dtij = deltaT.block<3, 1>(0, 3);

@@ -43,9 +43,9 @@ class KannalaBrandt8 : public GeometricCamera {
 
 public:
   KannalaBrandt8();
-  KannalaBrandt8(const std::vector<float>& _vParameters);
+  explicit KannalaBrandt8(const std::vector<float>& _vParameters);
   KannalaBrandt8(const std::vector<float>& _vParameters, float _precision);
-  KannalaBrandt8(KannalaBrandt8* pKannala);
+  explicit KannalaBrandt8(KannalaBrandt8* pKannala);
 
   cv::Point2f     project(const cv::Point3f& p3D) override;
   Eigen::Vector2d project(const Eigen::Vector3d& v3D) override;

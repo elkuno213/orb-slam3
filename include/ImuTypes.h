@@ -171,7 +171,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Preintegrated();
   Preintegrated(const Bias& b_, const Calib& calib);
-  Preintegrated(Preintegrated* pImuPre);
+  explicit Preintegrated(Preintegrated* pImuPre);
   ~Preintegrated();
   void CopyFrom(Preintegrated* pImuPre);
   void Initialize(const Bias& b_);

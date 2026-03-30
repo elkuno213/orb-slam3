@@ -37,7 +37,7 @@ class Viewer;
 class FrameDrawer {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  FrameDrawer(Atlas* pAtlas);
+  explicit FrameDrawer(Atlas* pAtlas);
 
   // Update info from the last processed frame.
   void Update(Tracking* pTracker);

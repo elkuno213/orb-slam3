@@ -39,7 +39,7 @@ class GeometricCamera {
 
 public:
   GeometricCamera() = default;
-  GeometricCamera(const std::vector<float>& _vParameters) : mvParameters(_vParameters) {
+  explicit GeometricCamera(const std::vector<float>& _vParameters) : mvParameters(_vParameters) {
   }
   virtual ~GeometricCamera() = default;
 

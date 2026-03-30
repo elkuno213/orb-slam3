@@ -47,7 +47,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   KeyFrameDatabase();
-  KeyFrameDatabase(const ORBVocabulary& voc);
+  explicit KeyFrameDatabase(const ORBVocabulary& voc);
 
   void add(KeyFrame* pKF);
 

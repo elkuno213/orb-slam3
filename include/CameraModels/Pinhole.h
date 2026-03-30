@@ -42,8 +42,8 @@ class Pinhole : public GeometricCamera {
 
 public:
   Pinhole();
-  Pinhole(const std::vector<float>& _vParameters);
-  Pinhole(Pinhole* pPinhole);
+  explicit Pinhole(const std::vector<float>& _vParameters);
+  explicit Pinhole(Pinhole* pPinhole);
   ~Pinhole() override;
 
   cv::Point2f     project(const cv::Point3f& p3D) override;
