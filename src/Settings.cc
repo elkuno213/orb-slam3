@@ -112,7 +112,7 @@ cv::Mat Settings::readParameter<cv::Mat>(
   }
 }
 
-Settings::Settings(const std::string& configFile, const int& sensor)
+Settings::Settings(const std::string& configFile, const int sensor)
   : bNeedToUndistort_(false)
   , bNeedToRectify_(false)
   , bNeedToResize1_(false)

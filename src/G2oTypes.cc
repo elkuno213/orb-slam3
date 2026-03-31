@@ -151,7 +151,7 @@ void ImuCamPose::SetParam(
   const std::vector<Eigen::Vector3d>& _tcw,
   const std::vector<Eigen::Matrix3d>& _Rbc,
   const std::vector<Eigen::Vector3d>& _tbc,
-  const double&                       _bf
+  const double                        _bf
 ) {
   Rbc                = _Rbc;
   tbc                = _tbc;

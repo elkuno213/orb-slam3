@@ -54,7 +54,7 @@ public:
   /*
    * Constructor from file
    */
-  Settings(const std::string& configFile, const int& sensor);
+  Settings(const std::string& configFile, int sensor);
 
   /*
    * Return string of settings

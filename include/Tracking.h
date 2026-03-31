@@ -74,13 +74,13 @@ public:
   Sophus::SE3f GrabImageStereo(
     const cv::Mat& imRectLeft,
     const cv::Mat& imRectRight,
-    const double&  timestamp,
+    double         timestamp,
     std::string    filename
   );
   Sophus::SE3f GrabImageRGBD(
-    const cv::Mat& imRGB, const cv::Mat& imD, const double& timestamp, std::string filename
+    const cv::Mat& imRGB, const cv::Mat& imD, double timestamp, std::string filename
   );
-  Sophus::SE3f GrabImageMonocular(const cv::Mat& im, const double& timestamp, std::string filename);
+  Sophus::SE3f GrabImageMonocular(const cv::Mat& im, double timestamp, std::string filename);
 
   void GrabImuData(const IMU::Point& imuMeasurement);
 
@@ -96,7 +96,7 @@ public:
 
   // Use this function if you have deactivated local mapping and you only want to localize the
   // camera.
-  void InformOnlyTracking(const bool& flag);
+  void InformOnlyTracking(bool flag);
 
   void      UpdateFrameIMU(float s, const IMU::Bias& b, KeyFrame* pCurrentKeyFrame);
   KeyFrame* GetLastKeyFrame() {

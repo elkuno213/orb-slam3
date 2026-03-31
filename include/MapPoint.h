@@ -65,7 +65,7 @@ public:
 
   MapPoint(const Eigen::Vector3f& Pos, KeyFrame* pRefKF, Map* pMap);
   MapPoint(double invDepth, cv::Point2f uv_init, KeyFrame* pRefKF, KeyFrame* pHostKF, Map* pMap);
-  MapPoint(const Eigen::Vector3f& Pos, Map* pMap, Frame* pFrame, const int& idxF);
+  MapPoint(const Eigen::Vector3f& Pos, Map* pMap, Frame* pFrame, int idxF);
 
   void            SetWorldPos(const Eigen::Vector3f& Pos);
   Eigen::Vector3f GetWorldPos();
@@ -101,8 +101,8 @@ public:
 
   float GetMinDistanceInvariance();
   float GetMaxDistanceInvariance();
-  int   PredictScale(const float& currentDist, KeyFrame* pKF);
-  int   PredictScale(const float& currentDist, Frame* pF);
+  int   PredictScale(float currentDist, KeyFrame* pKF);
+  int   PredictScale(float currentDist, Frame* pF);
 
   Map* GetMap();
   void UpdateMap(Map* pMap);

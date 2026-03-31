@@ -139,7 +139,7 @@ public:
   static const int HISTO_LENGTH;
 
 protected:
-  static float RadiusByViewingCos(const float& viewCos);
+  static float RadiusByViewingCos(float viewCos);
 
   static void ComputeThreeMaxima(std::vector<int>* histo, int L, int& ind1, int& ind2, int& ind3);
 

@@ -154,14 +154,14 @@ Frame::Frame(const Frame& frame)
 Frame::Frame(
   const cv::Mat&    imLeft,
   const cv::Mat&    imRight,
-  const double&     timeStamp,
+  const double      timeStamp,
   ORBextractor*     extractorLeft,
   ORBextractor*     extractorRight,
   ORBVocabulary*    voc,
   cv::Mat&          K,
   cv::Mat&          distCoef,
-  const float&      bf,
-  const float&      thDepth,
+  const float       bf,
+  const float       thDepth,
   GeometricCamera*  pCamera,
   Frame*            pPrevF,
   const IMU::Calib& ImuCalib
@@ -285,13 +285,13 @@ Frame::Frame(
 Frame::Frame(
   const cv::Mat&    imGray,
   const cv::Mat&    imDepth,
-  const double&     timeStamp,
+  const double      timeStamp,
   ORBextractor*     extractor,
   ORBVocabulary*    voc,
   cv::Mat&          K,
   cv::Mat&          distCoef,
-  const float&      bf,
-  const float&      thDepth,
+  const float       bf,
+  const float       thDepth,
   GeometricCamera*  pCamera,
   Frame*            pPrevF,
   const IMU::Calib& ImuCalib
@@ -405,13 +405,13 @@ Frame::Frame(
 
 Frame::Frame(
   const cv::Mat&    imGray,
-  const double&     timeStamp,
+  const double      timeStamp,
   ORBextractor*     extractor,
   ORBVocabulary*    voc,
   GeometricCamera*  pCamera,
   cv::Mat&          distCoef,
-  const float&      bf,
-  const float&      thDepth,
+  const float       bf,
+  const float       thDepth,
   Frame*            pPrevF,
   const IMU::Calib& ImuCalib
 )
@@ -793,12 +793,12 @@ Eigen::Vector3f Frame::inRefCoordinates(const Eigen::Vector3f& pCw) {
 }
 
 std::vector<std::size_t> Frame::GetFeaturesInArea(
-  const float& x,
-  const float& y,
-  const float& r,
-  const int    minLevel,
-  const int    maxLevel,
-  const bool   bRight
+  const float x,
+  const float y,
+  const float r,
+  const int   minLevel,
+  const int   maxLevel,
+  const bool  bRight
 ) const {
   std::vector<std::size_t> vIndices;
   vIndices.reserve(N);
@@ -1135,7 +1135,7 @@ void Frame::ComputeStereoFromRGBD(const cv::Mat& imDepth) {
   }
 }
 
-bool Frame::UnprojectStereo(const int& i, Eigen::Vector3f& x3D) {
+bool Frame::UnprojectStereo(const int i, Eigen::Vector3f& x3D) {
   const float z = mvDepth[i];
   if (z > 0) {
     const float           u = mvKeysUn[i].pt.x;
@@ -1163,14 +1163,14 @@ void Frame::setIntegrated() {
 Frame::Frame(
   const cv::Mat&    imLeft,
   const cv::Mat&    imRight,
-  const double&     timeStamp,
+  const double      timeStamp,
   ORBextractor*     extractorLeft,
   ORBextractor*     extractorRight,
   ORBVocabulary*    voc,
   cv::Mat&          K,
   cv::Mat&          distCoef,
-  const float&      bf,
-  const float&      thDepth,
+  const float       bf,
+  const float       thDepth,
   GeometricCamera*  pCamera,
   GeometricCamera*  pCamera2,
   Sophus::SE3f&     Tlr,
@@ -1432,7 +1432,7 @@ bool Frame::isInFrustumChecks(MapPoint* pMP, float viewingCosLimit, bool bRight)
   return true;
 }
 
-Eigen::Vector3f Frame::UnprojectStereoFishEye(const int& i) {
+Eigen::Vector3f Frame::UnprojectStereoFishEye(const int i) {
   return mRwc * mvStereo3Dpoints[i] + mOw;
 }
 

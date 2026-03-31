@@ -1336,7 +1336,7 @@ bool Tracking::GetStepByStep() const {
 Sophus::SE3f Tracking::GrabImageStereo(
   const cv::Mat& imRectLeft,
   const cv::Mat& imRectRight,
-  const double&  timestamp,
+  const double   timestamp,
   std::string    filename
 ) {
   mImGray             = imRectLeft;
@@ -1447,7 +1447,7 @@ Sophus::SE3f Tracking::GrabImageStereo(
 }
 
 Sophus::SE3f Tracking::GrabImageRGBD(
-  const cv::Mat& imRGB, const cv::Mat& imD, const double& timestamp, std::string filename
+  const cv::Mat& imRGB, const cv::Mat& imD, const double timestamp, std::string filename
 ) {
   mImGray         = imRGB;
   cv::Mat imDepth = imD;
@@ -1520,7 +1520,7 @@ Sophus::SE3f Tracking::GrabImageRGBD(
 }
 
 Sophus::SE3f Tracking::GrabImageMonocular(
-  const cv::Mat& im, const double& timestamp, std::string filename
+  const cv::Mat& im, const double timestamp, std::string filename
 ) {
   mImGray = im;
   if (mImGray.channels() == 3) {
@@ -3735,7 +3735,7 @@ void Tracking::ChangeCalibration(const std::string& strSettingPath) {
   Frame::mbInitialComputations = true;
 }
 
-void Tracking::InformOnlyTracking(const bool& flag) {
+void Tracking::InformOnlyTracking(const bool flag) {
   mbOnlyTracking = flag;
 }
 

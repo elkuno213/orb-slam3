@@ -85,7 +85,7 @@ public:
     const LoopClosing::KeyFrameAndPose&             NonCorrectedSim3,
     const LoopClosing::KeyFrameAndPose&             CorrectedSim3,
     const std::map<KeyFrame*, std::set<KeyFrame*>>& LoopConnections,
-    const bool&                                     bFixScale
+    bool                                            bFixScale
   );
   void static OptimizeEssentialGraph(
     KeyFrame*               pCurKF,
@@ -148,7 +148,7 @@ public:
 
   // Marginalize block element (start:end,start:end). Perform Schur complement.
   // Marginalized elements are filled with zeros.
-  static Eigen::MatrixXd Marginalize(const Eigen::MatrixXd& H, const int& start, const int& end);
+  static Eigen::MatrixXd Marginalize(const Eigen::MatrixXd& H, int start, int end);
 
   // Inertial pose-graph
   void static InertialOptimization(

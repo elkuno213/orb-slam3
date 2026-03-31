@@ -216,7 +216,7 @@ int ORBmatcher::SearchByProjection(
   return nmatches;
 }
 
-float ORBmatcher::RadiusByViewingCos(const float& viewCos) {
+float ORBmatcher::RadiusByViewingCos(const float viewCos) {
   if (viewCos > 0.998) {
     return 2.5;
   } else {

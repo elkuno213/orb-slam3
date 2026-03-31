@@ -121,7 +121,7 @@ MapPoint::MapPoint(
   mnId = nNextId++;
 }
 
-MapPoint::MapPoint(const Eigen::Vector3f& Pos, Map* pMap, Frame* pFrame, const int& idxF)
+MapPoint::MapPoint(const Eigen::Vector3f& Pos, Map* pMap, Frame* pFrame, const int idxF)
   : mnFirstKFid(-1)
   , mnFirstFrame(pFrame->mnId)
   , nObs(0)
@@ -533,7 +533,7 @@ float MapPoint::GetMaxDistanceInvariance() {
   return 1.2F * mfMaxDistance;
 }
 
-int MapPoint::PredictScale(const float& currentDist, KeyFrame* pKF) {
+int MapPoint::PredictScale(const float currentDist, KeyFrame* pKF) {
   float ratio = 0.0F;
   {
     const std::unique_lock<std::mutex> lock(mMutexPos);
@@ -550,7 +550,7 @@ int MapPoint::PredictScale(const float& currentDist, KeyFrame* pKF) {
   return nScale;
 }
 
-int MapPoint::PredictScale(const float& currentDist, Frame* pF) {
+int MapPoint::PredictScale(const float currentDist, Frame* pF) {
   float ratio = 0.0F;
   {
     const std::unique_lock<std::mutex> lock(mMutexPos);

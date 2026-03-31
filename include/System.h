@@ -79,7 +79,7 @@ public:
   Sophus::SE3f TrackStereo(
     const cv::Mat&                 imLeft,
     const cv::Mat&                 imRight,
-    const double&                  timestamp,
+    double                         timestamp,
     const std::vector<IMU::Point>& vImuMeas = std::vector<IMU::Point>(),
     std::string                    filename = {}
   );
@@ -91,7 +91,7 @@ public:
   Sophus::SE3f TrackRGBD(
     const cv::Mat&                 im,
     const cv::Mat&                 depthmap,
-    const double&                  timestamp,
+    double                         timestamp,
     const std::vector<IMU::Point>& vImuMeas = std::vector<IMU::Point>(),
     std::string                    filename = {}
   );
@@ -101,7 +101,7 @@ public:
   // Returns the camera pose (empty if tracking fails).
   Sophus::SE3f TrackMonocular(
     const cv::Mat&                 im,
-    const double&                  timestamp,
+    double                         timestamp,
     const std::vector<IMU::Point>& vImuMeas = std::vector<IMU::Point>(),
     std::string                    filename = {}
   );
@@ -144,7 +144,7 @@ public:
   void SaveKeyFrameTrajectoryEuRoC(const std::string& filename, Map* pMap);
 
   // Save data used for initialization debug
-  void SaveDebugData(const int& initIdx);
+  void SaveDebugData(int initIdx);
 
   // Save camera trajectory in the KITTI dataset format.
   // Only for stereo and RGB-D. This method does not work for monocular.
