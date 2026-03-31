@@ -1728,7 +1728,7 @@ bool Tracking::PredictStateIMU() {
     const Eigen::Matrix3f Rwb1 = mpLastKeyFrame->GetImuRotation();
     const Eigen::Vector3f Vwb1 = mpLastKeyFrame->GetVelocity();
 
-    const Eigen::Vector3f Gz(0, 0, -IMU::GRAVITY_VALUE);
+    const Eigen::Vector3f Gz(0, 0, -IMU::kGravity);
     const float           t12 = mpImuPreintegratedFromLastKF->dT;
 
     const Eigen::Matrix3f Rwb2 = IMU::NormalizeRotation(
@@ -1749,7 +1749,7 @@ bool Tracking::PredictStateIMU() {
     const Eigen::Vector3f twb1 = mLastFrame.GetImuPosition();
     const Eigen::Matrix3f Rwb1 = mLastFrame.GetImuRotation();
     const Eigen::Vector3f Vwb1 = mLastFrame.GetVelocity();
-    const Eigen::Vector3f Gz(0, 0, -IMU::GRAVITY_VALUE);
+    const Eigen::Vector3f Gz(0, 0, -IMU::kGravity);
     const float           t12 = mCurrentFrame.mpImuPreintegratedFrame->dT;
 
     const Eigen::Matrix3f Rwb2 = IMU::NormalizeRotation(
@@ -3778,7 +3778,7 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias& b, KeyFrame* pCurr
       mLastFrame.mpLastKeyFrame->GetVelocity()
     );
   } else {
-    const Eigen::Vector3f Gz(0, 0, -IMU::GRAVITY_VALUE);
+    const Eigen::Vector3f Gz(0, 0, -IMU::kGravity);
     const Eigen::Vector3f twb1 = mLastFrame.mpLastKeyFrame->GetImuPosition();
     const Eigen::Matrix3f Rwb1 = mLastFrame.mpLastKeyFrame->GetImuRotation();
     const Eigen::Vector3f Vwb1 = mLastFrame.mpLastKeyFrame->GetVelocity();
@@ -3793,7 +3793,7 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias& b, KeyFrame* pCurr
   }
 
   if (mCurrentFrame.mpImuPreintegrated) {
-    const Eigen::Vector3f Gz(0, 0, -IMU::GRAVITY_VALUE);
+    const Eigen::Vector3f Gz(0, 0, -IMU::kGravity);
 
     const Eigen::Vector3f twb1 = mCurrentFrame.mpLastKeyFrame->GetImuPosition();
     const Eigen::Matrix3f Rwb1 = mCurrentFrame.mpLastKeyFrame->GetImuRotation();

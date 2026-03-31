@@ -32,7 +32,7 @@
 
 namespace ORB_SLAM3::IMU {
 
-const float GRAVITY_VALUE = 9.81;
+inline constexpr float kGravity = 9.81F;
 
 // IMU measurement (gyro, accelerometer and timestamp)
 class Point {

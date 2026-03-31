@@ -477,7 +477,7 @@ EdgeInertial::EdgeInertial(IMU::Preintegrated* pInt)
   , dt(pInt->dT) {
   // This edge links 6 vertices
   resize(6);
-  g << 0, 0, -IMU::GRAVITY_VALUE;
+  g << 0, 0, -IMU::kGravity;
 
   Matrix9d Info = pInt->C.block<9, 9>(0, 0).cast<double>().inverse();
   Info          = (Info + Info.transpose()) / 2;
@@ -604,7 +604,7 @@ EdgeInertialGS::EdgeInertialGS(IMU::Preintegrated* pInt)
   , dt(pInt->dT) {
   // This edge links 8 vertices
   resize(8);
-  gI << 0, 0, -IMU::GRAVITY_VALUE;
+  gI << 0, 0, -IMU::kGravity;
 
   Matrix9d Info = pInt->C.block<9, 9>(0, 0).cast<double>().inverse();
   Info          = (Info + Info.transpose()) / 2;
@@ -683,8 +683,8 @@ void EdgeInertialGS::linearizeOplus() {
   const Eigen::Matrix3d Rwb2     = VP2->estimate().Rwb;
   const Eigen::Matrix3d Rwg      = VGDir->estimate().Rwg;
   Eigen::MatrixXd       Gm       = Eigen::MatrixXd::Zero(3, 2);
-  Gm(0, 1)                       = -IMU::GRAVITY_VALUE;
-  Gm(1, 0)                       = IMU::GRAVITY_VALUE;
+  Gm(0, 1)                       = -IMU::kGravity;
+  Gm(1, 0)                       = IMU::kGravity;
   const double          s        = VS->estimate();
   const Eigen::MatrixXd dGdTheta = Rwg * Gm;
   const Eigen::Matrix3d dR       = mpInt->GetDeltaRotation(b).cast<double>();
