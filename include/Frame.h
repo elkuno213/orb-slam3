@@ -215,8 +215,6 @@ private:
   bool            mbHasVelocity;
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   // Vocabulary used for relocalization.
   ORBVocabulary* mpORBvocabulary;
 

@@ -70,7 +70,6 @@ Eigen::Matrix<T, 3, 3> NormalizeRotation(const Eigen::Matrix<T, 3, 3>& R) {
 
 class ImuCamPose {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   ImuCamPose() = default;
   explicit ImuCamPose(KeyFrame* pKF);
   explicit ImuCamPose(Frame* pF);
@@ -112,7 +111,6 @@ public:
 
 class InvDepthPoint {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   InvDepthPoint() = default;
   InvDepthPoint(double _rho, double _u, double _v, KeyFrame* pHostKF);
 
@@ -129,7 +127,6 @@ public:
 // Optimizable parameters are IMU pose
 class VertexPose : public g2o::BaseVertex<6, ImuCamPose> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexPose() = default;
   explicit VertexPose(KeyFrame* pKF) {
     setEstimate(ImuCamPose(pKF));
@@ -153,7 +150,6 @@ public:
 class VertexPose4DoF : public g2o::BaseVertex<4, ImuCamPose> {
   // Translation and yaw are the only optimizable variables
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexPose4DoF() = default;
   explicit VertexPose4DoF(KeyFrame* pKF) {
     setEstimate(ImuCamPose(pKF));
@@ -190,7 +186,6 @@ public:
 
 class VertexVelocity : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexVelocity() = default;
   explicit VertexVelocity(KeyFrame* pKF);
   explicit VertexVelocity(Frame* pF);
@@ -214,7 +209,6 @@ public:
 
 class VertexGyroBias : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexGyroBias() = default;
   explicit VertexGyroBias(KeyFrame* pKF);
   explicit VertexGyroBias(Frame* pF);
@@ -238,7 +232,6 @@ public:
 
 class VertexAccBias : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexAccBias() = default;
   explicit VertexAccBias(KeyFrame* pKF);
   explicit VertexAccBias(Frame* pF);
@@ -263,7 +256,6 @@ public:
 // Gravity direction vertex
 class GDirection {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   GDirection() : its(0) {
   }
   explicit GDirection(const Eigen::Matrix3d& pRwg) : Rwg(pRwg), its(0) {
@@ -280,7 +272,6 @@ public:
 
 class VertexGDir : public g2o::BaseVertex<2, GDirection> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexGDir() = default;
   explicit VertexGDir(const Eigen::Matrix3d& pRwg) {
     setEstimate(GDirection(pRwg));
@@ -305,7 +296,6 @@ public:
 // scale vertex
 class VertexScale : public g2o::BaseVertex<1, double> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexScale() {
     setEstimate(1.0);
   }
@@ -332,7 +322,6 @@ public:
 // Inverse depth point (just one parameter, inverse depth at the host frame)
 class VertexInvDepth : public g2o::BaseVertex<1, InvDepthPoint> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   VertexInvDepth() = default;
   VertexInvDepth(double invDepth, double u, double v, KeyFrame* pHostKF) {
     setEstimate(InvDepthPoint(invDepth, u, v, pHostKF));
@@ -357,8 +346,6 @@ public:
 class EdgeMono
   : public g2o::BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ, VertexPose> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit EdgeMono(int cam_idx_ = 0) : cam_idx(cam_idx_) {
   }
 
@@ -405,8 +392,6 @@ public:
 
 class EdgeMonoOnlyPose : public g2o::BaseUnaryEdge<2, Eigen::Vector2d, VertexPose> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit EdgeMonoOnlyPose(const Eigen::Vector3f& Xw_, int cam_idx_ = 0)
     : Xw(Xw_.cast<double>()), cam_idx(cam_idx_) {
   }
@@ -443,8 +428,6 @@ public:
 class EdgeStereo
   : public g2o::BaseBinaryEdge<3, Eigen::Vector3d, g2o::VertexSBAPointXYZ, VertexPose> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit EdgeStereo(int cam_idx_ = 0) : cam_idx(cam_idx_) {
   }
 
@@ -485,8 +468,6 @@ public:
 
 class EdgeStereoOnlyPose : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, VertexPose> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit EdgeStereoOnlyPose(const Eigen::Vector3f& Xw_, int cam_idx_ = 0)
     : Xw(Xw_.cast<double>()), cam_idx(cam_idx_) {
   }
@@ -517,8 +498,6 @@ public:
 
 class EdgeInertial : public g2o::BaseMultiEdge<9, Vector9d> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit EdgeInertial(IMU::Preintegrated* pInt);
 
   bool read(std::istream& is) override {
@@ -573,8 +552,6 @@ public:
 // pointing in -z axis, as well as scale
 class EdgeInertialGS : public g2o::BaseMultiEdge<9, Vector9d> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   // EdgeInertialGS(IMU::Preintegrated* pInt);
   explicit EdgeInertialGS(IMU::Preintegrated* pInt);
 
@@ -659,8 +636,6 @@ public:
 
 class EdgeGyroRW : public g2o::BaseBinaryEdge<3, Eigen::Vector3d, VertexGyroBias, VertexGyroBias> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   EdgeGyroRW() = default;
 
   bool read(std::istream& is) override {
@@ -697,8 +672,6 @@ public:
 
 class EdgeAccRW : public g2o::BaseBinaryEdge<3, Eigen::Vector3d, VertexAccBias, VertexAccBias> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   EdgeAccRW() = default;
 
   bool read(std::istream& is) override {
@@ -735,8 +708,6 @@ public:
 
 class ConstraintPoseImu {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   ConstraintPoseImu(
     const Eigen::Matrix3d& Rwb_,
     const Eigen::Vector3d& twb_,
@@ -767,7 +738,6 @@ public:
 
 class EdgePriorPoseImu : public g2o::BaseMultiEdge<15, Vector15d> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   explicit EdgePriorPoseImu(ConstraintPoseImu* c);
 
   bool read(std::istream& is) override {
@@ -806,8 +776,6 @@ public:
 // Priors for biases
 class EdgePriorAcc : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, VertexAccBias> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit EdgePriorAcc(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
   }
 
@@ -834,8 +802,6 @@ public:
 
 class EdgePriorGyro : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, VertexGyroBias> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit EdgePriorGyro(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
   }
 
@@ -862,8 +828,6 @@ public:
 
 class Edge4DoF : public g2o::BaseBinaryEdge<6, Vector6d, VertexPose4DoF, VertexPose4DoF> {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   explicit Edge4DoF(const Eigen::Matrix4d& deltaT) {
     dTij = deltaT;
     dRij = deltaT.block<3, 3>(0, 0);
