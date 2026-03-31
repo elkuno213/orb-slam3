@@ -43,7 +43,7 @@ bool sortByVal(const std::pair<MapPoint*, int>& a, const std::pair<MapPoint*, in
   return (a.second < b.second);
 }
 
-void Optimizer::GlobalBundleAdjustemnt(
+void Optimizer::GlobalBundleAdjustment(
   Map* pMap, int nIterations, bool* pbStopFlag, const unsigned long nLoopKF, const bool bRobust
 ) {
   const auto vpKFs = pMap->GetAllKeyFrames();

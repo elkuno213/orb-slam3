@@ -35,7 +35,7 @@ class MapPoint;
 
 class Optimizer {
 public:
-  void static BundleAdjustment(
+  static void BundleAdjustment(
     const std::vector<KeyFrame*>& vpKF,
     const std::vector<MapPoint*>& vpMP,
     int                           nIterations = 5,
@@ -43,14 +43,14 @@ public:
     unsigned long                 nLoopKF     = 0,
     bool                          bRobust     = true
   );
-  void static GlobalBundleAdjustemnt(
+  static void GlobalBundleAdjustment(
     Map*          pMap,
     int           nIterations = 5,
     bool*         pbStopFlag  = nullptr,
     unsigned long nLoopKF     = 0,
     bool          bRobust     = true
   );
-  void static FullInertialBA(
+  static void FullInertialBA(
     Map*             pMap,
     int              its,
     bool             bFixLocal  = false,
@@ -63,7 +63,7 @@ public:
     bool*            bHess      = nullptr
   );
 
-  void static LocalBundleAdjustment(
+  static void LocalBundleAdjustment(
     KeyFrame* pKF,
     bool*     pbStopFlag,
     Map*      pMap,
@@ -73,12 +73,12 @@ public:
     int&      num_edges
   );
 
-  int static PoseOptimization(Frame* pFrame);
-  int static PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit = false);
-  int static PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit = false);
+  static int PoseOptimization(Frame* pFrame);
+  static int PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit = false);
+  static int PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit = false);
 
   // if bFixScale is true, 6DoF optimization (stereo,rgbd), 7DoF otherwise (mono)
-  void static OptimizeEssentialGraph(
+  static void OptimizeEssentialGraph(
     Map*                                            pMap,
     KeyFrame*                                       pLoopKF,
     KeyFrame*                                       pCurKF,
@@ -87,7 +87,7 @@ public:
     const std::map<KeyFrame*, std::set<KeyFrame*>>& LoopConnections,
     bool                                            bFixScale
   );
-  void static OptimizeEssentialGraph(
+  static void OptimizeEssentialGraph(
     KeyFrame*               pCurKF,
     std::vector<KeyFrame*>& vpFixedKFs,
     std::vector<KeyFrame*>& vpFixedCorrectedKFs,
@@ -96,7 +96,7 @@ public:
   );
 
   // For inertial loopclosing
-  void static OptimizeEssentialGraph4DoF(
+  static void OptimizeEssentialGraph4DoF(
     Map*                                            pMap,
     KeyFrame*                                       pLoopKF,
     KeyFrame*                                       pCurKF,
@@ -119,7 +119,7 @@ public:
 
   // For inertial systems
 
-  void static LocalInertialBA(
+  static void LocalInertialBA(
     KeyFrame* pKF,
     bool*     pbStopFlag,
     Map*      pMap,
@@ -130,7 +130,7 @@ public:
     bool      bLarge   = false,
     bool      bRecInit = false
   );
-  void static MergeInertialBA(
+  static void MergeInertialBA(
     KeyFrame*                     pCurrKF,
     KeyFrame*                     pMergeKF,
     bool*                         pbStopFlag,
@@ -139,7 +139,7 @@ public:
   );
 
   // Local BA in welding area when two maps are merged
-  void static LocalBundleAdjustment(
+  static void LocalBundleAdjustment(
     KeyFrame*                     pMainKF,
     std::vector<KeyFrame*>        vpAdjustKF,
     const std::vector<KeyFrame*>& vpFixedKF,
@@ -151,7 +151,7 @@ public:
   static Eigen::MatrixXd Marginalize(const Eigen::MatrixXd& H, int start, int end);
 
   // Inertial pose-graph
-  void static InertialOptimization(
+  static void InertialOptimization(
     Map*             pMap,
     Eigen::Matrix3d& Rwg,
     double&          scale,
@@ -164,10 +164,10 @@ public:
     float            priorG    = 1e2,
     float            priorA    = 1e6
   );
-  void static InertialOptimization(
+  static void InertialOptimization(
     Map* pMap, Eigen::Vector3d& bg, Eigen::Vector3d& ba, float priorG = 1e2, float priorA = 1e6
   );
-  void static InertialOptimization(Map* pMap, Eigen::Matrix3d& Rwg, double& scale);
+  static void InertialOptimization(Map* pMap, Eigen::Matrix3d& Rwg, double& scale);
 
 };
 
