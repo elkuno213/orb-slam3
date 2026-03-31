@@ -145,12 +145,12 @@ namespace ORB_SLAM3 {
 
 EuRoCRunner::EuRoCRunner(const RunConfig& config)
   : _sensor(config.sensor)
-  , _inertial(config.sensor == System::IMU_MONOCULAR || config.sensor == System::IMU_STEREO)
+  , _inertial(config.sensor == System::Sensor::IMU_MONOCULAR || config.sensor == System::Sensor::IMU_STEREO)
   , _data_dirs(config.data_dirs) {
 }
 
 void EuRoCRunner::load() {
-  const bool is_stereo = _sensor == System::STEREO || _sensor == System::IMU_STEREO;
+  const bool is_stereo = _sensor == System::Sensor::STEREO || _sensor == System::Sensor::IMU_STEREO;
 
   _sequences.resize(_data_dirs.size());
 
@@ -198,7 +198,7 @@ void EuRoCRunner::load() {
   }
 }
 
-System::eSensor EuRoCRunner::sensor() const noexcept {
+System::Sensor EuRoCRunner::sensor() const noexcept {
   return _sensor;
 }
 

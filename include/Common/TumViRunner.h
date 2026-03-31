@@ -37,13 +37,13 @@ public:
   explicit TumViRunner(const RunConfig& config);
 
   void                          load() override;
-  [[nodiscard]] System::eSensor sensor() const noexcept override;
+  [[nodiscard]] System::Sensor sensor() const noexcept override;
   [[nodiscard]] bool            useClahe() const noexcept override;   ///< Always true.
   [[nodiscard]] int             imreadMode() const noexcept override; ///< cv::IMREAD_GRAYSCALE.
   [[nodiscard]] std::string     param() const noexcept override;      ///< Returns output directory.
 
 private:
-  System::eSensor                    _sensor;
+  System::Sensor                    _sensor;
   bool                               _inertial;
   bool                               _is_stereo;
   std::vector<std::filesystem::path> _data_dirs;

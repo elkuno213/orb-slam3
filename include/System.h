@@ -48,7 +48,7 @@ class Viewer;
 class System {
 public:
   // Input sensor
-  enum eSensor {
+  enum class Sensor {
     MONOCULAR     = 0,
     STEREO        = 1,
     RGBD          = 2,
@@ -58,7 +58,7 @@ public:
   };
 
   // File type
-  enum FileType {
+  enum class FileType {
     TEXT_FILE   = 0,
     BINARY_FILE = 1,
   };
@@ -67,7 +67,7 @@ public:
   System(
     const std::string& strVocFile,
     const std::string& strSettingsFile,
-    eSensor            sensor,
+    Sensor            sensor,
     bool               bUseViewer  = true,
     int                initFr      = 0,
     const std::string& strSequence = std::string()
@@ -178,13 +178,13 @@ public:
 #endif
 
 private:
-  void SaveAtlas(int type);
-  bool LoadAtlas(int type);
+  void SaveAtlas(FileType type);
+  bool LoadAtlas(FileType type);
 
-  std::string CalculateCheckSum(std::string filename, int type);
+  std::string CalculateCheckSum(std::string filename, FileType type);
 
   // Input sensor
-  eSensor mSensor;
+  Sensor mSensor;
 
   // ORB vocabulary used for place recognition and feature matching.
   ORBVocabulary* mpVocabulary;

@@ -241,7 +241,7 @@ void LocalMapping::Run() {
         if ((mTinit < 50.0F) && mbInertial) {
           if (mpCurrentKeyFrame->GetMap()->isImuInitialized()
               && mpTracker->mState
-                   == Tracking::OK) { // Enter here everytime local-mapping is called
+                   == Tracking::State::OK) { // Enter here everytime local-mapping is called
             if (!mpCurrentKeyFrame->GetMap()->GetIniertialBA1()) {
               if (mTinit > 5.0F) {
                 _logger->info("Starting visual-inertial bundle adjustment 1...");
@@ -1378,7 +1378,7 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
   }
   mlNewKeyFrames.clear();
 
-  mpTracker->mState = Tracking::OK;
+  mpTracker->mState = Tracking::State::OK;
   bInitializing     = false;
 
   mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();

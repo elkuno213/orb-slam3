@@ -19,7 +19,6 @@
 
 #include "Tracking.h"
 #include <chrono>
-#include <ranges>
 #include <thread>
 #include <utility>
 #include <opencv2/imgproc.hpp>
@@ -52,7 +51,7 @@ Tracking::Tracking(
   Atlas*             pAtlas,
   KeyFrameDatabase*  pKFDB,
   const std::string& strSettingPath,
-  const int          sensor,
+  const System::Sensor sensor,
   Settings*          settings,
   const std::string& /*_nameSeq*/
 )
@@ -83,8 +82,8 @@ Tracking::Tracking(
       );
     }
 
-    if (sensor == System::IMU_MONOCULAR || sensor == System::IMU_STEREO
-        || sensor == System::IMU_RGBD) {
+    if (sensor == System::Sensor::IMU_MONOCULAR || sensor == System::Sensor::IMU_STEREO
+        || sensor == System::Sensor::IMU_RGBD) {
       if (!ParseIMUParamFile(fSettings)) {
         throw std::runtime_error(
           fmt::format("Format incorrect of IMU parameters in settings file at {}", strSettingPath)
@@ -527,8 +526,8 @@ void Tracking::newParameterLoader(Settings* settings) {
   mK_(0, 2) = mpCamera->getParameter(2);
   mK_(1, 2) = mpCamera->getParameter(3);
 
-  if ((mSensor == System::STEREO || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)
-      && settings->cameraType() == Settings::KannalaBrandt) {
+  if ((mSensor == System::Sensor::STEREO || mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD)
+      && settings->cameraType() == Settings::CameraType::KannalaBrandt) {
     mpCamera2 = settings->camera2();
     mpCamera2 = mpAtlas->AddCamera(mpCamera2);
 
@@ -537,13 +536,13 @@ void Tracking::newParameterLoader(Settings* settings) {
     mpFrameDrawer->both = true;
   }
 
-  if (mSensor == System::STEREO || mSensor == System::RGBD || mSensor == System::IMU_STEREO
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::STEREO || mSensor == System::Sensor::RGBD || mSensor == System::Sensor::IMU_STEREO
+      || mSensor == System::Sensor::IMU_RGBD) {
     mbf      = settings->bf();
     mThDepth = settings->b() * settings->thDepth();
   }
 
-  if (mSensor == System::RGBD || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::RGBD || mSensor == System::Sensor::IMU_RGBD) {
     mDepthMapFactor = settings->depthMapFactor();
     if (std::fabs(mDepthMapFactor) < 1e-5) {
       mDepthMapFactor = 1;
@@ -565,12 +564,12 @@ void Tracking::newParameterLoader(Settings* settings) {
 
   mpORBextractorLeft = new ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST);
 
-  if (mSensor == System::STEREO || mSensor == System::IMU_STEREO) {
+  if (mSensor == System::Sensor::STEREO || mSensor == System::Sensor::IMU_STEREO) {
     mpORBextractorRight
       = new ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST);
   }
 
-  if (mSensor == System::MONOCULAR || mSensor == System::IMU_MONOCULAR) {
+  if (mSensor == System::Sensor::MONOCULAR || mSensor == System::Sensor::IMU_MONOCULAR) {
     mpIniORBextractor
       = new ORBextractor(5 * nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST);
   }
@@ -868,7 +867,7 @@ bool Tracking::ParseCamParamFile(cv::FileStorage& fSettings) {
       mK_(1, 2) = cy;
     }
 
-    if (mSensor == System::STEREO || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) {
+    if (mSensor == System::Sensor::STEREO || mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD) {
       // Right camera
       // Camera calibration parameters
       cv::FileNode node = fSettings["Camera2.fx"];
@@ -1049,8 +1048,8 @@ bool Tracking::ParseCamParamFile(cv::FileStorage& fSettings) {
     _logger->error("Check an example configuration file with the desired sensor");
   }
 
-  if (mSensor == System::STEREO || mSensor == System::RGBD || mSensor == System::IMU_STEREO
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::STEREO || mSensor == System::Sensor::RGBD || mSensor == System::Sensor::IMU_STEREO
+      || mSensor == System::Sensor::IMU_RGBD) {
     const cv::FileNode node = fSettings["Camera.bf"];
     if (!node.empty() && node.isReal()) {
       mbf = node.real();
@@ -1083,8 +1082,8 @@ bool Tracking::ParseCamParamFile(cv::FileStorage& fSettings) {
 
   msg = msg1 + msg2;
 
-  if (mSensor == System::STEREO || mSensor == System::RGBD || mSensor == System::IMU_STEREO
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::STEREO || mSensor == System::Sensor::RGBD || mSensor == System::Sensor::IMU_STEREO
+      || mSensor == System::Sensor::IMU_RGBD) {
     const float        fx   = mpCamera->getParameter(0);
     const cv::FileNode node = fSettings["ThDepth"];
     if (!node.empty() && node.isReal()) {
@@ -1097,7 +1096,7 @@ bool Tracking::ParseCamParamFile(cv::FileStorage& fSettings) {
     }
   }
 
-  if (mSensor == System::RGBD || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::RGBD || mSensor == System::Sensor::IMU_RGBD) {
     const cv::FileNode node = fSettings["DepthMapFactor"];
     if (!node.empty() && node.isReal()) {
       mDepthMapFactor = node.real();
@@ -1176,12 +1175,12 @@ bool Tracking::ParseORBParamFile(cv::FileStorage& fSettings) {
 
   mpORBextractorLeft = new ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST);
 
-  if (mSensor == System::STEREO || mSensor == System::IMU_STEREO) {
+  if (mSensor == System::Sensor::STEREO || mSensor == System::Sensor::IMU_STEREO) {
     mpORBextractorRight
       = new ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST);
   }
 
-  if (mSensor == System::MONOCULAR || mSensor == System::IMU_MONOCULAR) {
+  if (mSensor == System::Sensor::MONOCULAR || mSensor == System::Sensor::IMU_MONOCULAR) {
     mpIniORBextractor
       = new ORBextractor(5 * nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST);
   }
@@ -1366,7 +1365,7 @@ Sophus::SE3f Tracking::GrabImageStereo(
   }
 
   _logger->debug("Creating frame...");
-  if (mSensor == System::STEREO && !mpCamera2) {
+  if (mSensor == System::Sensor::STEREO && !mpCamera2) {
     mCurrentFrame = Frame(
       mImGray,
       imGrayRight,
@@ -1380,7 +1379,7 @@ Sophus::SE3f Tracking::GrabImageStereo(
       mThDepth,
       mpCamera
     );
-  } else if (mSensor == System::STEREO && mpCamera2) {
+  } else if (mSensor == System::Sensor::STEREO && mpCamera2) {
     mCurrentFrame = Frame(
       mImGray,
       imGrayRight,
@@ -1396,7 +1395,7 @@ Sophus::SE3f Tracking::GrabImageStereo(
       mpCamera2,
       mTlr
     );
-  } else if (mSensor == System::IMU_STEREO && !mpCamera2) {
+  } else if (mSensor == System::Sensor::IMU_STEREO && !mpCamera2) {
     mCurrentFrame = Frame(
       mImGray,
       imGrayRight,
@@ -1412,7 +1411,7 @@ Sophus::SE3f Tracking::GrabImageStereo(
       &mLastFrame,
       *mpImuCalib
     );
-  } else if (mSensor == System::IMU_STEREO && mpCamera2) {
+  } else if (mSensor == System::Sensor::IMU_STEREO && mpCamera2) {
     mCurrentFrame = Frame(
       mImGray,
       imGrayRight,
@@ -1476,7 +1475,7 @@ Sophus::SE3f Tracking::GrabImageRGBD(
   }
 
   _logger->debug("Creating frame...");
-  if (mSensor == System::RGBD) {
+  if (mSensor == System::Sensor::RGBD) {
     mCurrentFrame = Frame(
       mImGray,
       imDepth,
@@ -1489,7 +1488,7 @@ Sophus::SE3f Tracking::GrabImageRGBD(
       mThDepth,
       mpCamera
     );
-  } else if (mSensor == System::IMU_RGBD) {
+  } else if (mSensor == System::Sensor::IMU_RGBD) {
     mCurrentFrame = Frame(
       mImGray,
       imDepth,
@@ -1542,8 +1541,8 @@ Sophus::SE3f Tracking::GrabImageMonocular(
   }
 
   _logger->debug("Creating frame...");
-  if (mSensor == System::MONOCULAR) {
-    if (mState == NOT_INITIALIZED || mState == NO_IMAGES_YET || (lastID - initID) < mMaxFrames) {
+  if (mSensor == System::Sensor::MONOCULAR) {
+    if (mState == State::NOT_INITIALIZED || mState == State::NO_IMAGES_YET || (lastID - initID) < mMaxFrames) {
       mCurrentFrame = Frame(
         mImGray,
         timestamp,
@@ -1566,8 +1565,8 @@ Sophus::SE3f Tracking::GrabImageMonocular(
         mThDepth
       );
     }
-  } else if (mSensor == System::IMU_MONOCULAR) {
-    if (mState == NOT_INITIALIZED || mState == NO_IMAGES_YET) {
+  } else if (mSensor == System::Sensor::IMU_MONOCULAR) {
+    if (mState == State::NOT_INITIALIZED || mState == State::NO_IMAGES_YET) {
       mCurrentFrame = Frame(
         mImGray,
         timestamp,
@@ -1597,7 +1596,7 @@ Sophus::SE3f Tracking::GrabImageMonocular(
   }
   _logger->debug("Frame created with ID {}", mCurrentFrame.mnId);
 
-  if (mState == NO_IMAGES_YET) {
+  if (mState == State::NO_IMAGES_YET) {
     t0 = timestamp;
   }
 
@@ -1801,7 +1800,7 @@ void Tracking::Track() {
     // TODO(elkuno213): consider return here
   }
 
-  if (mState != NO_IMAGES_YET) {
+  if (mState != State::NO_IMAGES_YET) {
     if (mLastFrame.mTimeStamp > mCurrentFrame.mTimeStamp) {
       _logger->warn(
         "Frame timestamp ({:.6f}) is older than previous frame ({:.6f}). Creating new map in the "
@@ -1837,20 +1836,20 @@ void Tracking::Track() {
     }
   }
 
-  if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-       || mSensor == System::IMU_RGBD)
+  if ((mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+       || mSensor == System::Sensor::IMU_RGBD)
       && mpLastKeyFrame) {
     mCurrentFrame.SetNewBias(mpLastKeyFrame->GetImuBias());
   }
 
-  if (mState == NO_IMAGES_YET) {
-    mState = NOT_INITIALIZED;
+  if (mState == State::NO_IMAGES_YET) {
+    mState = State::NOT_INITIALIZED;
   }
 
   mLastProcessedState = mState;
 
-  if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-       || mSensor == System::IMU_RGBD)
+  if ((mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+       || mSensor == System::Sensor::IMU_RGBD)
       && !mbCreatedMap) {
 #ifdef REGISTER_TIMES
     std::chrono::steady_clock::time_point time_StartPreIMU = std::chrono::steady_clock::now();
@@ -1880,9 +1879,9 @@ void Tracking::Track() {
     mbMapUpdated = true;
   }
 
-  if (mState == NOT_INITIALIZED) {
-    if (mSensor == System::STEREO || mSensor == System::RGBD || mSensor == System::IMU_STEREO
-        || mSensor == System::IMU_RGBD) {
+  if (mState == State::NOT_INITIALIZED) {
+    if (mSensor == System::Sensor::STEREO || mSensor == System::Sensor::RGBD || mSensor == System::Sensor::IMU_STEREO
+        || mSensor == System::Sensor::IMU_RGBD) {
       StereoInitialization();
     } else {
       MonocularInitialization();
@@ -1890,7 +1889,7 @@ void Tracking::Track() {
 
     // mpFrameDrawer->Update(this);
 
-    if (mState != OK) { // If rightly initialized, mState=OK
+    if (mState != State::OK) { // If rightly initialized, mState=State::OK
       mLastFrame = Frame(mCurrentFrame);
       return;
     }
@@ -1911,7 +1910,7 @@ void Tracking::Track() {
       // State OK
       // Local Mapping is activated. This is the normal behaviour, unless
       // you explicitly activate the "only tracking" mode.
-      if (mState == OK) {
+      if (mState == State::OK) {
         // Local Mapping might have changed some MapPoints tracked in last frame
         CheckReplacedInLastFrame();
 
@@ -1930,22 +1929,22 @@ void Tracking::Track() {
         if (!bOK) {
           if (mCurrentFrame.mnId
                 <= (mnLastRelocFrameId + static_cast<unsigned int>(mnFramesToResetIMU))
-              && (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)) {
-            mState = LOST;
+              && (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD)) {
+            mState = State::LOST;
           } else if (pCurrentMap->KeyFramesInMap() > 10) {
-            mState         = RECENTLY_LOST;
+            mState         = State::RECENTLY_LOST;
             mTimeStampLost = mCurrentFrame.mTimeStamp;
           } else {
-            mState = LOST;
+            mState = State::LOST;
           }
         }
       } else {
-        if (mState == RECENTLY_LOST) {
+        if (mState == State::RECENTLY_LOST) {
           _logger->warn("Tracking lost for a short time");
 
           bOK = true;
-          if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-               || mSensor == System::IMU_RGBD)) {
+          if ((mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+               || mSensor == System::Sensor::IMU_RGBD)) {
             if (pCurrentMap->isImuInitialized()) {
               PredictStateIMU();
             } else {
@@ -1953,7 +1952,7 @@ void Tracking::Track() {
             }
 
             if (mCurrentFrame.mTimeStamp - mTimeStampLost > time_recently_lost) {
-              mState = LOST;
+              mState = State::LOST;
               _logger->warn("Tracking lost...");
               bOK = false;
             }
@@ -1961,12 +1960,12 @@ void Tracking::Track() {
             // Relocalization
             bOK = Relocalization();
             if (mCurrentFrame.mTimeStamp - mTimeStampLost > 3.0F && !bOK) {
-              mState = LOST;
+              mState = State::LOST;
               _logger->warn("Tracking lost...");
               bOK = false;
             }
           }
-        } else if (mState == LOST) {
+        } else if (mState == State::LOST) {
           _logger->info("A new map is started");
 
           if (pCurrentMap->KeyFramesInMap() < 10) {
@@ -1986,9 +1985,9 @@ void Tracking::Track() {
 
     } else {
       // Localization Mode: Local Mapping is deactivated (TODO Not available in inertial mode)
-      if (mState == LOST) {
-        if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-            || mSensor == System::IMU_RGBD) {
+      if (mState == State::LOST) {
+        if (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+            || mSensor == System::Sensor::IMU_RGBD) {
           _logger->warn("Tracking lost (with IMU)...");
         }
         bOK = Relocalization();
@@ -2074,19 +2073,19 @@ void Tracking::Track() {
     }
 
     if (bOK) {
-      mState = OK;
-    } else if (mState == OK) {
-      if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-          || mSensor == System::IMU_RGBD) {
+      mState = State::OK;
+    } else if (mState == State::OK) {
+      if (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+          || mSensor == System::Sensor::IMU_RGBD) {
         _logger->warn("Tracking lost for less than one second");
         if (!pCurrentMap->isImuInitialized() || !pCurrentMap->GetIniertialBA2()) {
           _logger->warn("IMU is not or recently initialized. Resetting active map...");
           mpSystem->ResetActiveMap();
         }
 
-        mState = RECENTLY_LOST;
+        mState = State::RECENTLY_LOST;
       } else {
-        mState = RECENTLY_LOST; // visual to lost
+        mState = State::RECENTLY_LOST; // visual to lost
       }
 
       /*if(mCurrentFrame.mnId>mnLastRelocFrameId+mMaxFrames)
@@ -2099,7 +2098,7 @@ void Tracking::Track() {
     // copy, it shluld be once mCurrFrame is completely modified)
     if ((mCurrentFrame.mnId < (mnLastRelocFrameId + static_cast<unsigned int>(mnFramesToResetIMU)))
         && (mCurrentFrame.mnId > static_cast<FrameId>(mnFramesToResetIMU))
-        && (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)
+        && (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD)
         && pCurrentMap->isImuInitialized()) {
       // TODO check this situation
       _logger->info("Saving pointer to frame. IMU needs reset...");
@@ -2138,7 +2137,7 @@ void Tracking::Track() {
       mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.GetPose());
     }
 
-    if (bOK || mState == RECENTLY_LOST) {
+    if (bOK || mState == State::RECENTLY_LOST) {
       // Update motion model
       if (mLastFrame.isSet() && mCurrentFrame.isSet()) {
         const Sophus::SE3f LastTwc = mLastFrame.GetPose().inverse();
@@ -2148,8 +2147,8 @@ void Tracking::Track() {
         mbVelocity = false;
       }
 
-      if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-          || mSensor == System::IMU_RGBD) {
+      if (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+          || mSensor == System::Sensor::IMU_RGBD) {
         mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.GetPose());
       }
 
@@ -2178,7 +2177,7 @@ void Tracking::Track() {
       // Check if we need to insert a new keyframe
       // if(bNeedKF && bOK)
       if (bNeedKF
-          && (bOK || (mInsertKFsLost && mState == RECENTLY_LOST && (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)))) {
+          && (bOK || (mInsertKFsLost && mState == State::RECENTLY_LOST && (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD)))) {
         CreateNewKeyFrame();
       }
 
@@ -2204,13 +2203,13 @@ void Tracking::Track() {
     }
 
     // Reset if the camera get lost soon after initialization
-    if (mState == LOST) {
+    if (mState == State::LOST) {
       if (pCurrentMap->KeyFramesInMap() <= 10) {
         mpSystem->ResetActiveMap();
         return;
       }
-      if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-          || mSensor == System::IMU_RGBD) {
+      if (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+          || mSensor == System::Sensor::IMU_RGBD) {
         if (!pCurrentMap->isImuInitialized()) {
           _logger->warn("Tracking lost before IMU initialization. Resetting active map...");
           mpSystem->ResetActiveMap();
@@ -2230,7 +2229,7 @@ void Tracking::Track() {
     mLastFrame = Frame(mCurrentFrame);
   }
 
-  if (mState == OK || mState == RECENTLY_LOST) {
+  if (mState == State::OK || mState == State::RECENTLY_LOST) {
     // Store frame pose information to retrieve the complete camera trajectory afterwards.
     if (mCurrentFrame.isSet()) {
       const Sophus::SE3f Tcr_
@@ -2238,13 +2237,13 @@ void Tracking::Track() {
       mlRelativeFramePoses.push_back(Tcr_);
       mlpReferences.push_back(mCurrentFrame.mpReferenceKF);
       mlFrameTimes.push_back(mCurrentFrame.mTimeStamp);
-      mlbLost.push_back(mState == LOST);
+      mlbLost.push_back(mState == State::LOST);
     } else {
       // This can happen if tracking is lost
       mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
       mlpReferences.push_back(mlpReferences.back());
       mlFrameTimes.push_back(mlFrameTimes.back());
-      mlbLost.push_back(mState == LOST);
+      mlbLost.push_back(mState == State::LOST);
     }
   }
 
@@ -2260,7 +2259,7 @@ void Tracking::Track() {
 
 void Tracking::StereoInitialization() {
   if (mCurrentFrame.N > 500) {
-    if (mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) {
+    if (mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD) {
       if (!mCurrentFrame.mpImuPreintegrated || !mLastFrame.mpImuPreintegrated) {
         _logger->warn("No IMU measurement found");
         return;
@@ -2282,7 +2281,7 @@ void Tracking::StereoInitialization() {
     }
 
     // Set Frame pose to the origin (In case of inertial SLAM to imu)
-    if (mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) {
+    if (mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD) {
       const Eigen::Matrix3f Rwb0 = mCurrentFrame.mImuCalib.mTcb.rotationMatrix();
       const Eigen::Vector3f twb0 = mCurrentFrame.mImuCalib.mTcb.translation();
       Eigen::Vector3f       Vwb0;
@@ -2296,7 +2295,7 @@ void Tracking::StereoInitialization() {
     auto* pKFini = new KeyFrame(mCurrentFrame, mpAtlas->GetCurrentMap(), mpKeyFrameDB);
 
     // Insert KeyFrame in the map
-    ORB_SLAM3::Atlas::AddKeyFrame(pKFini);
+    mpAtlas->AddKeyFrame(pKFini);
 
     // Create MapPoints and asscoiate to KeyFrame
     if (!mpCamera2) {
@@ -2310,7 +2309,7 @@ void Tracking::StereoInitialization() {
           pKFini->AddMapPoint(pNewMP, i);
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          ORB_SLAM3::Atlas::AddMapPoint(pNewMP);
+          mpAtlas->AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i] = pNewMP;
         }
@@ -2331,7 +2330,7 @@ void Tracking::StereoInitialization() {
 
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          ORB_SLAM3::Atlas::AddMapPoint(pNewMP);
+          mpAtlas->AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i]                                = pNewMP;
           mCurrentFrame.mvpMapPoints[rightIndex + mCurrentFrame.Nleft] = pNewMP;
@@ -2359,7 +2358,7 @@ void Tracking::StereoInitialization() {
 
     mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.GetPose());
 
-    mState = OK;
+    mState = State::OK;
   }
 }
 
@@ -2376,7 +2375,7 @@ void Tracking::MonocularInitialization() {
 
       std::fill(mvIniMatches.begin(), mvIniMatches.end(), -1);
 
-      if (mSensor == System::IMU_MONOCULAR) {
+      if (mSensor == System::Sensor::IMU_MONOCULAR) {
         delete mpImuPreintegratedFromLastKF;
         mpImuPreintegratedFromLastKF     = new IMU::Preintegrated(IMU::Bias(), *mpImuCalib);
         mCurrentFrame.mpImuPreintegrated = mpImuPreintegratedFromLastKF;
@@ -2388,14 +2387,14 @@ void Tracking::MonocularInitialization() {
     }
   } else {
     if ((static_cast<int>(mCurrentFrame.mvKeys.size()) <= 100)
-        || ((mSensor == System::IMU_MONOCULAR) && (mLastFrame.mTimeStamp - mInitialFrame.mTimeStamp > 1.0))) {
+        || ((mSensor == System::Sensor::IMU_MONOCULAR) && (mLastFrame.mTimeStamp - mInitialFrame.mTimeStamp > 1.0))) {
       mbReadyToInitializate = false;
 
       return;
     }
 
     // Find correspondences
-    const ORBmatcher matcher(0.9, true);
+    ORBmatcher matcher(0.9, true);
     int        nmatches
       = matcher
           .SearchForInitialization(mInitialFrame, mCurrentFrame, mvbPrevMatched, mvIniMatches, 100);
@@ -2438,7 +2437,7 @@ void Tracking::CreateInitialMapMonocular() {
   auto* pKFini = new KeyFrame(mInitialFrame, mpAtlas->GetCurrentMap(), mpKeyFrameDB);
   auto* pKFcur = new KeyFrame(mCurrentFrame, mpAtlas->GetCurrentMap(), mpKeyFrameDB);
 
-  if (mSensor == System::IMU_MONOCULAR) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR) {
     pKFini->mpImuPreintegrated = nullptr;
   }
 
@@ -2446,8 +2445,8 @@ void Tracking::CreateInitialMapMonocular() {
   pKFcur->ComputeBoW();
 
   // Insert KFs in the map
-  ORB_SLAM3::Atlas::AddKeyFrame(pKFini);
-  ORB_SLAM3::Atlas::AddKeyFrame(pKFcur);
+  mpAtlas->AddKeyFrame(pKFini);
+  mpAtlas->AddKeyFrame(pKFcur);
 
   for (std::size_t i = 0; i < mvIniMatches.size(); i++) {
     if (mvIniMatches[i] < 0) {
@@ -2473,7 +2472,7 @@ void Tracking::CreateInitialMapMonocular() {
     mCurrentFrame.mvbOutlier[mvIniMatches[i]]   = false;
 
     // Add to Map
-    ORB_SLAM3::Atlas::AddMapPoint(pMP);
+    mpAtlas->AddMapPoint(pMP);
   }
 
   // Update Connections
@@ -2489,7 +2488,7 @@ void Tracking::CreateInitialMapMonocular() {
 
   const float medianDepth    = pKFini->ComputeSceneMedianDepth(2);
   float       invMedianDepth = 0.0F;
-  if (mSensor == System::IMU_MONOCULAR) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR) {
     invMedianDepth = 4.0F / medianDepth; // 4.0f
   } else {
     invMedianDepth = 1.0F / medianDepth;
@@ -2507,7 +2506,7 @@ void Tracking::CreateInitialMapMonocular() {
   pKFcur->SetPose(Tc2w);
 
   // Scale points
-  const std::vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
+  std::vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
   for (auto* pMP : vpAllMapPoints) {
     if (pMP != nullptr) {
       pMP->SetWorldPos(pMP->GetWorldPos() * invMedianDepth);
@@ -2515,7 +2514,7 @@ void Tracking::CreateInitialMapMonocular() {
     }
   }
 
-  if (mSensor == System::IMU_MONOCULAR) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR) {
     pKFcur->mPrevKF            = pKFini;
     pKFini->mNextKF            = pKFcur;
     pKFcur->mpImuPreintegrated = mpImuPreintegratedFromLastKF;
@@ -2558,7 +2557,7 @@ void Tracking::CreateInitialMapMonocular() {
 
   mpAtlas->GetCurrentMap()->mvpKeyFrameOrigins.push_back(pKFini);
 
-  mState = OK;
+  mState = State::OK;
 
   initID = pKFcur->mnId;
 }
@@ -2566,14 +2565,14 @@ void Tracking::CreateInitialMapMonocular() {
 void Tracking::CreateMapInAtlas() {
   mnLastInitFrameId = mCurrentFrame.mnId;
   mpAtlas->CreateNewMap();
-  if (mSensor == System::IMU_STEREO || mSensor == System::IMU_MONOCULAR
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_MONOCULAR
+      || mSensor == System::Sensor::IMU_RGBD) {
     mpAtlas->SetInertialSensor();
   }
   mbSetInit = false;
 
   mnInitialFrameId = mCurrentFrame.mnId + 1;
-  mState           = NO_IMAGES_YET;
+  mState           = State::NO_IMAGES_YET;
 
   // Restart the variable with information about the last KF
   mbVelocity = false;
@@ -2581,12 +2580,12 @@ void Tracking::CreateMapInAtlas() {
   // it is the new starting point for new map
   _logger->info("First frame ID in map: {}", mnLastInitFrameId + 1);
   mbVO = false; // Init value for know if there are enough MapPoints in the last KF
-  if (mSensor == System::MONOCULAR || mSensor == System::IMU_MONOCULAR) {
+  if (mSensor == System::Sensor::MONOCULAR || mSensor == System::Sensor::IMU_MONOCULAR) {
     mbReadyToInitializate = false;
   }
 
-  if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-       || mSensor == System::IMU_RGBD)
+  if ((mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+       || mSensor == System::Sensor::IMU_RGBD)
       && mpImuPreintegratedFromLastKF) {
     delete mpImuPreintegratedFromLastKF;
     mpImuPreintegratedFromLastKF = new IMU::Preintegrated(IMU::Bias(), *mpImuCalib);
@@ -2626,7 +2625,7 @@ bool Tracking::TrackReferenceKeyFrame() {
 
   // We perform first an ORB matching with the reference keyframe
   // If enough matches are found we setup a PnP solver
-  const ORBmatcher       matcher(0.7, true);
+  ORBmatcher             matcher(0.7, true);
   std::vector<MapPoint*> vpMapPointMatches;
 
   int nmatches = matcher.SearchByBoW(mpReferenceKF, mCurrentFrame, vpMapPointMatches);
@@ -2667,8 +2666,8 @@ bool Tracking::TrackReferenceKeyFrame() {
     }
   }
 
-  if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+      || mSensor == System::Sensor::IMU_RGBD) {
     return true;
   } else {
     return nmatchesMap >= 10;
@@ -2681,8 +2680,8 @@ void Tracking::UpdateLastFrame() {
   const Sophus::SE3f Tlr  = mlRelativeFramePoses.back();
   mLastFrame.SetPose(Tlr * pRef->GetPose());
 
-  if (mnLastKeyFrameId == mLastFrame.mnId || mSensor == System::MONOCULAR
-      || mSensor == System::IMU_MONOCULAR || !mbOnlyTracking) {
+  if (mnLastKeyFrameId == mLastFrame.mnId || mSensor == System::Sensor::MONOCULAR
+      || mSensor == System::Sensor::IMU_MONOCULAR || !mbOnlyTracking) {
     return;
   }
 
@@ -2743,7 +2742,7 @@ void Tracking::UpdateLastFrame() {
 }
 
 bool Tracking::TrackWithMotionModel() {
-  const ORBmatcher matcher(0.9, true);
+  ORBmatcher matcher(0.9, true);
 
   // Update last frame pose according to its reference keyframe
   // Create "visual odometry" points if in Localization Mode
@@ -2763,7 +2762,7 @@ bool Tracking::TrackWithMotionModel() {
   // Project points seen in previous frame
   int th = 0;
 
-  if (mSensor == System::STEREO) {
+  if (mSensor == System::Sensor::STEREO) {
     th = 7;
   } else {
     th = 15;
@@ -2773,7 +2772,7 @@ bool Tracking::TrackWithMotionModel() {
     mCurrentFrame,
     mLastFrame,
     th,
-    mSensor == System::MONOCULAR || mSensor == System::IMU_MONOCULAR
+    mSensor == System::Sensor::MONOCULAR || mSensor == System::Sensor::IMU_MONOCULAR
   );
 
   // If few matches, uses a wider window search
@@ -2785,15 +2784,15 @@ bool Tracking::TrackWithMotionModel() {
       mCurrentFrame,
       mLastFrame,
       2 * th,
-      mSensor == System::MONOCULAR || mSensor == System::IMU_MONOCULAR
+      mSensor == System::Sensor::MONOCULAR || mSensor == System::Sensor::IMU_MONOCULAR
     );
     _logger->info("{} matches with wider search", nmatches);
   }
 
   if (nmatches < 20) {
     _logger->warn("Not enough matches");
-    return mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-        || mSensor == System::IMU_RGBD;
+    return mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+        || mSensor == System::Sensor::IMU_RGBD;
   }
 
   // Optimize frame pose with all matches
@@ -2826,8 +2825,8 @@ bool Tracking::TrackWithMotionModel() {
     return nmatches > 20;
   }
 
-  if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+      || mSensor == System::Sensor::IMU_RGBD) {
     return true;
   } else {
     return nmatchesMap >= 10;
@@ -2849,7 +2848,7 @@ bool Tracking::TrackLocalMap() {
       _logger->debug("Optimizing pose when tracking local map...");
       Optimizer::PoseOptimization(&mCurrentFrame);
     } else {
-      // if(!mbMapUpdated && mState == OK) //  && (mnMatchesInliers>30))
+      // if(!mbMapUpdated && mState == State::OK) //  && (mnMatchesInliers>30))
       if (!mbMapUpdated) { // && (mnMatchesInliers>30))
         _logger->debug("Optimizing pose with IMU from last frame when tracking local map...");
         Optimizer::PoseInertialOptimizationLastFrame(
@@ -2878,7 +2877,7 @@ bool Tracking::TrackLocalMap() {
         } else {
           mnMatchesInliers++;
         }
-      } else if (mSensor == System::STEREO) {
+      } else if (mSensor == System::Sensor::STEREO) {
         mCurrentFrame.mvpMapPoints[i] = nullptr;
       }
     }
@@ -2891,14 +2890,16 @@ bool Tracking::TrackLocalMap() {
     return false;
   }
 
-  if ((mnMatchesInliers > 10) && (mState == RECENTLY_LOST)) {
+  if ((mnMatchesInliers > 10) && (mState == State::RECENTLY_LOST)) {
     return true;
   }
 
-  if (mSensor == System::IMU_MONOCULAR) {
-    return (mnMatchesInliers >= 15 || !mpAtlas->isImuInitialized())
-        && (mnMatchesInliers >= 50 || mpAtlas->isImuInitialized());
-  } else if (mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR) {
+    return !(
+      (mnMatchesInliers < 15 && mpAtlas->isImuInitialized())
+      || (mnMatchesInliers < 50 && !mpAtlas->isImuInitialized())
+    );
+  } else if (mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD) {
     return mnMatchesInliers >= 15;
   } else {
     return mnMatchesInliers >= 30;
@@ -2906,13 +2907,13 @@ bool Tracking::TrackLocalMap() {
 }
 
 bool Tracking::NeedNewKeyFrame() {
-  if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-       || mSensor == System::IMU_RGBD)
+  if ((mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+       || mSensor == System::Sensor::IMU_RGBD)
       && !mpAtlas->GetCurrentMap()->isImuInitialized()) {
-    if (mSensor == System::IMU_MONOCULAR
+    if (mSensor == System::Sensor::IMU_MONOCULAR
         && (mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.25) {
       return true;
-    } else if ((mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)
+    } else if ((mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD)
                && (mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.25) {
       return true;
     } else {
@@ -2950,7 +2951,7 @@ bool Tracking::NeedNewKeyFrame() {
   int nNonTrackedClose = 0;
   int nTrackedClose    = 0;
 
-  if (mSensor != System::MONOCULAR && mSensor != System::IMU_MONOCULAR) {
+  if (mSensor != System::Sensor::MONOCULAR && mSensor != System::Sensor::IMU_MONOCULAR) {
     const int N = (!mCurrentFrame.isFisheye()) ? mCurrentFrame.N : mCurrentFrame.Nleft;
     for (int i = 0; i < N; i++) {
       if (mCurrentFrame.mvDepth[i] > 0 && mCurrentFrame.mvDepth[i] < mThDepth) {
@@ -2973,14 +2974,14 @@ bool Tracking::NeedNewKeyFrame() {
 
   /*int nClosedPoints = nTrackedClose + nNonTrackedClose;
   const int thStereoClosedPoints = 15;
-  if(nClosedPoints < thStereoClosedPoints && (mSensor==System::STEREO ||
-  mSensor==System::IMU_STEREO))
+  if(nClosedPoints < thStereoClosedPoints && (mSensor==System::Sensor::STEREO ||
+  mSensor==System::Sensor::IMU_STEREO))
   {
       //Pseudo-monocular, there are not enough close points to be confident about the stereo
   observations. thRefRatio = 0.9f;
   }*/
 
-  if (mSensor == System::MONOCULAR) {
+  if (mSensor == System::Sensor::MONOCULAR) {
     thRefRatio = 0.9F;
   }
 
@@ -2988,7 +2989,7 @@ bool Tracking::NeedNewKeyFrame() {
     thRefRatio = 0.75F;
   }
 
-  if (mSensor == System::IMU_MONOCULAR) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR) {
     if (mnMatchesInliers > 350) { // Points tracked from the local map
       thRefRatio = 0.75F;
     } else {
@@ -3003,8 +3004,8 @@ bool Tracking::NeedNewKeyFrame() {
     = ((mCurrentFrame.mnId >= mnLastKeyFrameId + mMinFrames) && bLocalMappingIdle); // mpLocalMapper->KeyframesInQueue()
                                                                                     // < 2);
   // Condition 1c: tracking is weak
-  const bool c1c = mSensor != System::MONOCULAR && mSensor != System::IMU_MONOCULAR
-                && mSensor != System::IMU_STEREO && mSensor != System::IMU_RGBD
+  const bool c1c = mSensor != System::Sensor::MONOCULAR && mSensor != System::Sensor::IMU_MONOCULAR
+                && mSensor != System::Sensor::IMU_STEREO && mSensor != System::Sensor::IMU_RGBD
                 && (mnMatchesInliers < nRefMatches * 0.25 || bNeedToInsertClose);
   // Condition 2: Few tracked points compared to reference keyframe. Lots of visual odometry
   // compared to map matches.
@@ -3014,19 +3015,19 @@ bool Tracking::NeedNewKeyFrame() {
   //  Temporal condition for Inertial cases
   bool c3 = false;
   if (mpLastKeyFrame) {
-    if (mSensor == System::IMU_MONOCULAR) {
+    if (mSensor == System::Sensor::IMU_MONOCULAR) {
       if ((mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.5) {
         c3 = true;
       }
-    } else if (mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) {
+    } else if (mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD) {
       if ((mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.5) {
         c3 = true;
       }
     }
   }
 
-  const bool c4 = (((mnMatchesInliers < 75) && (mnMatchesInliers > 15)) || mState == RECENTLY_LOST)
-               && (mSensor == System::IMU_MONOCULAR);
+  const bool c4 = (((mnMatchesInliers < 75) && (mnMatchesInliers > 15)) || mState == State::RECENTLY_LOST)
+               && (mSensor == System::Sensor::IMU_MONOCULAR);
 
   if (((c1a || c1b || c1c) && c2) || c3 || c4) {
     // If the mapping accepts keyframes, insert keyframe.
@@ -3035,7 +3036,7 @@ bool Tracking::NeedNewKeyFrame() {
       return true;
     } else {
       mpLocalMapper->InterruptBA();
-      if (mSensor != System::MONOCULAR && mSensor != System::IMU_MONOCULAR) {
+      if (mSensor != System::Sensor::MONOCULAR && mSensor != System::Sensor::IMU_MONOCULAR) {
         return mpLocalMapper->KeyframesInQueue() < 3;
       } else {
         // Localmap is busy
@@ -3074,12 +3075,12 @@ void Tracking::CreateNewKeyFrame() {
   }
 
   // Reset preintegration from last KF (Create new object)
-  if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+      || mSensor == System::Sensor::IMU_RGBD) {
     mpImuPreintegratedFromLastKF = new IMU::Preintegrated(pKF->GetImuBias(), pKF->mImuCalib);
   }
 
-  if (mSensor != System::MONOCULAR && mSensor != System::IMU_MONOCULAR) { // TODO check if incluide
+  if (mSensor != System::Sensor::MONOCULAR && mSensor != System::Sensor::IMU_MONOCULAR) { // TODO check if incluide
                                                                           // imu_stereo
     mCurrentFrame.UpdatePoseMatrices();
     // Create new map points.
@@ -3087,7 +3088,7 @@ void Tracking::CreateNewKeyFrame() {
     // We create all those MapPoints whose depth < mThDepth.
     // If there are less than 100 close points we create the 100 closest.
     int maxPoint = 100;
-    if (mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) {
+    if (mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD) {
       maxPoint = 100;
     }
 
@@ -3140,7 +3141,7 @@ void Tracking::CreateNewKeyFrame() {
           pKF->AddMapPoint(pNewMP, i);
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          ORB_SLAM3::Atlas::AddMapPoint(pNewMP);
+          mpAtlas->AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i] = pNewMP;
           nPoints++;
@@ -3199,9 +3200,9 @@ void Tracking::SearchLocalPoints() {
   }
 
   if (nToMatch > 0) {
-    const ORBmatcher matcher(0.8);
+    ORBmatcher matcher(0.8);
     int        th = 1;
-    if (mSensor == System::RGBD || mSensor == System::IMU_RGBD) {
+    if (mSensor == System::Sensor::RGBD || mSensor == System::Sensor::IMU_RGBD) {
       th = 3;
     }
     if (mpAtlas->isImuInitialized()) {
@@ -3211,7 +3212,7 @@ void Tracking::SearchLocalPoints() {
         th = 6;
       }
     } else if (!mpAtlas->isImuInitialized()
-               && (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)) {
+               && (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD)) {
       th = 10;
     }
 
@@ -3220,7 +3221,7 @@ void Tracking::SearchLocalPoints() {
       th = 5;
     }
 
-    if (mState == LOST || mState == RECENTLY_LOST) { // Lost for less than 1 second
+    if (mState == State::LOST || mState == State::RECENTLY_LOST) { // Lost for less than 1 second
       th = 15;
     }
 
@@ -3246,7 +3247,9 @@ void Tracking::UpdateLocalMap() {
 void Tracking::UpdateLocalPoints() {
   mvpLocalMapPoints.clear();
 
-  for (auto pKF : std::ranges::reverse_view(mvpLocalKeyFrames)) {
+  for (auto itKF = mvpLocalKeyFrames.rbegin(), itEndKF = mvpLocalKeyFrames.rend(); itKF != itEndKF;
+       ++itKF) {
+    KeyFrame*                    pKF   = *itKF;
     const std::vector<MapPoint*> vpMPs = pKF->GetMapPointMatches();
 
     for (auto* pMP : vpMPs) {
@@ -3366,8 +3369,8 @@ void Tracking::UpdateLocalKeyFrames() {
   }
 
   // Add 10 last temporal KFs (mainly for IMU)
-  if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO
-       || mSensor == System::IMU_RGBD)
+  if ((mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
+       || mSensor == System::Sensor::IMU_RGBD)
       && mvpLocalKeyFrames.size() < 80) {
     KeyFrame* tempKeyFrame = mCurrentFrame.mpLastKeyFrame;
 
@@ -3409,7 +3412,7 @@ bool Tracking::Relocalization() {
 
   // We perform first an ORB matching with each candidate
   // If enough matches are found we setup a PnP solver
-  const ORBmatcher matcher(0.75, true);
+  ORBmatcher matcher(0.75, true);
 
   std::vector<MLPnPsolver*> vpMLPnPsolvers;
   vpMLPnPsolvers.resize(nKFs);
@@ -3444,7 +3447,7 @@ bool Tracking::Relocalization() {
   // Alternatively perform some iterations of P4P RANSAC
   // Until we found a camera pose supported by enough inliers
   bool       bMatch = false;
-  const ORBmatcher matcher2(0.9, true);
+  ORBmatcher matcher2(0.9, true);
 
   while (nCandidates > 0 && !bMatch) {
     for (int i = 0; i < nKFs; i++) {
@@ -3580,15 +3583,15 @@ void Tracking::Reset(bool bLocMap) {
   // Clear Map (this erase MapPoints and KeyFrames)
   mpAtlas->clearAtlas();
   mpAtlas->CreateNewMap();
-  if (mSensor == System::IMU_STEREO || mSensor == System::IMU_MONOCULAR
-      || mSensor == System::IMU_RGBD) {
+  if (mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_MONOCULAR
+      || mSensor == System::Sensor::IMU_RGBD) {
     mpAtlas->SetInertialSensor();
   }
   mnInitialFrameId = 0;
 
   KeyFrame::nNextId = 0;
   Frame::nNextId    = 0;
-  mState            = NO_IMAGES_YET;
+  mState            = State::NO_IMAGES_YET;
 
   mbReadyToInitializate = false;
   mbSetInit             = false;
@@ -3645,7 +3648,7 @@ void Tracking::ResetActiveMap(bool bLocMap) {
   // Frame::nNextId = mnLastInitFrameId;
   mnLastInitFrameId = Frame::nNextId;
   // mnLastRelocFrameId = mnLastInitFrameId;
-  mState = NO_IMAGES_YET; // NOT_INITIALIZED;
+  mState = State::NO_IMAGES_YET; // NOT_INITIALIZED;
 
   mbReadyToInitializate = false;
 

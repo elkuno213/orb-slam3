@@ -35,10 +35,10 @@ public:
   explicit TumRunner(const RunConfig& config);
 
   void                          load() override;
-  [[nodiscard]] System::eSensor sensor() const noexcept override;
+  [[nodiscard]] System::Sensor sensor() const noexcept override;
 
 private:
-  System::eSensor                    _sensor;
+  System::Sensor                    _sensor;
   std::vector<std::filesystem::path> _data_dirs;
 };
 

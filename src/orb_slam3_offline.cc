@@ -33,7 +33,7 @@ namespace fs = std::filesystem;
 /// @brief Dispatch a single frame to the appropriate System::Track*() method.
 void trackFrame(
   ORB_SLAM3::System&                        slam,
-  ORB_SLAM3::System::eSensor                sensor,
+  ORB_SLAM3::System::Sensor                sensor,
   const double                              timestamp,
   const cv::Mat&                            img_left,
   const cv::Mat&                            img_right,
@@ -41,16 +41,17 @@ void trackFrame(
   const std::vector<ORB_SLAM3::IMU::Point>& imu_meas
 ) {
   switch (sensor) {
-    case ORB_SLAM3::System::MONOCULAR:
-    case ORB_SLAM3::System::IMU_MONOCULAR:
+    using enum ORB_SLAM3::System::Sensor;
+    case MONOCULAR:
+    case IMU_MONOCULAR:
       slam.TrackMonocular(img_left, timestamp, imu_meas);
       break;
-    case ORB_SLAM3::System::STEREO:
-    case ORB_SLAM3::System::IMU_STEREO:
+    case STEREO:
+    case IMU_STEREO:
       slam.TrackStereo(img_left, img_right, timestamp, imu_meas);
       break;
-    case ORB_SLAM3::System::RGBD:
-    case ORB_SLAM3::System::IMU_RGBD:
+    case RGBD:
+    case IMU_RGBD:
       slam.TrackRGBD(img_left, depth, timestamp, imu_meas);
       break;
     default:

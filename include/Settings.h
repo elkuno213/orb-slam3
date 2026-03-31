@@ -28,6 +28,7 @@
 #include <opencv2/core.hpp>
 #include <sophus/se3.hpp>
 #include <spdlog/logger.h>
+#include "System.h"
 
 namespace ORB_SLAM3 {
 
@@ -40,7 +41,7 @@ public:
   /*
    * Enum for the different camera types implemented
    */
-  enum CameraType {
+  enum class CameraType {
     PinHole       = 0,
     Rectified     = 1,
     KannalaBrandt = 2
@@ -54,7 +55,7 @@ public:
   /*
    * Constructor from file
    */
-  Settings(const std::string& configFile, int sensor);
+  Settings(const std::string& configFile, System::Sensor sensor);
 
   /*
    * Return string of settings
@@ -246,7 +247,7 @@ private:
 
   void precomputeRectificationMaps();
 
-  int        sensor_;
+  System::Sensor sensor_;
   CameraType cameraType_; // Camera type
 
   /*

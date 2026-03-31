@@ -26,7 +26,7 @@
 namespace ORB_SLAM3 {
 
 FrameDrawer::FrameDrawer(Atlas* pAtlas) : mpAtlas(pAtlas) {
-  mState   = Tracking::SYSTEM_NOT_READY;
+  mState   = Tracking::State::SYSTEM_NOT_READY;
   mIm      = cv::Mat(480, 640, CV_8UC3, cv::Scalar(0, 0, 0));
   mImRight = cv::Mat(480, 640, CV_8UC3, cv::Scalar(0, 0, 0));
 }
@@ -39,7 +39,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
   std::vector<bool>         vbVO;
   std::vector<bool>         vbMap; // Tracked MapPoints in current frame
   std::vector<std::pair<cv::Point2f, cv::Point2f> > vTracks;
-  int                                               state = 0; // Tracking state
+  Tracking::State                          state{}; // Tracking state
   std::vector<float>                                vCurrentDepth;
 
   Frame                                    currentFrame;
@@ -58,18 +58,18 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
   {
     const std::unique_lock<std::mutex> lock(mMutex);
     state = mState;
-    if (mState == Tracking::SYSTEM_NOT_READY) {
-      mState = Tracking::NO_IMAGES_YET;
+    if (mState == Tracking::State::SYSTEM_NOT_READY) {
+      mState = Tracking::State::NO_IMAGES_YET;
     }
 
     mIm.copyTo(im);
 
-    if (mState == Tracking::NOT_INITIALIZED) {
+    if (mState == Tracking::State::NOT_INITIALIZED) {
       vCurrentKeys = mvCurrentKeys;
       vIniKeys     = mvIniKeys;
       vMatches     = mvIniMatches;
       vTracks      = mvTracks;
-    } else if (mState == Tracking::OK) {
+    } else if (mState == Tracking::State::OK) {
       vCurrentKeys = mvCurrentKeys;
       vbVO         = mvbVO;
       vbMap        = mvbMap;
@@ -85,7 +85,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
 
       vCurrentDepth = mvCurrentDepth;
 
-    } else if (mState == Tracking::LOST) {
+    } else if (mState == Tracking::State::LOST) {
       vCurrentKeys = mvCurrentKeys;
     }
   }
@@ -101,7 +101,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
   }
 
   // Draw
-  if (state == Tracking::NOT_INITIALIZED) {
+  if (state == Tracking::State::NOT_INITIALIZED) {
     for (unsigned int i = 0; i < vMatches.size(); i++) {
       if (vMatches[i] >= 0) {
         cv::Point2f pt1;
@@ -129,7 +129,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
       cv::line(im, pt1, pt2, standardColor, 5);
     }
 
-  } else if (state == Tracking::OK) // TRACKING
+  } else if (state == Tracking::State::OK) // TRACKING
   {
     mnTracked     = 0;
     mnTrackedVO   = 0;
@@ -184,27 +184,27 @@ cv::Mat FrameDrawer::DrawRightFrame(float imageScale) {
   std::vector<cv::KeyPoint> vCurrentKeys; // KeyPoints in current frame
   std::vector<bool>         vbVO;
   std::vector<bool>         vbMap;     // Tracked MapPoints in current frame
-  int                       state = 0; // Tracking state
+  Tracking::State  state{}; // Tracking state
 
   // Copy variables within scoped mutex
   {
     const std::unique_lock<std::mutex> lock(mMutex);
     state = mState;
-    if (mState == Tracking::SYSTEM_NOT_READY) {
-      mState = Tracking::NO_IMAGES_YET;
+    if (mState == Tracking::State::SYSTEM_NOT_READY) {
+      mState = Tracking::State::NO_IMAGES_YET;
     }
 
     mImRight.copyTo(im);
 
-    if (mState == Tracking::NOT_INITIALIZED) {
+    if (mState == Tracking::State::NOT_INITIALIZED) {
       vCurrentKeys = mvCurrentKeysRight;
       vIniKeys     = mvIniKeys;
       vMatches     = mvIniMatches;
-    } else if (mState == Tracking::OK) {
+    } else if (mState == Tracking::State::OK) {
       vCurrentKeys = mvCurrentKeysRight;
       vbVO         = mvbVO;
       vbMap        = mvbMap;
-    } else if (mState == Tracking::LOST) {
+    } else if (mState == Tracking::State::LOST) {
       vCurrentKeys = mvCurrentKeysRight;
     }
   } // destroy scoped mutex -> release mutex
@@ -220,7 +220,7 @@ cv::Mat FrameDrawer::DrawRightFrame(float imageScale) {
   }
 
   // Draw
-  if (state == Tracking::NOT_INITIALIZED) // INITIALIZING
+  if (state == Tracking::State::NOT_INITIALIZED) // INITIALIZING
   {
     for (unsigned int i = 0; i < vMatches.size(); i++) {
       if (vMatches[i] >= 0) {
@@ -237,7 +237,7 @@ cv::Mat FrameDrawer::DrawRightFrame(float imageScale) {
         cv::line(im, pt1, pt2, cv::Scalar(0, 255, 0));
       }
     }
-  } else if (state == Tracking::OK) // TRACKING
+  } else if (state == Tracking::State::OK) // TRACKING
   {
     mnTracked         = 0;
     mnTrackedVO       = 0;
@@ -287,13 +287,13 @@ cv::Mat FrameDrawer::DrawRightFrame(float imageScale) {
   return imWithInfo;
 }
 
-void FrameDrawer::DrawTextInfo(cv::Mat& im, int nState, cv::Mat& imText) {
+void FrameDrawer::DrawTextInfo(cv::Mat& im, Tracking::State nState, cv::Mat& imText) {
   std::stringstream s;
-  if (nState == Tracking::NO_IMAGES_YET) {
+  if (nState == Tracking::State::NO_IMAGES_YET) {
     s << " WAITING FOR IMAGES";
-  } else if (nState == Tracking::NOT_INITIALIZED) {
+  } else if (nState == Tracking::State::NOT_INITIALIZED) {
     s << " TRYING TO INITIALIZE ";
-  } else if (nState == Tracking::OK) {
+  } else if (nState == Tracking::State::OK) {
     if (!mbOnlyTracking) {
       s << "SLAM MODE |  ";
     } else {
@@ -306,9 +306,9 @@ void FrameDrawer::DrawTextInfo(cv::Mat& im, int nState, cv::Mat& imText) {
     if (mnTrackedVO > 0) {
       s << ", + VO matches: " << mnTrackedVO;
     }
-  } else if (nState == Tracking::LOST) {
+  } else if (nState == Tracking::State::LOST) {
     s << " TRACK LOST. TRYING TO RELOCALIZE ";
-  } else if (nState == Tracking::SYSTEM_NOT_READY) {
+  } else if (nState == Tracking::State::SYSTEM_NOT_READY) {
     s << " LOADING ORB VOCABULARY. PLEASE WAIT...";
   }
 
@@ -364,10 +364,10 @@ void FrameDrawer::Update(Tracking* pTracker) {
   mvpOutlierMPs.clear();
   mvpOutlierMPs.reserve(N);
 
-  if (pTracker->mLastProcessedState == Tracking::NOT_INITIALIZED) {
+  if (pTracker->mLastProcessedState == Tracking::State::NOT_INITIALIZED) {
     mvIniKeys    = pTracker->mInitialFrame.mvKeys;
     mvIniMatches = pTracker->mvIniMatches;
-  } else if (pTracker->mLastProcessedState == Tracking::OK) {
+  } else if (pTracker->mLastProcessedState == Tracking::State::OK) {
     for (int i = 0; i < N; i++) {
       MapPoint* pMP = pTracker->mCurrentFrame.mvpMapPoints[i];
       if (pMP) {
@@ -386,7 +386,7 @@ void FrameDrawer::Update(Tracking* pTracker) {
       }
     }
   }
-  mState = static_cast<int>(pTracker->mLastProcessedState);
+  mState = pTracker->mLastProcessedState;
 }
 
 } // namespace ORB_SLAM3
