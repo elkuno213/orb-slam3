@@ -25,6 +25,8 @@
 #include "MapPoint.h"
 #include "Viewer.h"
 
+using namespace std::chrono_literals;
+
 namespace ORB_SLAM3 {
 
 Atlas::Atlas() : _logger(logging::CreateModuleLogger("Atlas")) {
@@ -223,7 +225,7 @@ Map* Atlas::GetCurrentMap() {
     CreateNewMap();
   }
   while (mpCurrentMap->IsBad()) {
-    std::this_thread::sleep_for(std::chrono::microseconds(3000));
+    std::this_thread::sleep_for(3000us);
   }
 
   return mpCurrentMap;

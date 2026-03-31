@@ -46,6 +46,8 @@
 #include "Tracking.h"
 #include "Viewer.h"
 
+using namespace std::chrono_literals;
+
 namespace ORB_SLAM3 {
 
 System::System(
@@ -287,7 +289,7 @@ Sophus::SE3f System::TrackStereo(
       _logger->debug("Requesting local mapper to stop...");
       mpLocalMapper->RequestStop();
       while (!mpLocalMapper->isStopped()) {
-        std::this_thread::sleep_for(std::chrono::microseconds(1000));
+        std::this_thread::sleep_for(1000us);
       }
 
       _logger->debug("Local mapper stopped. Switching to localization-only mode");
@@ -374,7 +376,7 @@ Sophus::SE3f System::TrackRGBD(
       _logger->debug("Requesting local mapper to stop...");
       mpLocalMapper->RequestStop();
       while (!mpLocalMapper->isStopped()) {
-        std::this_thread::sleep_for(std::chrono::microseconds(1000));
+        std::this_thread::sleep_for(1000us);
       }
 
       _logger->debug("Local mapper stopped. Switching to localization-only mode");
@@ -466,7 +468,7 @@ Sophus::SE3f System::TrackMonocular(
       _logger->debug("Requesting local mapper to stop...");
       mpLocalMapper->RequestStop();
       while (!mpLocalMapper->isStopped()) {
-        std::this_thread::sleep_for(std::chrono::microseconds(1000));
+        std::this_thread::sleep_for(1000us);
       }
 
       _logger->debug("Local mapper stopped. Switching to localization-only mode");

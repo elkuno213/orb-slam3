@@ -39,6 +39,7 @@
 #include "Settings.h"
 #include "System.h"
 #include "Viewer.h"
+using namespace std::chrono_literals;
 
 namespace ORB_SLAM3 {
 
@@ -1655,7 +1656,7 @@ void Tracking::PreintegrateIMU() {
       }
     }
     if (bSleep) {
-      std::this_thread::sleep_for(std::chrono::microseconds(500));
+      std::this_thread::sleep_for(500us);
     }
   }
 
@@ -1782,7 +1783,7 @@ void Tracking::Track() {
   if (bStepByStep) {
     _logger->info("Waiting for next step...");
     while (!mbStep && bStepByStep) {
-      std::this_thread::sleep_for(std::chrono::microseconds(500));
+      std::this_thread::sleep_for(500us);
     }
     mbStep = false;
   }
@@ -2250,7 +2251,7 @@ void Tracking::Track() {
   if (Stop()) {
     // Safe area to stop
     while (isStopped()) {
-      std::this_thread::sleep_for(std::chrono::microseconds(3000));
+      std::this_thread::sleep_for(3000us);
     }
   }
 #endif
@@ -3554,7 +3555,7 @@ void Tracking::Reset(bool bLocMap) {
   if (mpViewer) {
     mpViewer->RequestStop();
     while (!mpViewer->isStopped()) {
-      std::this_thread::sleep_for(std::chrono::microseconds(3000));
+      std::this_thread::sleep_for(3000us);
     }
   }
 
@@ -3614,7 +3615,7 @@ void Tracking::ResetActiveMap(bool bLocMap) {
   if (mpViewer) {
     mpViewer->RequestStop();
     while (!mpViewer->isStopped()) {
-      std::this_thread::sleep_for(std::chrono::microseconds(3000));
+      std::this_thread::sleep_for(3000us);
     }
   }
 
@@ -3768,7 +3769,7 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias& b, KeyFrame* pCurr
   mCurrentFrame.SetNewBias(mLastBias);
 
   while (!mCurrentFrame.imuIsPreintegrated()) {
-    std::this_thread::sleep_for(std::chrono::microseconds(500));
+    std::this_thread::sleep_for(500us);
   }
 
   if (mLastFrame.mnId == mLastFrame.mpLastKeyFrame->mnFrameId) {
