@@ -2097,7 +2097,7 @@ void Tracking::Track() {
     // Save frame if recent relocalization, since they are used for IMU reset (as we are making
     // copy, it shluld be once mCurrFrame is completely modified)
     if ((mCurrentFrame.mnId < (mnLastRelocFrameId + static_cast<unsigned int>(mnFramesToResetIMU)))
-        && (mCurrentFrame.mnId > static_cast<long unsigned int>(mnFramesToResetIMU))
+        && (mCurrentFrame.mnId > static_cast<FrameId>(mnFramesToResetIMU))
         && (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)
         && pCurrentMap->isImuInitialized()) {
       // TODO check this situation

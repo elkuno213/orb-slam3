@@ -87,7 +87,7 @@ void Atlas::ChangeMap(Map* pMap) {
   mpCurrentMap->SetCurrentMap();
 }
 
-unsigned long int Atlas::GetLastInitKFid() {
+FrameId Atlas::GetLastInitKFid() {
   const std::unique_lock<std::mutex> lock(mMutexAtlas);
   return mnLastInitKFidMap;
 }
@@ -165,12 +165,12 @@ int Atlas::GetLastBigChangeIdx() {
   return mpCurrentMap->GetLastBigChangeIdx();
 }
 
-long unsigned int Atlas::MapPointsInMap() {
+unsigned long Atlas::MapPointsInMap() {
   const std::unique_lock<std::mutex> lock(mMutexAtlas);
   return mpCurrentMap->MapPointsInMap();
 }
 
-long unsigned Atlas::KeyFramesInMap() {
+unsigned long Atlas::KeyFramesInMap() {
   const std::unique_lock<std::mutex> lock(mMutexAtlas);
   return mpCurrentMap->KeyFramesInMap();
 }
@@ -324,9 +324,9 @@ ORBVocabulary* Atlas::GetORBVocabulary() {
   return mpORBVocabulary;
 }
 
-long unsigned int Atlas::GetNumLivedKF() {
+unsigned long Atlas::GetNumLivedKF() {
   const std::unique_lock<std::mutex> lock(mMutexAtlas);
-  long unsigned int                  num = 0;
+  FrameId                            num = 0;
   for (Map* pMap_i : mspMaps) {
     num += pMap_i->GetAllKeyFrames().size();
   }
@@ -334,9 +334,9 @@ long unsigned int Atlas::GetNumLivedKF() {
   return num;
 }
 
-long unsigned int Atlas::GetNumLivedMP() {
+unsigned long Atlas::GetNumLivedMP() {
   const std::unique_lock<std::mutex> lock(mMutexAtlas);
-  long unsigned int                  num = 0;
+  FrameId                            num = 0;
   for (Map* pMap_i : mspMaps) {
     num += pMap_i->GetAllMapPoints().size();
   }
@@ -344,8 +344,8 @@ long unsigned int Atlas::GetNumLivedMP() {
   return num;
 }
 
-std::map<long unsigned int, KeyFrame*> Atlas::GetAtlasKeyframes() {
-  std::map<long unsigned int, KeyFrame*> mpIdKFs;
+IdKeyFrameMap Atlas::GetAtlasKeyframes() {
+  IdKeyFrameMap mpIdKFs;
   for (Map* pMap_i : mvpBackupMaps) {
     const auto vpKFs_Mi = pMap_i->GetAllKeyFrames();
 

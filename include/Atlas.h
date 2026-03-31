@@ -71,7 +71,7 @@ public:
   void CreateNewMap();
   void ChangeMap(Map* pMap);
 
-  unsigned long int GetLastInitKFid();
+  FrameId GetLastInitKFid();
 
   void SetViewer(Viewer* pViewer);
 
@@ -87,8 +87,8 @@ public:
   void InformNewBigChange();
   int  GetLastBigChangeIdx();
 
-  long unsigned int MapPointsInMap();
-  long unsigned     KeyFramesInMap();
+  unsigned long MapPointsInMap();
+  unsigned long KeyFramesInMap();
 
   // Method for get data in current map
   std::vector<KeyFrame*> GetAllKeyFrames();
@@ -117,7 +117,7 @@ public:
   void PreSave();
   void PostLoad();
 
-  std::map<long unsigned int, KeyFrame*> GetAtlasKeyframes();
+  IdKeyFrameMap GetAtlasKeyframes();
 
   void              SetKeyFrameDababase(KeyFrameDatabase* pKFDB);
   KeyFrameDatabase* GetKeyFrameDatabase();
@@ -125,9 +125,9 @@ public:
   void           SetORBVocabulary(ORBVocabulary* pORBVoc);
   ORBVocabulary* GetORBVocabulary();
 
-  long unsigned int GetNumLivedKF();
+  unsigned long GetNumLivedKF();
 
-  long unsigned int GetNumLivedMP();
+  unsigned long GetNumLivedMP();
 
 protected:
   std::set<Map*> mspMaps;
@@ -140,7 +140,7 @@ protected:
 
   std::vector<GeometricCamera*> mvpCameras;
 
-  unsigned long int mnLastInitKFidMap;
+  FrameId mnLastInitKFidMap;
 
   Viewer* mpViewer;
   bool    mHasViewer;

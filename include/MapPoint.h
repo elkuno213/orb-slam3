@@ -31,6 +31,7 @@
 #include <opencv2/core.hpp>
 #include <spdlog/logger.h>
 #include "SerializationUtils.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -108,12 +109,10 @@ public:
   void UpdateMap(Map* pMap);
 
   void PreSave(std::set<KeyFrame*>& spKF, std::set<MapPoint*>& spMP);
-  void PostLoad(
-    std::map<long unsigned int, KeyFrame*>& mpKFid, std::map<long unsigned int, MapPoint*>& mpMPid
-  );
+  void PostLoad(IdKeyFrameMap& mpKFid, IdMapPointMap& mpMPid);
 
-  long unsigned int        mnId;
-  static long unsigned int nNextId;
+  MapPointId        mnId;
+  static MapPointId nNextId;
   long int                 mnFirstKFid;
   long int                 mnFirstFrame;
   int                      nObs;
@@ -128,20 +127,20 @@ public:
   bool              mbTrackInView, mbTrackInViewR;
   int               mnTrackScaleLevel, mnTrackScaleLevelR;
   float             mTrackViewCos, mTrackViewCosR;
-  long unsigned int mnTrackReferenceForFrame;
-  long unsigned int mnLastFrameSeen;
+  FrameId mnTrackReferenceForFrame;
+  FrameId mnLastFrameSeen;
 
   // Variables used by local mapping
-  long unsigned int mnBALocalForKF;
-  long unsigned int mnFuseCandidateForKF;
+  FrameId mnBALocalForKF;
+  FrameId mnFuseCandidateForKF;
 
   // Variables used by loop closing
-  long unsigned int mnLoopPointForKF;
-  long unsigned int mnCorrectedByKF;
-  long unsigned int mnCorrectedReference;
-  Eigen::Vector3f   mPosGBA;
-  long unsigned int mnBAGlobalForKF;
-  long unsigned int mnBALocalForMerge;
+  FrameId         mnLoopPointForKF;
+  FrameId         mnCorrectedByKF;
+  FrameId         mnCorrectedReference;
+  Eigen::Vector3f mPosGBA;
+  FrameId         mnBAGlobalForKF;
+  FrameId         mnBALocalForMerge;
 
   // Variable used by merging
   Eigen::Vector3f mPosMerge;
@@ -164,8 +163,8 @@ protected:
   // Keyframes observing the point and associated index in keyframe
   std::map<KeyFrame*, std::tuple<int, int>> mObservations;
   // For save relation without pointer, this is necessary for save/load function
-  std::map<long unsigned int, int> mBackupObservationsId1;
-  std::map<long unsigned int, int> mBackupObservationsId2;
+  std::map<FrameId, int> mBackupObservationsId1;
+  std::map<FrameId, int> mBackupObservationsId2;
 
   // Mean viewing direction
   Eigen::Vector3f mNormalVector;
@@ -175,7 +174,7 @@ protected:
 
   // Reference KeyFrame
   KeyFrame*         mpRefKF;
-  long unsigned int mBackupRefKFId;
+  FrameId mBackupRefKFId;
 
   // Tracking counters
   int mnVisible;

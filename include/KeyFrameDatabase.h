@@ -28,6 +28,7 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/vector.hpp>
 #include "ORBVocabulary.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -78,7 +79,7 @@ public:
   std::vector<KeyFrame*> DetectRelocalizationCandidates(Frame* F, Map* pMap);
 
   void PreSave();
-  void PostLoad(std::map<long unsigned int, KeyFrame*> mpKFid);
+  void PostLoad(IdKeyFrameMap mpKFid);
   void SetORBVocabulary(ORBVocabulary* pORBVoc);
 
 protected:
@@ -89,7 +90,7 @@ protected:
   std::vector<std::list<KeyFrame*>> mvInvertedFile;
 
   // For save relation without pointer, this is necessary for save/load function
-  std::vector<std::list<long unsigned int>> mvBackupInvertedFileId;
+  std::vector<std::list<FrameId>> mvBackupInvertedFileId;
 
   // Mutex
   std::mutex mMutex;

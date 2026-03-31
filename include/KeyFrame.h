@@ -37,6 +37,7 @@
 #include "ImuTypes.h"
 #include "ORBVocabulary.h"
 #include "SerializationUtils.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -52,7 +53,7 @@ class KeyFrame {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & mnId;
-    ar& const_cast<long unsigned int&>(mnFrameId);
+    ar& const_cast<FrameId&>(mnFrameId);
     ar& const_cast<double&>(mTimeStamp);
     // Grid
     ar& const_cast<int&>(mnGridCols);
@@ -256,8 +257,8 @@ public:
     std::set<KeyFrame*>& spKF, std::set<MapPoint*>& spMP, std::set<GeometricCamera*>& spCam
   );
   void PostLoad(
-    std::map<long unsigned int, KeyFrame*>&   mpKFid,
-    std::map<long unsigned int, MapPoint*>&   mpMPid,
+    IdKeyFrameMap&                           mpKFid,
+    IdMapPointMap&                           mpMPid,
     std::map<unsigned int, GeometricCamera*>& mpCamId
   );
 
@@ -268,9 +269,9 @@ public:
 
   // The following variables are accesed from only 1 thread or never change (no mutex needed).
 
-  static long unsigned int nNextId;
-  long unsigned int        mnId;
-  const long unsigned int  mnFrameId;
+  static FrameId nNextId;
+  FrameId        mnId;
+  const FrameId  mnFrameId;
 
   const double mTimeStamp;
 
@@ -281,27 +282,27 @@ public:
   const float mfGridElementHeightInv;
 
   // Variables used by the tracking
-  long unsigned int mnTrackReferenceForFrame;
-  long unsigned int mnFuseTargetForKF;
+  FrameId mnTrackReferenceForFrame;
+  FrameId mnFuseTargetForKF;
 
   // Variables used by the local mapping
-  long unsigned int mnBALocalForKF;
-  long unsigned int mnBAFixedForKF;
+  FrameId mnBALocalForKF;
+  FrameId mnBAFixedForKF;
 
   // Number of optimizations by BA(amount of iterations in BA)
-  long unsigned int mnNumberOfOpt;
+  unsigned long mnNumberOfOpt;
 
   // Variables used by the keyframe database
-  long unsigned int mnLoopQuery;
-  int               mnLoopWords;
-  float             mLoopScore;
-  long unsigned int mnRelocQuery;
-  int               mnRelocWords;
-  float             mRelocScore;
-  long unsigned int mnMergeQuery;
-  int               mnMergeWords;
-  float             mMergeScore;
-  long unsigned int mnPlaceRecognitionQuery;
+  FrameId mnLoopQuery;
+  int     mnLoopWords;
+  float   mLoopScore;
+  FrameId mnRelocQuery;
+  int     mnRelocWords;
+  float   mRelocScore;
+  FrameId mnMergeQuery;
+  int     mnMergeWords;
+  float   mMergeScore;
+  FrameId mnPlaceRecognitionQuery;
   int               mnPlaceRecognitionWords;
   float             mPlaceRecognitionScore;
 
@@ -313,7 +314,7 @@ public:
   Eigen::Vector3f   mVwbGBA;
   Eigen::Vector3f   mVwbBefGBA;
   IMU::Bias         mBiasGBA;
-  long unsigned int mnBAGlobalForKF;
+  FrameId mnBAGlobalForKF;
 
   // Variables used by merging
   Sophus::SE3f      mTcwMerge;
@@ -322,10 +323,10 @@ public:
   Eigen::Vector3f   mVwbMerge;
   Eigen::Vector3f   mVwbBefMerge;
   IMU::Bias         mBiasMerge;
-  long unsigned int mnMergeCorrectedForKF;
-  long unsigned int mnMergeForKF;
-  float             mfScaleMerge;
-  long unsigned int mnBALocalForMerge;
+  FrameId mnMergeCorrectedForKF;
+  FrameId mnMergeForKF;
+  float   mfScaleMerge;
+  FrameId mnBALocalForMerge;
 
   float mfScale;
 
@@ -417,7 +418,7 @@ protected:
   std::vector<KeyFrame*>   mvpOrderedConnectedKeyFrames;
   std::vector<int>         mvOrderedWeights;
   // For save relation without pointer, this is necessary for save/load function
-  std::map<long unsigned int, int> mBackupConnectedKeyFrameIdWeights;
+  std::map<FrameId, int> mBackupConnectedKeyFrameIdWeights;
 
   // Spanning Tree and Loop Edges
   bool                mbFirstConnection;
@@ -427,9 +428,9 @@ protected:
   std::set<KeyFrame*> mspMergeEdges;
   // For save relation without pointer, this is necessary for save/load function
   long long int                  mBackupParentId;
-  std::vector<long unsigned int> mvBackupChildrensId;
-  std::vector<long unsigned int> mvBackupLoopEdgesId;
-  std::vector<long unsigned int> mvBackupMergeEdgesId;
+  std::vector<FrameId> mvBackupChildrensId;
+  std::vector<FrameId> mvBackupLoopEdgesId;
+  std::vector<FrameId> mvBackupMergeEdgesId;
 
   // Bad flags
   bool mbNotErase;

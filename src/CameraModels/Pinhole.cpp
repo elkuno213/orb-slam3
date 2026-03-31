@@ -23,7 +23,7 @@
 
 namespace ORB_SLAM3 {
 
-long unsigned int GeometricCamera::nNextId = 0;
+FrameId GeometricCamera::nNextId = 0;
 
 Pinhole::Pinhole() {
   mvParameters.resize(4);

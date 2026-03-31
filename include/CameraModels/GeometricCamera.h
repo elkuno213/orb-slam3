@@ -25,6 +25,7 @@
 #include <boost/serialization/vector.hpp>
 #include <opencv2/core.hpp>
 #include <sophus/se3.hpp>
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 class GeometricCamera {
@@ -114,7 +115,7 @@ public:
   const static unsigned int CAM_PINHOLE = 0;
   const static unsigned int CAM_FISHEYE = 1;
 
-  static long unsigned int nNextId;
+  static FrameId nNextId;
 
 protected:
   std::vector<float> mvParameters;

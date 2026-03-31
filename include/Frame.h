@@ -30,6 +30,7 @@
 #include <spdlog/logger.h>
 #include "ImuTypes.h"
 #include "ORBVocabulary.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 inline constexpr int kFrameGridRows = 48;
@@ -295,8 +296,8 @@ public:
   IMU::Preintegrated* mpImuPreintegratedFrame;
 
   // Current and Next Frame id.
-  static long unsigned int nNextId;
-  long unsigned int        mnId;
+  static FrameId nNextId;
+  FrameId        mnId;
 
   // Reference Keyframe.
   KeyFrame* mpReferenceKF;
@@ -318,8 +319,8 @@ public:
 
   static bool mbInitialComputations;
 
-  std::map<long unsigned int, cv::Point2f> mmProjectPoints;
-  std::map<long unsigned int, cv::Point2f> mmMatchedInImage;
+  std::map<FrameId, cv::Point2f> mmProjectPoints;
+  std::map<FrameId, cv::Point2f> mmMatchedInImage;
 
   string mNameFile;
 

@@ -25,6 +25,7 @@
 #include <Eigen/Core>
 #include <g2o/g2o/types/sim3.h>
 #include "LoopClosing.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -40,21 +41,21 @@ public:
     const std::vector<MapPoint*>& vpMP,
     int                           nIterations = 5,
     bool*                         pbStopFlag  = nullptr,
-    unsigned long                 nLoopKF     = 0,
+    FrameId                       nLoopKF     = 0,
     bool                          bRobust     = true
   );
   static void GlobalBundleAdjustment(
-    Map*          pMap,
-    int           nIterations = 5,
-    bool*         pbStopFlag  = nullptr,
-    unsigned long nLoopKF     = 0,
-    bool          bRobust     = true
+    Map*    pMap,
+    int     nIterations = 5,
+    bool*   pbStopFlag  = nullptr,
+    FrameId nLoopKF     = 0,
+    bool    bRobust     = true
   );
   static void FullInertialBA(
     Map*             pMap,
     int              its,
     bool             bFixLocal  = false,
-    unsigned long    nLoopKF    = 0,
+    FrameId          nLoopKF    = 0,
     bool*            pbStopFlag = nullptr,
     bool             bInit      = false,
     float            priorG     = 1e2,

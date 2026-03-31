@@ -25,7 +25,7 @@
 
 namespace ORB_SLAM3 {
 
-long unsigned int Map::nNextId = 0;
+unsigned long Map::nNextId = 0;
 
 Map::Map()
   : mpFirstRegionKF(nullptr)
@@ -160,12 +160,12 @@ std::vector<MapPoint*> Map::GetAllMapPoints() {
   return {mspMapPoints.begin(), mspMapPoints.end()};
 }
 
-long unsigned int Map::MapPointsInMap() {
+unsigned long Map::MapPointsInMap() {
   const std::unique_lock<std::mutex> lock(mMutexMap);
   return mspMapPoints.size();
 }
 
-long unsigned int Map::KeyFramesInMap() {
+unsigned long Map::KeyFramesInMap() {
   const std::unique_lock<std::mutex> lock(mMutexMap);
   return mspKeyFrames.size();
 }
@@ -175,21 +175,21 @@ std::vector<MapPoint*> Map::GetReferenceMapPoints() {
   return mvpReferenceMapPoints;
 }
 
-long unsigned int Map::GetId() const {
+unsigned long Map::GetId() const {
   return mnId;
 }
 
-long unsigned int Map::GetInitKFid() {
+FrameId Map::GetInitKFid() {
   const std::unique_lock<std::mutex> lock(mMutexMap);
   return mnInitKFid;
 }
 
-void Map::SetInitKFid(long unsigned int initKFif) {
+void Map::SetInitKFid(FrameId initKFif) {
   const std::unique_lock<std::mutex> lock(mMutexMap);
   mnInitKFid = initKFif;
 }
 
-long unsigned int Map::GetMaxKFid() {
+FrameId Map::GetMaxKFid() {
   const std::unique_lock<std::mutex> lock(mMutexMap);
   return mnMaxKFid;
 }
@@ -300,7 +300,7 @@ bool Map::GetIniertialBA2() {
   return mbIMU_BA2;
 }
 
-void Map::ChangeId(long unsigned int nId) {
+void Map::ChangeId(unsigned long nId) {
   mnId = nId;
 }
 
@@ -390,7 +390,7 @@ void Map::PreSave(std::set<GeometricCamera*>& spCams) {
 
 void Map::PostLoad(
   KeyFrameDatabase* pKFDB,
-  ORBVocabulary*    pORBVoc /*, std::map<long unsigned int, KeyFrame*>& mpKeyFrameId*/,
+  ORBVocabulary*    pORBVoc /*, IdKeyFrameMap& mpKeyFrameId*/,
   std::map<unsigned int, GeometricCamera*>& mpCams
 ) {
   _logger->info(
@@ -410,7 +410,7 @@ void Map::PostLoad(
     std::inserter(mspKeyFrames, mspKeyFrames.begin())
   );
 
-  std::map<long unsigned int, MapPoint*> mpMapPointId;
+  IdMapPointMap mpMapPointId;
   for (MapPoint* pMPi : mspMapPoints) {
     if (!pMPi || pMPi->isBad()) {
       continue;
@@ -420,7 +420,7 @@ void Map::PostLoad(
     mpMapPointId[pMPi->mnId] = pMPi;
   }
 
-  std::map<long unsigned int, KeyFrame*> mpKeyFrameId;
+  IdKeyFrameMap mpKeyFrameId;
   for (KeyFrame* pKFi : mspKeyFrames) {
     if (!pKFi || pKFi->isBad()) {
       continue;
@@ -450,7 +450,7 @@ void Map::PostLoad(
     pKFDB->add(pKFi);
   }
 
-  constexpr auto kUnsetId = static_cast<unsigned long int>(-1);
+  constexpr auto kUnsetId = static_cast<FrameId>(-1);
 
   if (mnBackupKFinitialID != kUnsetId) {
     mpKFinitial = mpKeyFrameId[mnBackupKFinitialID];

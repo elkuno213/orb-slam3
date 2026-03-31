@@ -33,7 +33,7 @@
 
 namespace ORB_SLAM3 {
 
-long unsigned int KeyFrame::nNextId = 0;
+FrameId KeyFrame::nNextId = 0;
 
 KeyFrame::KeyFrame()
   : mnFrameId(0)
@@ -969,8 +969,8 @@ void KeyFrame::PreSave(
 }
 
 void KeyFrame::PostLoad(
-  std::map<long unsigned int, KeyFrame*>&   mpKFid,
-  std::map<long unsigned int, MapPoint*>&   mpMPid,
+  IdKeyFrameMap&                           mpKFid,
+  IdMapPointMap&                           mpMPid,
   std::map<unsigned int, GeometricCamera*>& mpCamId
 ) {
   // Rebuild the empty variables

@@ -27,7 +27,7 @@
 
 namespace ORB_SLAM3 {
 
-long unsigned int MapPoint::nNextId = 0;
+MapPointId MapPoint::nNextId = 0;
 std::mutex        MapPoint::mGlobalMutex;
 
 MapPoint::MapPoint()
@@ -601,9 +601,7 @@ void MapPoint::PreSave(set<KeyFrame*>& spKF, set<MapPoint*>& spMP) {
   }
 }
 
-void MapPoint::PostLoad(
-  std::map<long unsigned int, KeyFrame*>& mpKFid, std::map<long unsigned int, MapPoint*>& mpMPid
-) {
+void MapPoint::PostLoad(IdKeyFrameMap& mpKFid, IdMapPointMap& mpMPid) {
   mpRefKF = mpKFid[mBackupRefKFId];
   if (!mpRefKF) {
     _logger->error("Map point {} observations has no reference key frame", nObs);

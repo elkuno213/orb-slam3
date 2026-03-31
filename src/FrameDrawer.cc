@@ -48,8 +48,8 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
   std::vector<MapPoint*>                   vpMatchedMPs;
   std::vector<cv::KeyPoint>                vOutlierKeys;
   std::vector<MapPoint*>                   vpOutlierMPs;
-  std::map<long unsigned int, cv::Point2f> mProjectPoints;
-  std::map<long unsigned int, cv::Point2f> mMatchedInImage;
+  std::map<FrameId, cv::Point2f> mProjectPoints;
+  std::map<FrameId, cv::Point2f> mMatchedInImage;
 
   const cv::Scalar standardColor(0, 255, 0);
   const cv::Scalar odometryColor(255, 0, 0);

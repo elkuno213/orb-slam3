@@ -160,8 +160,8 @@ void MapDrawer::DrawKeyFrames(
 
   Map* pActiveMap = mpAtlas->GetCurrentMap();
   // DEBUG LBA
-  std::set<long unsigned int> sOptKFs   = pActiveMap->msOptKFs;
-  std::set<long unsigned int> sFixedKFs = pActiveMap->msFixedKFs;
+  std::set<FrameId> sOptKFs   = pActiveMap->msOptKFs;
+  std::set<FrameId> sFixedKFs = pActiveMap->msFixedKFs;
 
   if (!pActiveMap) {
     return;

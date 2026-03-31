@@ -34,7 +34,7 @@
 
 namespace ORB_SLAM3 {
 
-long unsigned int Frame::nNextId               = 0;
+FrameId Frame::nNextId               = 0;
 bool              Frame::mbInitialComputations = true;
 float             Frame::cx, Frame::cy, Frame::fx, Frame::fy, Frame::invfx, Frame::invfy;
 float             Frame::mnMinX, Frame::mnMinY, Frame::mnMaxX, Frame::mnMaxY;
@@ -477,7 +477,7 @@ Frame::Frame(
   mvpMapPoints = std::vector<MapPoint*>(N, nullptr);
 
   mmProjectPoints
-    .clear(); // = std::map<long unsigned int, cv::Point2f>(N, static_cast<cv::Point2f>(nullptr));
+    .clear(); // = std::map<FrameId, cv::Point2f>(N, static_cast<cv::Point2f>(nullptr));
   mmMatchedInImage.clear();
 
   mvbOutlier = std::vector<bool>(N, false);

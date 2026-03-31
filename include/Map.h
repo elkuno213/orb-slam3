@@ -31,6 +31,7 @@
 #include <sophus/se3.hpp>
 #include <spdlog/logger.h>
 #include "ORBVocabulary.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -83,14 +84,14 @@ public:
   std::vector<MapPoint*> GetAllMapPoints();
   std::vector<MapPoint*> GetReferenceMapPoints();
 
-  long unsigned int MapPointsInMap();
-  long unsigned     KeyFramesInMap();
+  unsigned long MapPointsInMap();
+  unsigned long KeyFramesInMap();
 
-  [[nodiscard]] long unsigned int GetId() const;
+  unsigned long GetId() const;
 
-  long unsigned int GetInitKFid();
-  void              SetInitKFid(long unsigned int initKFif);
-  long unsigned int GetMaxKFid();
+  FrameId GetInitKFid();
+  void    SetInitKFid(FrameId initKFif);
+  FrameId GetMaxKFid();
 
   KeyFrame* GetOriginKF();
 
@@ -121,33 +122,33 @@ public:
   bool GetIniertialBA1();
   bool GetIniertialBA2();
 
-  void ChangeId(long unsigned int nId);
+  void ChangeId(unsigned long nId);
 
   unsigned int GetLowerKFID();
 
   void PreSave(std::set<GeometricCamera*>& spCams);
   void PostLoad(
     KeyFrameDatabase* pKFDB,
-    ORBVocabulary*    pORBVoc /*, std::map<long unsigned int, KeyFrame*>& mpKeyFrameId*/,
+    ORBVocabulary*    pORBVoc /*, IdKeyFrameMap& mpKeyFrameId*/,
     std::map<unsigned int, GeometricCamera*>& mpCams
   );
 
   std::vector<KeyFrame*>         mvpKeyFrameOrigins;
-  std::vector<unsigned long int> mvBackupKeyFrameOriginsId;
+  std::vector<FrameId> mvBackupKeyFrameOriginsId;
   KeyFrame*                      mpFirstRegionKF;
   std::mutex                     mMutexMapUpdate;
 
   // This avoid that two points are created simultaneously in separate threads (id conflict)
   std::mutex mMutexPointCreation;
 
-  static long unsigned int nNextId;
+  static unsigned long nNextId;
 
   // DEBUG: show KFs which are used in LBA
-  std::set<long unsigned int> msOptKFs;
-  std::set<long unsigned int> msFixedKFs;
+  std::set<FrameId> msOptKFs;
+  std::set<FrameId> msFixedKFs;
 
 protected:
-  long unsigned int mnId;
+  unsigned long mnId;
 
   std::set<MapPoint*> mspMapPoints;
   std::set<KeyFrame*> mspKeyFrames;
@@ -160,8 +161,8 @@ protected:
   KeyFrame* mpKFinitial;
   KeyFrame* mpKFlowerID;
 
-  unsigned long int mnBackupKFinitialID;
-  unsigned long int mnBackupKFlowerID;
+  FrameId mnBackupKFinitialID;
+  FrameId mnBackupKFlowerID;
 
   std::vector<MapPoint*> mvpReferenceMapPoints;
 
@@ -170,8 +171,8 @@ protected:
   int mnMapChange;
   int mnMapChangeNotified;
 
-  long unsigned int mnInitKFid;
-  long unsigned int mnMaxKFid;
+  FrameId mnInitKFid;
+  FrameId mnMaxKFid;
 
   // Index related to a big change in the map (loop closure, global BA)
   int mnBigChangeIdx;
