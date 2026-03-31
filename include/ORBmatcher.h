@@ -112,9 +112,7 @@ public:
 
   // Search matches between MapPoints seen in KF1 and KF2 transforming by a Sim3 [s12*R12|t12]
   // In the stereo and RGB-D case, s12=1
-  // int SearchBySim3(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint *> &vpMatches12, const
-  // float &s12, const cv::Mat &R12, const cv::Mat &t12, const float th);
-  static int SearchBySim3(
+  int SearchBySim3(
     KeyFrame*               pKF1,
     KeyFrame*               pKF2,
     std::vector<MapPoint*>& vpMatches12,

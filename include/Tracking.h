@@ -105,7 +105,6 @@ public:
   }
 
   void CreateMapInAtlas();
-  // std::mutex mMutexTracks;
 
   //--
   void NewDataset();
@@ -214,7 +213,6 @@ protected:
 
   // Map initialization for monocular
   void MonocularInitialization();
-  // void CreateNewMapPoints();
   void CreateInitialMapMonocular();
 
   void CheckReplacedInLastFrame();
@@ -348,8 +346,6 @@ protected:
   bool mbRGB;
 
   std::list<MapPoint*> mlpTemporalPoints;
-
-  // int nMapChangeIndex;
 
   int mnNumDataset;
 

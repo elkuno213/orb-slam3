@@ -95,9 +95,6 @@ public:
     const IMU::Calib& ImuCalib = IMU::Calib()
   );
 
-  // Destructor
-  // ~Frame();
-
   // Extract ORB on the image. 0 for left image and 1 for right image.
   void ExtractORB(int flag, const cv::Mat& im, int x0, int x1);
 
@@ -400,8 +397,6 @@ public:
   Eigen::Vector3f UnprojectStereoFishEye(const int& i);
 
   cv::Mat imgLeft, imgRight;
-
-  Sophus::SE3<double> T_test;
 
   std::shared_ptr<spdlog::logger> _logger;
 };

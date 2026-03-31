@@ -148,7 +148,6 @@ System::System(
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
 
     // Load the file with an earlier session
-    // clock_t start = clock();
     _logger->info("Loading Atlas from file {}", mStrLoadAtlasFromFile);
     const bool isRead = LoadAtlas(FileType::BINARY_FILE);
 
@@ -158,22 +157,9 @@ System::System(
       );
     }
 
-    // mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
-    // _logger->info(
-    //   "KF in DB: {} ; words: {}",
-    //   mpKeyFrameDatabase->mnNumKFs,
-    //   mpKeyFrameDatabase->mnNumWords
-    // );
-
     loadedAtlas = true;
 
     mpAtlas->CreateNewMap();
-
-    // clock_t timeElapsed = clock() - start;
-    // unsigned msElapsed = timeElapsed / (CLOCKS_PER_SEC / 1000);
-    // _logger->info("Binary file read in {} ms", msElapsed);
-
-    // std::this_thread::sleep_for(std::chrono::microseconds(10*1000*1000));
   }
 
   if (mSensor == IMU_STEREO || mSensor == IMU_MONOCULAR || mSensor == IMU_RGBD) {
@@ -248,11 +234,8 @@ System::System(
   mpLoopCloser->SetTracker(mpTracker);
   mpLoopCloser->SetLocalMapper(mpLocalMapper);
 
-  // std::this_thread::sleep_for(std::chrono::microseconds(10*1000*1000));
-
   // Initialize the Viewer thread and launch
   if (bUseViewer) {
-    // if(false) // TODO
     _logger->info("Initializing viewer thread...");
     mpViewer  = new Viewer(this, mpFrameDrawer, mpMapDrawer, mpTracker, strSettingsFile, settings_);
     mptViewer = new std::thread(&Viewer::Run, mpViewer);
@@ -673,8 +656,6 @@ void System::SaveKeyFrameTrajectoryTUM(const std::string& filename) {
   f << std::fixed;
 
   for (auto* pKF : vpKFs) {
-    // pKF->SetPose(pKF->GetPose()*Two);
-
     // If the reference keyframe was culled, skip.
     if (pKF->isBad()) {
       continue;
@@ -739,11 +720,6 @@ void System::SaveTrajectoryEuRoC(const std::string& filename) {
   auto lT   = mpTracker->mlFrameTimes.begin();
   auto lbL  = mpTracker->mlbLost.begin();
 
-  // _logger->info("Size of mlpReferences: {}", mpTracker->mlpReferences.size());
-  // _logger->info("Size of mlRelativeFramePoses: {}", mpTracker->mlRelativeFramePoses.size());
-  // _logger->info("Size of mpTracker->mlFrameTimes: {}", mpTracker->mlFrameTimes.size());
-  // _logger->info("Size of mpTracker->mlbLost: {}", mpTracker->mlbLost.size());
-
   for (auto lit  = mpTracker->mlRelativeFramePoses.begin(),
             lend = mpTracker->mlRelativeFramePoses.end();
        lit != lend;
@@ -761,7 +737,6 @@ void System::SaveTrajectoryEuRoC(const std::string& filename) {
       continue;
     }
 
-    // If the reference keyframe was culled, traverse the spanning tree to get a suitable keyframe.
     while (pKF->isBad()) {
       Trw = Trw * pKF->mTcp;
       pKF = pKF->GetParent();
@@ -828,11 +803,6 @@ void System::SaveTrajectoryEuRoC(const std::string& filename, Map* pMap) {
   auto lT   = mpTracker->mlFrameTimes.begin();
   auto lbL  = mpTracker->mlbLost.begin();
 
-  // _logger->info("Size of mlpReferences: {}", mpTracker->mlpReferences.size());
-  // _logger->info("Size of mlRelativeFramePoses: {}", mpTracker->mlRelativeFramePoses.size());
-  // _logger->info("Size of mpTracker->mlFrameTimes: {}", mpTracker->mlFrameTimes.size());
-  // _logger->info("Size of mpTracker->mlbLost: {}", mpTracker->mlbLost.size());
-
   for (auto lit  = mpTracker->mlRelativeFramePoses.begin(),
             lend = mpTracker->mlRelativeFramePoses.end();
        lit != lend;
@@ -882,187 +852,6 @@ void System::SaveTrajectoryEuRoC(const std::string& filename, Map* pMap) {
   _logger->info("Trajectory saved at {}", filename);
 }
 
-/*void System::SaveTrajectoryEuRoC(const std::string &filename) {
-
-    std::cout << std::endl << "Saving trajectory to " << filename << " ..." << std::endl;
-    if(mSensor==MONOCULAR)
-    {
-        std::cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." << std::endl;
-        return;
-    }
-
-    std::vector<Map*> vpMaps = mpAtlas->GetAllMaps();
-    Map* pBiggerMap = nullptr;
-    std::size_t numMaxKFs = 0;
-    for(Map* pMap :vpMaps)
-    {
-        if(pMap->GetAllKeyFrames().size() > numMaxKFs)
-        {
-            numMaxKFs = pMap->GetAllKeyFrames().size();
-            pBiggerMap = pMap;
-        }
-    }
-
-    std::vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-    std::sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
-
-    // Transform all keyframes so that the first keyframe is at the origin.
-    // After a loop closure the first keyframe might not be at the origin.
-    Sophus::SE3f Twb; // Can be word to cam0 or world to b dependingo on IMU or not.
-    if (mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD)
-        Twb = vpKFs[0]->GetImuPose_();
-    else
-        Twb = vpKFs[0]->GetPoseInverse_();
-
-    std::ofstream f;
-    f.open(filename);
-    // std::cout << "file open" << std::endl;
-    f << std::fixed;
-
-    // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose
-graph).
-    // We need to get first the keyframe pose and then concatenate the relative transformation.
-    // Frames not localized (tracking failure) are not saved.
-
-    // For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
-    // which is true when tracking failed (lbL).
-    std::list<ORB_SLAM3::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
-    std::list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
-    std::list<bool>::iterator lbL = mpTracker->mlbLost.begin();
-
-    // std::cout << "size mlpReferences: " << mpTracker->mlpReferences.size() << std::endl;
-    // std::cout << "size mlRelativeFramePoses: " << mpTracker->mlRelativeFramePoses.size() <<
-std::endl;
-    // std::cout << "size mpTracker->mlFrameTimes: " << mpTracker->mlFrameTimes.size() << std::endl;
-    // std::cout << "size mpTracker->mlbLost: " << mpTracker->mlbLost.size() << std::endl;
-
-
-    for(std::list<Sophus::SE3f>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
-        lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++, lbL++)
-    {
-        // std::cout << "1" << std::endl;
-        if(*lbL)
-            continue;
-
-
-        KeyFrame* pKF = *lRit;
-        // std::cout << "KF: " << pKF->mnId << std::endl;
-
-        Sophus::SE3f Trw;
-
-        // If the reference keyframe was culled, traverse the spanning tree to get a suitable
-keyframe. if (!pKF) continue;
-
-        // std::cout << "2.5" << std::endl;
-
-        while(pKF->isBad())
-        {
-            // std::cout << " 2.bad" << std::endl;
-            Trw = Trw * pKF->mTcp;
-            pKF = pKF->GetParent();
-            // std::cout << "--Parent KF: " << pKF->mnId << std::endl;
-        }
-
-        if(!pKF || pKF->GetMap() != pBiggerMap)
-        {
-            // std::cout << "--Parent KF is from another map" << std::endl;
-            continue;
-        }
-
-        // std::cout << "3" << std::endl;
-
-        Trw = Trw * pKF->GetPose()*Twb; // Tcp*Tpw*Twb0=Tcb0 where b0 is the new world reference
-
-        // std::cout << "4" << std::endl;
-
-
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
-        {
-            Sophus::SE3f Tbw = pKF->mImuCalib.Tbc_ * (*lit) * Trw;
-            Sophus::SE3f Twb = Tbw.inverse();
-
-            Eigen::Vector3f twb = Twb.translation();
-            Eigen::Quaternionf q = Twb.unit_quaternion();
-            f << std::setprecision(6) << 1e9*(*lT) << " " <<  std::setprecision(9) << twb(0) << " "
-<< twb(1)
-<< " " << twb(2) << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << std::endl;
-        }
-        else
-        {
-            Sophus::SE3f Tcw = (*lit) * Trw;
-            Sophus::SE3f Twc = Tcw.inverse();
-
-            Eigen::Vector3f twc = Twc.translation();
-            Eigen::Quaternionf q = Twc.unit_quaternion();
-            f << std::setprecision(6) << 1e9*(*lT) << " " <<  std::setprecision(9) << twc(0) << " "
-<< twc(1)
-<< " " << twc(2) << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << std::endl;
-        }
-
-        // std::cout << "5" << std::endl;
-    }
-    // std::cout << "end saving trajectory" << std::endl;
-    f.close();
-    std::cout << std::endl << "End of saving trajectory to " << filename << " ..." << std::endl;
-}*/
-
-/*void System::SaveKeyFrameTrajectoryEuRoC_old(const std::string &filename)
-{
-    std::cout << std::endl << "Saving keyframe trajectory to " << filename << " ..." << std::endl;
-
-    std::vector<Map*> vpMaps = mpAtlas->GetAllMaps();
-    Map* pBiggerMap = nullptr;
-    std::size_t numMaxKFs = 0;
-    for(Map* pMap :vpMaps)
-    {
-        if(pMap->GetAllKeyFrames().size() > numMaxKFs)
-        {
-            numMaxKFs = pMap->GetAllKeyFrames().size();
-            pBiggerMap = pMap;
-        }
-    }
-
-    std::vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-    std::sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
-
-    // Transform all keyframes so that the first keyframe is at the origin.
-    // After a loop closure the first keyframe might not be at the origin.
-    std::ofstream f;
-    f.open(filename);
-    f << std::fixed;
-
-    for(std::size_t i=0; i<vpKFs.size(); i++)
-    {
-        KeyFrame* pKF = vpKFs[i];
-
-       // pKF->SetPose(pKF->GetPose()*Two);
-
-        if(pKF->isBad())
-            continue;
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
-        {
-            cv::Mat R = pKF->GetImuRotation().t();
-            std::vector<float> q = Converter::toQuaternion(R);
-            cv::Mat twb = pKF->GetImuPosition();
-            f << std::setprecision(6) << 1e9*pKF->mTimeStamp  << " " <<  std::setprecision(9) <<
-twb.at<float>(0) << " " << twb.at<float>(1) << " " << twb.at<float>(2) << " " << q[0] << " " << q[1]
-<< " " << q[2] << " " << q[3] << std::endl;
-
-        }
-        else
-        {
-            cv::Mat R = pKF->GetRotation();
-            std::vector<float> q = Converter::toQuaternion(R);
-            cv::Mat t = pKF->GetCameraCenter();
-            f << std::setprecision(6) << 1e9*pKF->mTimeStamp << " " <<  std::setprecision(9) <<
-t.at<float>(0)
-<< " " << t.at<float>(1) << " " << t.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << "
-" << q[3] << std::endl;
-        }
-    }
-    f.close();
-}*/
-
 void System::SaveKeyFrameTrajectoryEuRoC(const std::string& filename) {
   _logger->info("Saving keyframe trajectory to {}...", filename);
 
@@ -1091,8 +880,6 @@ void System::SaveKeyFrameTrajectoryEuRoC(const std::string& filename) {
   f << std::fixed;
 
   for (auto* pKF : vpKFs) {
-    // pKF->SetPose(pKF->GetPose()*Two);
-
     if (pKF == nullptr || pKF->isBad()) {
       continue;
     }
@@ -1343,9 +1130,6 @@ void System::InsertTrackTime(double& time) {
 
 void System::SaveAtlas(int type) {
   if (!mStrSaveAtlasToFile.empty()) {
-    // clock_t start = clock();
-
-    // Save the current session
     mpAtlas->PreSave();
 
     std::string pathSaveFileName = "./";
