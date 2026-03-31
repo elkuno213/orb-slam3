@@ -67,19 +67,19 @@ public:
     return scaleFactor;
   }
 
-  std::vector<float> GetScaleFactors() {
+  [[nodiscard]] std::vector<float> GetScaleFactors() {
     return mvScaleFactor;
   }
 
-  std::vector<float> GetInverseScaleFactors() {
+  [[nodiscard]] std::vector<float> GetInverseScaleFactors() {
     return mvInvScaleFactor;
   }
 
-  std::vector<float> GetScaleSigmaSquares() {
+  [[nodiscard]] std::vector<float> GetScaleSigmaSquares() {
     return mvLevelSigma2;
   }
 
-  std::vector<float> GetInverseScaleSigmaSquares() {
+  [[nodiscard]] std::vector<float> GetInverseScaleSigmaSquares() {
     return mvInvLevelSigma2;
   }
 

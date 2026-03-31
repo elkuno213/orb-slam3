@@ -68,16 +68,16 @@ public:
   [[nodiscard]] CameraType cameraType() const {
     return cameraType_;
   }
-  GeometricCamera* camera1() {
+  [[nodiscard]] GeometricCamera* camera1() {
     return calibration1_;
   }
-  GeometricCamera* camera2() {
+  [[nodiscard]] GeometricCamera* camera2() {
     return calibration2_;
   }
-  cv::Mat camera1DistortionCoef() {
+  [[nodiscard]] cv::Mat camera1DistortionCoef() {
     return {static_cast<int>(vPinHoleDistorsion1_.size()), 1, CV_32F, vPinHoleDistorsion1_.data()};
   }
-  cv::Mat camera2DistortionCoef() {
+  [[nodiscard]] cv::Mat camera2DistortionCoef() {
     return {static_cast<int>(vPinHoleDistorsion2_.size()), 1, CV_32F, vPinHoleDistorsion1_.data()};
   }
 

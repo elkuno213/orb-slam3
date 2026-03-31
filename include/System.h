@@ -113,7 +113,7 @@ public:
 
   // Returns true if there have been a big map change (loop closure, global BA)
   // since last call to this function
-  bool MapChanged();
+  [[nodiscard]] bool MapChanged();
 
   // Reset the system (clear Atlas or the active map)
   void Reset();
@@ -123,7 +123,7 @@ public:
   // It waits until all threads have finished.
   // This function must be called before saving the trajectory.
   void Shutdown();
-  bool isShutDown();
+  [[nodiscard]] bool isShutDown();
 
   // Save camera trajectory in the TUM RGB-D dataset format.
   // Only for stereo and RGB-D. This method does not work for monocular.
@@ -158,18 +158,18 @@ public:
 
   // Information from most recent processed frame
   // You can call this right after TrackMonocular (or stereo or RGBD)
-  int                       GetTrackingState();
-  std::vector<MapPoint*>    GetTrackedMapPoints();
-  std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
+  [[nodiscard]] int                       GetTrackingState();
+  [[nodiscard]] std::vector<MapPoint*>    GetTrackedMapPoints();
+  [[nodiscard]] std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
 
   // For debugging
-  double GetTimeFromIMUInit();
-  bool   isLost();
-  bool   isFinished();
+  [[nodiscard]] double GetTimeFromIMUInit();
+  [[nodiscard]] bool   isLost();
+  [[nodiscard]] bool   isFinished();
 
   void ChangeDataset();
 
-  float GetImageScale();
+  [[nodiscard]] float GetImageScale();
 
 #ifdef REGISTER_TIMES
   void InsertRectTime(double& time);

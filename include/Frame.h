@@ -116,13 +116,13 @@ public:
   );
 
   [[nodiscard]] Eigen::Vector3f GetImuPosition() const;
-  Eigen::Matrix3f               GetImuRotation();
-  Sophus::SE3f                  GetImuPose();
+  [[nodiscard]] Eigen::Matrix3f GetImuRotation();
+  [[nodiscard]] Sophus::SE3f   GetImuPose();
 
-  Sophus::SE3f    GetRelativePoseTrl();
-  Sophus::SE3f    GetRelativePoseTlr();
-  Eigen::Matrix3f GetRelativePoseTlr_rotation();
-  Eigen::Vector3f GetRelativePoseTlr_translation();
+  [[nodiscard]] Sophus::SE3f    GetRelativePoseTrl();
+  [[nodiscard]] Sophus::SE3f    GetRelativePoseTlr();
+  [[nodiscard]] Eigen::Matrix3f GetRelativePoseTlr_rotation();
+  [[nodiscard]] Eigen::Vector3f GetRelativePoseTlr_translation();
 
   void SetNewBias(const IMU::Bias& b);
 
@@ -132,7 +132,7 @@ public:
 
   bool ProjectPointDistort(MapPoint* pMP, cv::Point2f& kp, float& u, float& v);
 
-  Eigen::Vector3f inRefCoordinates(const Eigen::Vector3f& pCw);
+  [[nodiscard]] Eigen::Vector3f inRefCoordinates(const Eigen::Vector3f& pCw);
 
   // Compute the cell of a keypoint (return false if outside the grid)
   bool PosInGrid(const cv::KeyPoint& kp, int& posX, int& posY);
@@ -159,7 +159,7 @@ public:
 
   ConstraintPoseImu* mpcpi;
 
-  bool imuIsPreintegrated();
+  [[nodiscard]] bool imuIsPreintegrated();
   void setIntegrated();
 
   [[nodiscard]] bool isSet() const;
@@ -168,10 +168,18 @@ public:
   void UpdatePoseMatrices();
 
   // Returns the camera center.
-  Eigen::Vector3f GetCameraCenter() {
+  [[nodiscard]] Eigen::Vector3f GetCameraCenter() {
     return mOw;
   }
 
+<<<<<<< HEAD
+=======
+  // Returns inverse of rotation
+  [[nodiscard]] Eigen::Matrix3f GetRotationInverse() {
+    return mRwc;
+  }
+
+>>>>>>> 793c4d8 (refactor: add [[nodiscard]] to pure query methods)
   [[nodiscard]] Sophus::SE3f GetPose() const {
     // TODO: can the Frame pose be accsessed from several threads? should this be protected somehow?
     return mTcw;
@@ -194,7 +202,7 @@ public:
   }
 
   /// True when this frame uses a fisheye stereo camera pair.
-  bool isFisheye() const noexcept { return Nleft != -1; }
+  [[nodiscard]] bool isFisheye() const noexcept { return Nleft != -1; }
 
 private:
   // Sophus/Eigen migration
@@ -396,7 +404,7 @@ public:
 
   bool isInFrustumChecks(MapPoint* pMP, float viewingCosLimit, bool bRight = false);
 
-  Eigen::Vector3f UnprojectStereoFishEye(int i);
+  [[nodiscard]] Eigen::Vector3f UnprojectStereoFishEye(int i);
 
   cv::Mat imgLeft, imgRight;
 

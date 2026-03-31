@@ -156,21 +156,21 @@ public:
   void SetPose(const Sophus::SE3f& Tcw);
   void SetVelocity(const Eigen::Vector3f& Vw_);
 
-  Sophus::SE3f GetPose();
+  [[nodiscard]] Sophus::SE3f GetPose();
 
-  Sophus::SE3f    GetPoseInverse();
-  Eigen::Vector3f GetCameraCenter();
+  [[nodiscard]] Sophus::SE3f    GetPoseInverse();
+  [[nodiscard]] Eigen::Vector3f GetCameraCenter();
 
-  Eigen::Vector3f GetImuPosition();
-  Eigen::Matrix3f GetImuRotation();
-  Sophus::SE3f    GetImuPose();
-  Eigen::Matrix3f GetRotation();
-  Eigen::Vector3f GetTranslation();
-  Eigen::Vector3f GetVelocity();
-  bool            isVelocitySet();
+  [[nodiscard]] Eigen::Vector3f GetImuPosition();
+  [[nodiscard]] Eigen::Matrix3f GetImuRotation();
+  [[nodiscard]] Sophus::SE3f    GetImuPose();
+  [[nodiscard]] Eigen::Matrix3f GetRotation();
+  [[nodiscard]] Eigen::Vector3f GetTranslation();
+  [[nodiscard]] Eigen::Vector3f GetVelocity();
+  [[nodiscard]] bool            isVelocitySet();
 
   /// True when this keyframe uses a fisheye stereo camera pair.
-  bool isFisheye() const noexcept { return NLeft != -1; }
+  [[nodiscard]] bool isFisheye() const noexcept { return NLeft != -1; }
 
   // Bag of Words Representation
   void ComputeBoW();
@@ -181,39 +181,39 @@ public:
 
   void                   UpdateConnections(bool upParent = true);
   void                   UpdateBestCovisibles();
-  std::set<KeyFrame*>    GetConnectedKeyFrames();
-  std::vector<KeyFrame*> GetVectorCovisibleKeyFrames();
-  std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(int N);
-  std::vector<KeyFrame*> GetCovisiblesByWeight(int w);
-  int                    GetWeight(KeyFrame* pKF);
+  [[nodiscard]] std::set<KeyFrame*>    GetConnectedKeyFrames();
+  [[nodiscard]] std::vector<KeyFrame*> GetVectorCovisibleKeyFrames();
+  [[nodiscard]] std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(int N);
+  [[nodiscard]] std::vector<KeyFrame*> GetCovisiblesByWeight(int w);
+  [[nodiscard]] int                    GetWeight(KeyFrame* pKF);
 
   // Spanning tree functions
   void                AddChild(KeyFrame* pKF);
   void                EraseChild(KeyFrame* pKF);
   void                ChangeParent(KeyFrame* pKF);
-  std::set<KeyFrame*> GetChilds();
-  KeyFrame*           GetParent();
-  bool                hasChild(KeyFrame* pKF);
+  [[nodiscard]] std::set<KeyFrame*> GetChilds();
+  [[nodiscard]] KeyFrame*           GetParent();
+  [[nodiscard]] bool                hasChild(KeyFrame* pKF);
   void                SetFirstConnection(bool bFirst);
 
   // Loop Edges
   void                AddLoopEdge(KeyFrame* pKF);
-  std::set<KeyFrame*> GetLoopEdges();
+  [[nodiscard]] std::set<KeyFrame*> GetLoopEdges();
 
   // Merge Edges
   void                AddMergeEdge(KeyFrame* pKF);
-  std::set<KeyFrame*> GetMergeEdges();
+  [[nodiscard]] std::set<KeyFrame*> GetMergeEdges();
 
   // MapPoint observation functions
-  int                    GetNumberMPs();
+  [[nodiscard]] int      GetNumberMPs();
   void                   AddMapPoint(MapPoint* pMP, const std::size_t& idx);
   void                   EraseMapPointMatch(int idx);
   void                   EraseMapPointMatch(MapPoint* pMP);
   void                   ReplaceMapPointMatch(int idx, MapPoint* pMP);
-  std::set<MapPoint*>    GetMapPoints();
-  std::vector<MapPoint*> GetMapPointMatches();
-  int                    TrackedMapPoints(int minObs);
-  MapPoint*              GetMapPoint(const std::size_t& idx);
+  [[nodiscard]] std::set<MapPoint*>    GetMapPoints();
+  [[nodiscard]] std::vector<MapPoint*> GetMapPointMatches();
+  [[nodiscard]] int                    TrackedMapPoints(int minObs);
+  [[nodiscard]] MapPoint*              GetMapPoint(const std::size_t& idx);
 
   // KeyPoint functions
   [[nodiscard]] std::vector<std::size_t> GetFeaturesInArea(
@@ -230,10 +230,10 @@ public:
 
   // Set/check bad flag
   void SetBadFlag();
-  bool isBad();
+  [[nodiscard]] bool isBad();
 
   // Compute Scene Depth (q=2 median). Used in monocular.
-  float ComputeSceneMedianDepth(int q);
+  [[nodiscard]] float ComputeSceneMedianDepth(int q);
 
   static bool weightComp(int a, int b) {
     return a > b;
@@ -243,15 +243,15 @@ public:
     return pKF1->mnId < pKF2->mnId;
   }
 
-  Map* GetMap();
+  [[nodiscard]] Map* GetMap();
   void UpdateMap(Map* pMap);
 
   void            SetNewBias(const IMU::Bias& b);
-  Eigen::Vector3f GetGyroBias();
+  [[nodiscard]] Eigen::Vector3f GetGyroBias();
 
-  Eigen::Vector3f GetAccBias();
+  [[nodiscard]] Eigen::Vector3f GetAccBias();
 
-  IMU::Bias GetImuBias();
+  [[nodiscard]] IMU::Bias GetImuBias();
 
   bool ProjectPointDistort(MapPoint* pMP, cv::Point2f& kp, float& u, float& v);
   bool ProjectPointUnDistort(MapPoint* pMP, cv::Point2f& kp, float& u, float& v);
@@ -469,8 +469,8 @@ public:
   // Indexes of stereo observations correspondences
   std::vector<int> mvLeftToRightMatch, mvRightToLeftMatch;
 
-  Sophus::SE3f GetRelativePoseTrl();
-  Sophus::SE3f GetRelativePoseTlr();
+  [[nodiscard]] Sophus::SE3f GetRelativePoseTrl();
+  [[nodiscard]] Sophus::SE3f GetRelativePoseTlr();
 
   // KeyPoints in the right image (for stereo fisheye, coordinates are needed)
   const std::vector<cv::KeyPoint> mvKeysRight;
@@ -479,12 +479,12 @@ public:
 
   std::vector<std::vector<std::vector<std::size_t>>> mGridRight;
 
-  Sophus::SE3f GetRightPose();
-  Sophus::SE3f GetRightPoseInverse();
+  [[nodiscard]] Sophus::SE3f GetRightPose();
+  [[nodiscard]] Sophus::SE3f GetRightPoseInverse();
 
-  Eigen::Vector3f            GetRightCameraCenter();
-  Eigen::Matrix3f GetRightRotation();
-  Eigen::Vector3f            GetRightTranslation();
+  [[nodiscard]] Eigen::Vector3f GetRightCameraCenter();
+  [[nodiscard]] Eigen::Matrix3f GetRightRotation();
+  [[nodiscard]] Eigen::Vector3f GetRightTranslation();
 };
 
 } // namespace ORB_SLAM3

@@ -68,44 +68,44 @@ public:
   MapPoint(double invDepth, cv::Point2f uv_init, KeyFrame* pRefKF, KeyFrame* pHostKF, Map* pMap);
   MapPoint(const Eigen::Vector3f& Pos, Map* pMap, Frame* pFrame, int idxF);
 
-  void            SetWorldPos(const Eigen::Vector3f& Pos);
-  Eigen::Vector3f GetWorldPos();
+  void                         SetWorldPos(const Eigen::Vector3f& Pos);
+  [[nodiscard]] Eigen::Vector3f GetWorldPos();
 
-  Eigen::Vector3f GetNormal();
-  void            SetNormalVector(const Eigen::Vector3f& normal);
+  [[nodiscard]] Eigen::Vector3f GetNormal();
+  void                          SetNormalVector(const Eigen::Vector3f& normal);
 
-  KeyFrame* GetReferenceKeyFrame();
+  [[nodiscard]] KeyFrame* GetReferenceKeyFrame();
 
-  std::map<KeyFrame*, std::tuple<int, int>> GetObservations();
-  int                                       Observations();
+  [[nodiscard]] std::map<KeyFrame*, std::tuple<int, int>> GetObservations();
+  [[nodiscard]] int                                       Observations();
 
   void AddObservation(KeyFrame* pKF, int idx);
   void EraseObservation(KeyFrame* pKF);
 
-  std::tuple<int, int> GetIndexInKeyFrame(KeyFrame* pKF);
-  bool                 IsInKeyFrame(KeyFrame* pKF);
+  [[nodiscard]] std::tuple<int, int> GetIndexInKeyFrame(KeyFrame* pKF);
+  [[nodiscard]] bool                 IsInKeyFrame(KeyFrame* pKF);
 
-  void SetBadFlag();
-  bool isBad();
+  void                SetBadFlag();
+  [[nodiscard]] bool  isBad();
 
-  void      Replace(MapPoint* pMP);
-  MapPoint* GetReplaced();
+  void                   Replace(MapPoint* pMP);
+  [[nodiscard]] MapPoint* GetReplaced();
 
   void              IncreaseVisible(int n = 1);
   void              IncreaseFound(int n = 1);
   float             GetFoundRatio();
   void ComputeDistinctiveDescriptors();
 
-  cv::Mat GetDescriptor();
+  [[nodiscard]] cv::Mat GetDescriptor();
 
   void UpdateNormalAndDepth();
 
-  float GetMinDistanceInvariance();
-  float GetMaxDistanceInvariance();
-  int   PredictScale(float currentDist, KeyFrame* pKF);
-  int   PredictScale(float currentDist, Frame* pF);
+  [[nodiscard]] float GetMinDistanceInvariance();
+  [[nodiscard]] float GetMaxDistanceInvariance();
+  [[nodiscard]] int   PredictScale(float currentDist, KeyFrame* pKF);
+  [[nodiscard]] int   PredictScale(float currentDist, Frame* pF);
 
-  Map* GetMap();
+  [[nodiscard]] Map* GetMap();
   void UpdateMap(Map* pMap);
 
   void PreSave(std::set<KeyFrame*>& spKF, std::set<MapPoint*>& spMP);

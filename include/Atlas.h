@@ -71,7 +71,7 @@ public:
   void CreateNewMap();
   void ChangeMap(Map* pMap);
 
-  FrameId GetLastInitKFid();
+  [[nodiscard]] FrameId GetLastInitKFid();
 
   void SetViewer(Viewer* pViewer);
 
@@ -80,54 +80,54 @@ public:
   static void AddMapPoint(MapPoint* pMP);
 
   GeometricCamera*              AddCamera(GeometricCamera* pCam);
-  std::vector<GeometricCamera*> GetAllCameras();
+  [[nodiscard]] std::vector<GeometricCamera*> GetAllCameras();
 
   /* All methods without Map pointer work on current map */
   void SetReferenceMapPoints(const std::vector<MapPoint*>& vpMPs);
   void InformNewBigChange();
-  int  GetLastBigChangeIdx();
+  [[nodiscard]] int GetLastBigChangeIdx();
 
-  unsigned long MapPointsInMap();
-  unsigned long KeyFramesInMap();
+  [[nodiscard]] unsigned long MapPointsInMap();
+  [[nodiscard]] unsigned long KeyFramesInMap();
 
   // Method for get data in current map
-  std::vector<KeyFrame*> GetAllKeyFrames();
-  std::vector<MapPoint*> GetAllMapPoints();
-  std::vector<MapPoint*> GetReferenceMapPoints();
+  [[nodiscard]] std::vector<KeyFrame*> GetAllKeyFrames();
+  [[nodiscard]] std::vector<MapPoint*> GetAllMapPoints();
+  [[nodiscard]] std::vector<MapPoint*> GetReferenceMapPoints();
 
-  std::vector<Map*> GetAllMaps();
+  [[nodiscard]] std::vector<Map*> GetAllMaps();
 
-  int CountMaps();
+  [[nodiscard]] int CountMaps();
 
   void clearMap();
 
   void clearAtlas();
 
-  Map* GetCurrentMap();
+  [[nodiscard]] Map* GetCurrentMap();
 
   void SetMapBad(Map* pMap);
   void RemoveBadMaps();
 
-  bool isInertial();
-  void SetInertialSensor();
-  void SetImuInitialized();
-  bool isImuInitialized();
+  [[nodiscard]] bool isInertial();
+  void               SetInertialSensor();
+  void               SetImuInitialized();
+  [[nodiscard]] bool isImuInitialized();
 
   // Function for garantee the correction of serialization of this object
   void PreSave();
   void PostLoad();
 
-  IdKeyFrameMap GetAtlasKeyframes();
+  [[nodiscard]] IdKeyFrameMap GetAtlasKeyframes();
 
   void              SetKeyFrameDababase(KeyFrameDatabase* pKFDB);
-  KeyFrameDatabase* GetKeyFrameDatabase();
+  [[nodiscard]] KeyFrameDatabase* GetKeyFrameDatabase();
 
   void           SetORBVocabulary(ORBVocabulary* pORBVoc);
-  ORBVocabulary* GetORBVocabulary();
+  [[nodiscard]] ORBVocabulary* GetORBVocabulary();
 
-  unsigned long GetNumLivedKF();
+  [[nodiscard]] unsigned long GetNumLivedKF();
 
-  unsigned long GetNumLivedMP();
+  [[nodiscard]] unsigned long GetNumLivedMP();
 
 protected:
   std::set<Map*> mspMaps;

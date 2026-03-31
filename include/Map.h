@@ -78,26 +78,29 @@ public:
   void EraseKeyFrame(KeyFrame* pKF);
   void SetReferenceMapPoints(const std::vector<MapPoint*>& vpMPs);
   void InformNewBigChange();
-  int  GetLastBigChangeIdx();
+  [[nodiscard]] int GetLastBigChangeIdx();
 
-  std::vector<KeyFrame*> GetAllKeyFrames();
-  std::vector<MapPoint*> GetAllMapPoints();
-  std::vector<MapPoint*> GetReferenceMapPoints();
+  [[nodiscard]] std::vector<KeyFrame*> GetAllKeyFrames();
+  [[nodiscard]] std::vector<MapPoint*> GetAllMapPoints();
+  [[nodiscard]] std::vector<MapPoint*> GetReferenceMapPoints();
 
-  unsigned long MapPointsInMap();
-  unsigned long KeyFramesInMap();
+  [[nodiscard]] unsigned long MapPointsInMap();
+  [[nodiscard]] unsigned long KeyFramesInMap();
 
-  unsigned long GetId() const;
+  [[nodiscard]] unsigned long GetId() const;
 
-  FrameId GetInitKFid();
-  void    SetInitKFid(FrameId initKFif);
-  FrameId GetMaxKFid();
+  [[nodiscard]] FrameId GetInitKFid();
+  void                  SetInitKFid(FrameId initKFif);
+  [[nodiscard]] FrameId GetMaxKFid();
 
-  KeyFrame* GetOriginKF();
+  [[nodiscard]] KeyFrame* GetOriginKF();
 
   void SetCurrentMap();
   void SetStoredMap();
 
+=======
+  [[nodiscard]] bool HasThumbnail();
+>>>>>>> 793c4d8 (refactor: add [[nodiscard]] to pure query methods)
   [[nodiscard]] bool IsInUse() const;
 
   void SetBad();
@@ -105,26 +108,27 @@ public:
 
   void clear();
 
-  int  GetMapChangeIndex();
-  void IncreaseChangeIndex();
-  int  GetLastMapChange();
+  [[nodiscard]] int GetMapChangeIndex();
+  void              IncreaseChangeIndex();
+  [[nodiscard]] int GetLastMapChange();
   void SetLastMapChange(int currentChangeId);
 
   void SetImuInitialized();
-  bool isImuInitialized();
+  [[nodiscard]] bool isImuInitialized();
 
   void ApplyScaledRotation(const Sophus::SE3f& T, float s, bool bScaledVel = false);
 
   void SetInertialSensor();
-  bool IsInertial();
-  void SetIniertialBA1();
-  void SetIniertialBA2();
-  bool GetIniertialBA1();
-  bool GetIniertialBA2();
+  [[nodiscard]] bool IsInertial();
+  void               SetIniertialBA1();
+  void               SetIniertialBA2();
+  [[nodiscard]] bool GetIniertialBA1();
+  [[nodiscard]] bool GetIniertialBA2();
 
+<<<<<<< HEAD
   void ChangeId(unsigned long nId);
 
-  unsigned int GetLowerKFID();
+  [[nodiscard]] unsigned int GetLowerKFID();
 
   void PreSave(std::set<GeometricCamera*>& spCams);
   void PostLoad(
