@@ -172,14 +172,6 @@ public:
     return mOw;
   }
 
-<<<<<<< HEAD
-=======
-  // Returns inverse of rotation
-  [[nodiscard]] Eigen::Matrix3f GetRotationInverse() {
-    return mRwc;
-  }
-
->>>>>>> 793c4d8 (refactor: add [[nodiscard]] to pure query methods)
   [[nodiscard]] Sophus::SE3f GetPose() const {
     // TODO: can the Frame pose be accsessed from several threads? should this be protected somehow?
     return mTcw;
@@ -336,11 +328,6 @@ public:
   string mNameFile;
 
   int mnDataset;
-
-#ifdef REGISTER_TIMES
-  double mTimeORB_Ext;
-  double mTimeStereoMatch;
-#endif
 
 private:
   // Undistort keypoints given OpenCV distortion parameters.

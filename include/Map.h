@@ -98,9 +98,6 @@ public:
   void SetCurrentMap();
   void SetStoredMap();
 
-=======
-  [[nodiscard]] bool HasThumbnail();
->>>>>>> 793c4d8 (refactor: add [[nodiscard]] to pure query methods)
   [[nodiscard]] bool IsInUse() const;
 
   void SetBad();
@@ -125,7 +122,6 @@ public:
   [[nodiscard]] bool GetIniertialBA1();
   [[nodiscard]] bool GetIniertialBA2();
 
-<<<<<<< HEAD
   void ChangeId(unsigned long nId);
 
   [[nodiscard]] unsigned int GetLowerKFID();

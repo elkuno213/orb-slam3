@@ -111,391 +111,7 @@ Tracking::Tracking(
     }
   }
 
-#ifdef REGISTER_TIMES
-  vdRectStereo_ms.clear();
-  vdResizeImage_ms.clear();
-  vdORBExtract_ms.clear();
-  vdStereoMatch_ms.clear();
-  vdIMUInteg_ms.clear();
-  vdPosePred_ms.clear();
-  vdLMTrack_ms.clear();
-  vdNewKF_ms.clear();
-  vdTrackTotal_ms.clear();
-#endif
 }
-
-#ifdef REGISTER_TIMES
-double calcAverage(std::vector<double> v_times) {
-  double accum = 0;
-  for (double value : v_times) {
-    accum += value;
-  }
-
-  return accum / v_times.size();
-}
-
-double calcDeviation(std::vector<double> v_times, double average) {
-  double accum = 0;
-  for (double value : v_times) {
-    accum += std::pow(value - average, 2);
-  }
-  return std::sqrt(accum / v_times.size());
-}
-
-double calcAverage(std::vector<int> v_values) {
-  double accum = 0;
-  int    total = 0;
-  for (double value : v_values) {
-    if (value == 0) {
-      continue;
-    }
-    accum += value;
-    total++;
-  }
-
-  return accum / total;
-}
-
-double calcDeviation(std::vector<int> v_values, double average) {
-  double accum = 0;
-  int    total = 0;
-  for (double value : v_values) {
-    if (value == 0) {
-      continue;
-    }
-    accum += std::pow(value - average, 2);
-    total++;
-  }
-  return std::sqrt(accum / total);
-}
-
-void Tracking::LocalMapStats2File() {
-  std::ofstream f;
-  f.open("LocalMapTimeStats.txt");
-  f << std::fixed << std::setprecision(6);
-  f << "#Stereo rect[ms], MP culling[ms], MP creation[ms], LBA[ms], KF culling[ms], Total[ms]"
-    << '\n';
-  for (int i = 0; i < mpLocalMapper->vdLMTotal_ms.size(); ++i) {
-    f << mpLocalMapper->vdKFInsert_ms[i] << "," << mpLocalMapper->vdMPCulling_ms[i] << ","
-      << mpLocalMapper->vdMPCreation_ms[i] << "," << mpLocalMapper->vdLBASync_ms[i] << ","
-      << mpLocalMapper->vdKFCullingSync_ms[i] << "," << mpLocalMapper->vdLMTotal_ms[i] << '\n';
-  }
-
-  f.close();
-
-  f.open("LBA_Stats.txt");
-  f << std::fixed << std::setprecision(6);
-  f << "#LBA time[ms], KF opt[#], KF fixed[#], MP[#], Edges[#]" << '\n';
-  for (int i = 0; i < mpLocalMapper->vdLBASync_ms.size(); ++i) {
-    f << mpLocalMapper->vdLBASync_ms[i] << "," << mpLocalMapper->vnLBA_KFopt[i] << ","
-      << mpLocalMapper->vnLBA_KFfixed[i] << "," << mpLocalMapper->vnLBA_MPs[i] << ","
-      << mpLocalMapper->vnLBA_edges[i] << '\n';
-  }
-
-  f.close();
-}
-
-void Tracking::TrackStats2File() {
-  std::ofstream f;
-  f.open("SessionInfo.txt");
-  f << std::fixed;
-  f << "Number of KFs: " << mpAtlas->GetAllKeyFrames().size() << '\n';
-  f << "Number of MPs: " << mpAtlas->GetAllMapPoints().size() << '\n';
-
-  f << "OpenCV version: " << CV_VERSION << '\n';
-
-  f.close();
-
-  f.open("TrackingTimeStats.txt");
-  f << std::fixed << std::setprecision(6);
-
-  f << "#Image Rect[ms], Image Resize[ms], ORB ext[ms], Stereo match[ms], IMU preint[ms], Pose "
-       "pred[ms], LM track[ms], KF dec[ms], Total[ms]"
-    << '\n';
-
-  for (int i = 0; i < vdTrackTotal_ms.size(); ++i) {
-    double stereo_rect = 0.0;
-    if (!vdRectStereo_ms.empty()) {
-      stereo_rect = vdRectStereo_ms[i];
-    }
-
-    double resize_image = 0.0;
-    if (!vdResizeImage_ms.empty()) {
-      resize_image = vdResizeImage_ms[i];
-    }
-
-    double stereo_match = 0.0;
-    if (!vdStereoMatch_ms.empty()) {
-      stereo_match = vdStereoMatch_ms[i];
-    }
-
-    double imu_preint = 0.0;
-    if (!vdIMUInteg_ms.empty()) {
-      imu_preint = vdIMUInteg_ms[i];
-    }
-
-    f << stereo_rect << "," << resize_image << "," << vdORBExtract_ms[i] << "," << stereo_match
-      << "," << imu_preint << "," << vdPosePred_ms[i] << "," << vdLMTrack_ms[i] << ","
-      << vdNewKF_ms[i] << "," << vdTrackTotal_ms[i] << '\n';
-  }
-
-  f.close();
-}
-
-void Tracking::PrintTimeStats() {
-  // Save data in files
-  TrackStats2File();
-  LocalMapStats2File();
-
-  std::ofstream f;
-  f.open("ExecMean.txt");
-  f << std::fixed;
-  // Report the mean and std of each one
-  _logger->info("TIME STATS in ms (mean+/-std)");
-  f << " TIME STATS in ms (mean$\\pm$std)" << '\n';
-  _logger->info("OpenCV version: {}", CV_VERSION);
-  f << "OpenCV version: " << CV_VERSION << '\n';
-  _logger->info("---------------------------");
-  _logger->info("Tracking");
-  f << "---------------------------" << '\n';
-  f << "Tracking" << std::setprecision(5) << '\n' << '\n';
-  double average, deviation;
-  if (!vdRectStereo_ms.empty()) {
-    average   = calcAverage(vdRectStereo_ms);
-    deviation = calcDeviation(vdRectStereo_ms, average);
-    _logger->info("Stereo Rectification: {:.5f}+/-{:.5f}", average, deviation);
-    f << "Stereo Rectification: " << average << "$\\pm$" << deviation << '\n';
-  }
-
-  if (!vdResizeImage_ms.empty()) {
-    average   = calcAverage(vdResizeImage_ms);
-    deviation = calcDeviation(vdResizeImage_ms, average);
-    _logger->info("Image Resize: {:.5f}+/-{:.5f}", average, deviation);
-    f << "Image Resize: " << average << "$\\pm$" << deviation << '\n';
-  }
-
-  average   = calcAverage(vdORBExtract_ms);
-  deviation = calcDeviation(vdORBExtract_ms, average);
-  _logger->info("ORB Extraction: {:.5f}+/-{:.5f}", average, deviation);
-  f << "ORB Extraction: " << average << "$\\pm$" << deviation << '\n';
-
-  if (!vdStereoMatch_ms.empty()) {
-    average   = calcAverage(vdStereoMatch_ms);
-    deviation = calcDeviation(vdStereoMatch_ms, average);
-    _logger->info("Stereo Matching: {:.5f}+/-{:.5f}", average, deviation);
-    f << "Stereo Matching: " << average << "$\\pm$" << deviation << '\n';
-  }
-
-  if (!vdIMUInteg_ms.empty()) {
-    average   = calcAverage(vdIMUInteg_ms);
-    deviation = calcDeviation(vdIMUInteg_ms, average);
-    _logger->info("IMU Preintegration: {:.5f}+/-{:.5f}", average, deviation);
-    f << "IMU Preintegration: " << average << "$\\pm$" << deviation << '\n';
-  }
-
-  average   = calcAverage(vdPosePred_ms);
-  deviation = calcDeviation(vdPosePred_ms, average);
-  _logger->info("Pose Prediction: {:.5f}+/-{:.5f}", average, deviation);
-  f << "Pose Prediction: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(vdLMTrack_ms);
-  deviation = calcDeviation(vdLMTrack_ms, average);
-  _logger->info("LM Track: {:.5f}+/-{:.5f}", average, deviation);
-  f << "LM Track: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(vdNewKF_ms);
-  deviation = calcDeviation(vdNewKF_ms, average);
-  _logger->info("New KF decision: {:.5f}+/-{:.5f}", average, deviation);
-  f << "New KF decision: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(vdTrackTotal_ms);
-  deviation = calcDeviation(vdTrackTotal_ms, average);
-  _logger->info("Total Tracking: {:.5f}+/-{:.5f}", average, deviation);
-  f << "Total Tracking: " << average << "$\\pm$" << deviation << '\n';
-
-  // Local Mapping time stats
-  _logger->info("Local Mapping");
-  f << '\n' << "Local Mapping" << '\n' << '\n';
-
-  average   = calcAverage(mpLocalMapper->vdKFInsert_ms);
-  deviation = calcDeviation(mpLocalMapper->vdKFInsert_ms, average);
-  _logger->info("KF Insertion: {:.5f}+/-{:.5f}", average, deviation);
-  f << "KF Insertion: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vdMPCulling_ms);
-  deviation = calcDeviation(mpLocalMapper->vdMPCulling_ms, average);
-  _logger->info("MP Culling: {:.5f}+/-{:.5f}", average, deviation);
-  f << "MP Culling: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vdMPCreation_ms);
-  deviation = calcDeviation(mpLocalMapper->vdMPCreation_ms, average);
-  _logger->info("MP Creation: {:.5f}+/-{:.5f}", average, deviation);
-  f << "MP Creation: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vdLBA_ms);
-  deviation = calcDeviation(mpLocalMapper->vdLBA_ms, average);
-  _logger->info("LBA: {:.5f}+/-{:.5f}", average, deviation);
-  f << "LBA: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vdKFCulling_ms);
-  deviation = calcDeviation(mpLocalMapper->vdKFCulling_ms, average);
-  _logger->info("KF Culling: {:.5f}+/-{:.5f}", average, deviation);
-  f << "KF Culling: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vdLMTotal_ms);
-  deviation = calcDeviation(mpLocalMapper->vdLMTotal_ms, average);
-  _logger->info("Total Local Mapping: {:.5f}+/-{:.5f}", average, deviation);
-  f << "Total Local Mapping: " << average << "$\\pm$" << deviation << '\n';
-
-  // Local Mapping LBA complexity
-  _logger->info("---------------------------");
-  _logger->info("LBA complexity (mean+/-std)");
-  f << "---------------------------" << '\n';
-  f << '\n' << "LBA complexity (mean$\\pm$std)" << '\n';
-
-  average   = calcAverage(mpLocalMapper->vnLBA_edges);
-  deviation = calcDeviation(mpLocalMapper->vnLBA_edges, average);
-  _logger->info("LBA Edges: {:.5f}+/-{:.5f}", average, deviation);
-  f << "LBA Edges: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vnLBA_KFopt);
-  deviation = calcDeviation(mpLocalMapper->vnLBA_KFopt, average);
-  _logger->info("LBA KF optimized: {:.5f}+/-{:.5f}", average, deviation);
-  f << "LBA KF optimized: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vnLBA_KFfixed);
-  deviation = calcDeviation(mpLocalMapper->vnLBA_KFfixed, average);
-  _logger->info("LBA KF fixed: {:.5f}+/-{:.5f}", average, deviation);
-  f << "LBA KF fixed: " << average << "$\\pm$" << deviation << '\n';
-
-  average   = calcAverage(mpLocalMapper->vnLBA_MPs);
-  deviation = calcDeviation(mpLocalMapper->vnLBA_MPs, average);
-  _logger->info("LBA MP: {:.5f}+/-{:.5f}", average, deviation);
-  f << "LBA MP: " << average << "$\\pm$" << deviation << '\n' << '\n';
-
-  _logger->info("LBA executions: {}", mpLocalMapper->nLBA_exec);
-  _logger->info("LBA aborts: {}", mpLocalMapper->nLBA_abort);
-  f << "LBA executions: " << mpLocalMapper->nLBA_exec << '\n';
-  f << "LBA aborts: " << mpLocalMapper->nLBA_abort << '\n';
-
-  // Map complexity
-  _logger->info("---------------------------");
-  _logger->info("Map complexity");
-  _logger->info("KFs in map: {}", mpAtlas->GetAllKeyFrames().size());
-  _logger->info("MPs in map: {}", mpAtlas->GetAllMapPoints().size());
-  f << "---------------------------" << '\n';
-  f << '\n' << "Map complexity" << '\n';
-  std::vector<Map*> vpMaps   = mpAtlas->GetAllMaps();
-  Map*              pBestMap = vpMaps[0];
-  for (int i = 1; i < vpMaps.size(); ++i) {
-    if (pBestMap->GetAllKeyFrames().size() < vpMaps[i]->GetAllKeyFrames().size()) {
-      pBestMap = vpMaps[i];
-    }
-  }
-
-  f << "KFs in map: " << pBestMap->GetAllKeyFrames().size() << '\n';
-  f << "MPs in map: " << pBestMap->GetAllMapPoints().size() << '\n';
-
-  f << "---------------------------" << '\n';
-  f << '\n' << "Place Recognition (mean$\\pm$std)" << '\n';
-  _logger->info("---------------------------");
-  _logger->info("Place Recognition (mean+/-std)");
-  average   = calcAverage(mpLoopClosing->vdDataQuery_ms);
-  deviation = calcDeviation(mpLoopClosing->vdDataQuery_ms, average);
-  f << "Database Query: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Database Query: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdEstSim3_ms);
-  deviation = calcDeviation(mpLoopClosing->vdEstSim3_ms, average);
-  f << "SE3 estimation: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("SE3 estimation: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdPRTotal_ms);
-  deviation = calcDeviation(mpLoopClosing->vdPRTotal_ms, average);
-  f << "Total Place Recognition: " << average << "$\\pm$" << deviation << '\n' << '\n';
-  _logger->info("Total Place Recognition: {:.5f}+/-{:.5f}", average, deviation);
-
-  f << '\n' << "Loop Closing (mean$\\pm$std)" << '\n';
-  _logger->info("Loop Closing (mean+/-std)");
-  average   = calcAverage(mpLoopClosing->vdLoopFusion_ms);
-  deviation = calcDeviation(mpLoopClosing->vdLoopFusion_ms, average);
-  f << "Loop Fusion: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Loop Fusion: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdLoopOptEss_ms);
-  deviation = calcDeviation(mpLoopClosing->vdLoopOptEss_ms, average);
-  f << "Essential Graph: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Essential Graph: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdLoopTotal_ms);
-  deviation = calcDeviation(mpLoopClosing->vdLoopTotal_ms, average);
-  f << "Total Loop Closing: " << average << "$\\pm$" << deviation << '\n' << '\n';
-  _logger->info("Total Loop Closing: {:.5f}+/-{:.5f}", average, deviation);
-
-  f << "Numb exec: " << mpLoopClosing->nLoop << '\n';
-  _logger->info("Num exec: {}", mpLoopClosing->nLoop);
-  average   = calcAverage(mpLoopClosing->vnLoopKFs);
-  deviation = calcDeviation(mpLoopClosing->vnLoopKFs, average);
-  f << "Number of KFs: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Number of KFs: {:.5f}+/-{:.5f}", average, deviation);
-
-  f << '\n' << "Map Merging (mean$\\pm$std)" << '\n';
-  _logger->info("Map Merging (mean+/-std)");
-  average   = calcAverage(mpLoopClosing->vdMergeMaps_ms);
-  deviation = calcDeviation(mpLoopClosing->vdMergeMaps_ms, average);
-  f << "Merge Maps: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Merge Maps: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdWeldingBA_ms);
-  deviation = calcDeviation(mpLoopClosing->vdWeldingBA_ms, average);
-  f << "Welding BA: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Welding BA: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdMergeOptEss_ms);
-  deviation = calcDeviation(mpLoopClosing->vdMergeOptEss_ms, average);
-  f << "Optimization Ess.: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Optimization Ess.: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdMergeTotal_ms);
-  deviation = calcDeviation(mpLoopClosing->vdMergeTotal_ms, average);
-  f << "Total Map Merging: " << average << "$\\pm$" << deviation << '\n' << '\n';
-  _logger->info("Total Map Merging: {:.5f}+/-{:.5f}", average, deviation);
-
-  f << "Numb exec: " << mpLoopClosing->nMerges << '\n';
-  _logger->info("Num exec: {}", mpLoopClosing->nMerges);
-  average   = calcAverage(mpLoopClosing->vnMergeKFs);
-  deviation = calcDeviation(mpLoopClosing->vnMergeKFs, average);
-  f << "Number of KFs: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Number of KFs: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vnMergeMPs);
-  deviation = calcDeviation(mpLoopClosing->vnMergeMPs, average);
-  f << "Number of MPs: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Number of MPs: {:.5f}+/-{:.5f}", average, deviation);
-
-  f << '\n' << "Full GBA (mean$\\pm$std)" << '\n';
-  _logger->info("Full GBA (mean+/-std)");
-  average   = calcAverage(mpLoopClosing->vdGBA_ms);
-  deviation = calcDeviation(mpLoopClosing->vdGBA_ms, average);
-  f << "GBA: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("GBA: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdUpdateMap_ms);
-  deviation = calcDeviation(mpLoopClosing->vdUpdateMap_ms, average);
-  f << "Map Update: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Map Update: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vdFGBATotal_ms);
-  deviation = calcDeviation(mpLoopClosing->vdFGBATotal_ms, average);
-  f << "Total Full GBA: " << average << "$\\pm$" << deviation << '\n' << '\n';
-  _logger->info("Total Full GBA: {:.5f}+/-{:.5f}", average, deviation);
-
-  f << "Numb exec: " << mpLoopClosing->nFGBA_exec << '\n';
-  _logger->info("Num exec: {}", mpLoopClosing->nFGBA_exec);
-  f << "Numb abort: " << mpLoopClosing->nFGBA_abort << '\n';
-  _logger->info("Num abort: {}", mpLoopClosing->nFGBA_abort);
-  average   = calcAverage(mpLoopClosing->vnGBAKFs);
-  deviation = calcDeviation(mpLoopClosing->vnGBAKFs, average);
-  f << "Number of KFs: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Number of KFs: {:.5f}+/-{:.5f}", average, deviation);
-  average   = calcAverage(mpLoopClosing->vnGBAMPs);
-  deviation = calcDeviation(mpLoopClosing->vnGBAMPs, average);
-  f << "Number of MPs: " << average << "$\\pm$" << deviation << '\n';
-  _logger->info("Number of MPs: {:.5f}+/-{:.5f}", average, deviation);
-
-  f.close();
-}
-#endif
 
 Tracking::~Tracking() = default;
 
@@ -1433,11 +1049,6 @@ Sophus::SE3f Tracking::GrabImageStereo(
   mCurrentFrame.mNameFile = std::move(filename);
   mCurrentFrame.mnDataset = mnNumDataset;
 
-#ifdef REGISTER_TIMES
-  vdORBExtract_ms.push_back(mCurrentFrame.mTimeORB_Ext);
-  vdStereoMatch_ms.push_back(mCurrentFrame.mTimeStereoMatch);
-#endif
-
   _logger->debug("Tracking starting...");
   Track();
   _logger->debug("Tracking ended");
@@ -1506,10 +1117,6 @@ Sophus::SE3f Tracking::GrabImageRGBD(
 
   mCurrentFrame.mNameFile = std::move(filename);
   mCurrentFrame.mnDataset = mnNumDataset;
-
-#ifdef REGISTER_TIMES
-  vdORBExtract_ms.push_back(mCurrentFrame.mTimeORB_Ext);
-#endif
 
   _logger->debug("Tracking starting...");
   Track();
@@ -1600,10 +1207,6 @@ Sophus::SE3f Tracking::GrabImageMonocular(
 
   mCurrentFrame.mNameFile = std::move(filename);
   mCurrentFrame.mnDataset = mnNumDataset;
-
-#ifdef REGISTER_TIMES
-  vdORBExtract_ms.push_back(mCurrentFrame.mTimeORB_Ext);
-#endif
 
   lastID = mCurrentFrame.mnId;
   _logger->debug("Tracking starting...");
@@ -1849,19 +1452,7 @@ void Tracking::Track() {
   if ((mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO
        || mSensor == System::Sensor::IMU_RGBD)
       && !mbCreatedMap) {
-#ifdef REGISTER_TIMES
-    std::chrono::steady_clock::time_point time_StartPreIMU = std::chrono::steady_clock::now();
-#endif
     PreintegrateIMU();
-#ifdef REGISTER_TIMES
-    std::chrono::steady_clock::time_point time_EndPreIMU = std::chrono::steady_clock::now();
-
-    double timePreImu = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                          time_EndPreIMU - time_StartPreIMU
-    )
-                          .count();
-    vdIMUInteg_ms.push_back(timePreImu);
-#endif
   }
   mbCreatedMap = false;
 
@@ -1898,10 +1489,6 @@ void Tracking::Track() {
   } else {
     // System is initialized. Track Frame.
     bool bOK = false;
-
-#ifdef REGISTER_TIMES
-    std::chrono::steady_clock::time_point time_StartPosePred = std::chrono::steady_clock::now();
-#endif
 
     // Initial camera pose estimation using motion model or relocalization (if tracking is lost)
     if (!mbOnlyTracking) {
@@ -2042,17 +1629,6 @@ void Tracking::Track() {
       mCurrentFrame.mpReferenceKF = mpReferenceKF;
     }
 
-#ifdef REGISTER_TIMES
-    std::chrono::steady_clock::time_point time_EndPosePred = std::chrono::steady_clock::now();
-
-    double timePosePred = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                            time_EndPosePred - time_StartPosePred
-    )
-                            .count();
-    vdPosePred_ms.push_back(timePosePred);
-
-    std::chrono::steady_clock::time_point time_StartLMTrack = std::chrono::steady_clock::now();
-#endif
     // If we have an initial estimation of the camera pose and matching. Track the local map.
     if (!mbOnlyTracking) {
       if (bOK) {
@@ -2119,16 +1695,6 @@ void Tracking::Track() {
       }
     }
 
-#ifdef REGISTER_TIMES
-    std::chrono::steady_clock::time_point time_EndLMTrack = std::chrono::steady_clock::now();
-
-    double timeLMTrack = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                           time_EndLMTrack - time_StartLMTrack
-    )
-                           .count();
-    vdLMTrack_ms.push_back(timeLMTrack);
-#endif
-
     // Update drawer
     mpFrameDrawer->Update(this);
     if (mCurrentFrame.isSet()) {
@@ -2167,9 +1733,6 @@ void Tracking::Track() {
       }
       mlpTemporalPoints.clear();
 
-#ifdef REGISTER_TIMES
-      std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
-#endif
       const bool bNeedKF = NeedNewKeyFrame();
 
       // Check if we need to insert a new keyframe
@@ -2178,16 +1741,6 @@ void Tracking::Track() {
           && (bOK || (mInsertKFsLost && mState == State::RECENTLY_LOST && (mSensor == System::Sensor::IMU_MONOCULAR || mSensor == System::Sensor::IMU_STEREO || mSensor == System::Sensor::IMU_RGBD)))) {
         CreateNewKeyFrame();
       }
-
-#ifdef REGISTER_TIMES
-      std::chrono::steady_clock::time_point time_EndNewKF = std::chrono::steady_clock::now();
-
-      double timeNewKF = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                           time_EndNewKF - time_StartNewKF
-      )
-                           .count();
-      vdNewKF_ms.push_back(timeNewKF);
-#endif
 
       // We allow points with high innovation (considererd outliers by the Huber Function)
       // pass to the new keyframe, so that bundle adjustment will finally decide
@@ -2245,14 +1798,6 @@ void Tracking::Track() {
     }
   }
 
-#ifdef REGISTER_LOOP
-  if (Stop()) {
-    // Safe area to stop
-    while (isStopped()) {
-      std::this_thread::sleep_for(3000us);
-    }
-  }
-#endif
 }
 
 void Tracking::StereoInitialization() {
@@ -3846,39 +3391,5 @@ void Tracking::SaveSubTrajectory(
 float Tracking::GetImageScale() const {
   return mImageScale;
 }
-
-#ifdef REGISTER_LOOP
-void Tracking::RequestStop() {
-  std::unique_lock<std::mutex> lock(mMutexStop);
-  mbStopRequested = true;
-}
-
-bool Tracking::Stop() {
-  std::unique_lock<std::mutex> lock(mMutexStop);
-  if (mbStopRequested && !mbNotStop) {
-    mbStopped = true;
-    _logger->info("Tracking STOP");
-    return true;
-  }
-
-  return false;
-}
-
-bool Tracking::stopRequested() {
-  std::unique_lock<std::mutex> lock(mMutexStop);
-  return mbStopRequested;
-}
-
-bool Tracking::isStopped() {
-  std::unique_lock<std::mutex> lock(mMutexStop);
-  return mbStopped;
-}
-
-void Tracking::Release() {
-  std::unique_lock<std::mutex> lock(mMutexStop);
-  mbStopped       = false;
-  mbStopRequested = false;
-}
-#endif
 
 } // namespace ORB_SLAM3

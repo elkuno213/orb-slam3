@@ -48,6 +48,20 @@ g2o::SE3Quat Converter::toSE3Quat(const Sophus::SE3f& T) {
   return {T.unit_quaternion().cast<double>(), T.translation().cast<double>()};
 }
 
+Eigen::Vector3f Converter::toVector3f(const cv::Mat& cvVector) {
+  Eigen::Vector3f v;
+  v << cvVector.at<float>(0), cvVector.at<float>(1), cvVector.at<float>(2);
+  return v;
+}
+
+Eigen::Matrix3f Converter::toMatrix3f(const cv::Mat& cvMat3) {
+  Eigen::Matrix3f M;
+  M << cvMat3.at<float>(0, 0), cvMat3.at<float>(0, 1), cvMat3.at<float>(0, 2),
+    cvMat3.at<float>(1, 0), cvMat3.at<float>(1, 1), cvMat3.at<float>(1, 2),
+    cvMat3.at<float>(2, 0), cvMat3.at<float>(2, 1), cvMat3.at<float>(2, 2);
+  return M;
+}
+
 Sophus::SE3<float> Converter::toSophus(const cv::Mat& T) {
   Eigen::Matrix<double, 3, 3> eigR;
   eigR << T.at<float>(0, 0), T.at<float>(0, 1), T.at<float>(0, 2),

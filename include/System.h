@@ -171,12 +171,6 @@ public:
 
   [[nodiscard]] float GetImageScale();
 
-#ifdef REGISTER_TIMES
-  void InsertRectTime(double& time);
-  void InsertResizeTime(double& time);
-  void InsertTrackTime(double& time);
-#endif
-
 private:
   void SaveAtlas(FileType type);
   bool LoadAtlas(FileType type);

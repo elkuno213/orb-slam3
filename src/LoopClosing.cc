@@ -52,34 +52,6 @@ LoopClosing::LoopClosing(
   mnCovisibilityConsistencyTh = 3;
   mpLastCurrentKF             = nullptr;
 
-#ifdef REGISTER_TIMES
-  vdDataQuery_ms.clear();
-  vdEstSim3_ms.clear();
-  vdPRTotal_ms.clear();
-
-  vdMergeMaps_ms.clear();
-  vdWeldingBA_ms.clear();
-  vdMergeOptEss_ms.clear();
-  vdMergeTotal_ms.clear();
-  vnMergeKFs.clear();
-  vnMergeMPs.clear();
-  nMerges = 0;
-
-  vdLoopFusion_ms.clear();
-  vdLoopOptEss_ms.clear();
-  vdLoopTotal_ms.clear();
-  vnLoopKFs.clear();
-  nLoop = 0;
-
-  vdGBA_ms.clear();
-  vdUpdateMap_ms.clear();
-  vdFGBATotal_ms.clear();
-  vnGBAKFs.clear();
-  vnGBAMPs.clear();
-  nFGBA_exec  = 0;
-  nFGBA_abort = 0;
-#endif
-
   mstrFolderSubTraj = "SubTrajectories/";
   mnNumCorrection   = 0;
   mnCorrectionGBA   = 0;
@@ -105,21 +77,8 @@ void LoopClosing::Run() {
         mpLastCurrentKF->mvpLoopCandKFs.clear();
         mpLastCurrentKF->mvpMergeCandKFs.clear();
       }
-#ifdef REGISTER_TIMES
-      std::chrono::steady_clock::time_point time_StartPR = std::chrono::steady_clock::now();
-#endif
-
       const bool bFindedRegion = NewDetectCommonRegions();
 
-#ifdef REGISTER_TIMES
-      std::chrono::steady_clock::time_point time_EndPR = std::chrono::steady_clock::now();
-
-      double timePRTotal = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                             time_EndPR - time_StartPR
-      )
-                             .count();
-      vdPRTotal_ms.push_back(timePRTotal);
-#endif
       if (bFindedRegion) {
         if (mbMergeDetected) {
           if ((mpTracker->mSensor == System::Sensor::IMU_MONOCULAR
@@ -172,11 +131,6 @@ void LoopClosing::Run() {
 
             _logger->info("Map merge successfully detected");
 
-#ifdef REGISTER_TIMES
-            std::chrono::steady_clock::time_point time_StartMerge
-              = std::chrono::steady_clock::now();
-            nMerges += 1;
-#endif
             // TODO UNCOMMENT
             if (mpTracker->mSensor == System::Sensor::IMU_MONOCULAR
                 || mpTracker->mSensor == System::Sensor::IMU_STEREO
@@ -185,16 +139,6 @@ void LoopClosing::Run() {
             } else {
               MergeLocal();
             }
-
-#ifdef REGISTER_TIMES
-            std::chrono::steady_clock::time_point time_EndMerge = std::chrono::steady_clock::now();
-            double                                timeMergeTotal
-              = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                  time_EndMerge - time_StartMerge
-              )
-                  .count();
-            vdMergeTotal_ms.push_back(timeMergeTotal);
-#endif
 
             _logger->info("Map merge completed successfully");
           }
@@ -268,20 +212,7 @@ void LoopClosing::Run() {
           if (bGoodLoop) {
             mvpLoopMapPoints = mvpLoopMPs;
 
-#ifdef REGISTER_TIMES
-            std::chrono::steady_clock::time_point time_StartLoop = std::chrono::steady_clock::now();
-            nLoop += 1;
-#endif
             CorrectLoop();
-#ifdef REGISTER_TIMES
-            std::chrono::steady_clock::time_point time_EndLoop = std::chrono::steady_clock::now();
-            double                                timeLoopTotal
-              = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                  time_EndLoop - time_StartLoop
-              )
-                  .count();
-            vdLoopTotal_ms.push_back(timeLoopTotal);
-#endif
 
             mnNumCorrection += 1;
           }
@@ -373,9 +304,6 @@ bool LoopClosing::NewDetectCommonRegions() {
   bool                  bLoopDetectedInKF = false;
   [[maybe_unused]] bool bCheckSpatial     = false;
 
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_StartEstSim3_1 = std::chrono::steady_clock::now();
-#endif
   if (mnLoopNumCoincidences > 0) {
     bCheckSpatial = true;
     // Find from the last KF candidates
@@ -465,19 +393,8 @@ bool LoopClosing::NewDetectCommonRegions() {
       }
     }
   }
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_EndEstSim3_1 = std::chrono::steady_clock::now();
-  double timeEstSim3 = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                         time_EndEstSim3_1 - time_StartEstSim3_1
-  )
-                         .count();
-#endif
-
   if (mbMergeDetected || mbLoopDetected) {
     _logger->info("Loop or merge detected, adding key frame {} to database", mpCurrentKF->mnId);
-#ifdef REGISTER_TIMES
-    vdEstSim3_ms.push_back(timeEstSim3);
-#endif
     mpKeyFrameDB->add(mpCurrentKF);
     return true;
   }
@@ -490,27 +407,13 @@ bool LoopClosing::NewDetectCommonRegions() {
   std::vector<KeyFrame*> vpLoopBowCand;
   if (!bMergeDetectedInKF || !bLoopDetectedInKF) {
     // Search in BoW
-#ifdef REGISTER_TIMES
-    std::chrono::steady_clock::time_point time_StartQuery = std::chrono::steady_clock::now();
-#endif
     mpKeyFrameDB->DetectNBestCandidates(mpCurrentKF, vpLoopBowCand, vpMergeBowCand, 3);
-#ifdef REGISTER_TIMES
-    std::chrono::steady_clock::time_point time_EndQuery = std::chrono::steady_clock::now();
-    double timeDataQuery = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                             time_EndQuery - time_StartQuery
-    )
-                             .count();
-    vdDataQuery_ms.push_back(timeDataQuery);
-#endif
     _logger->info(
       "Loop or merge not detected in key frame, so detect in database and find {} candidates",
       vpLoopBowCand.size()
     );
   }
 
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_StartEstSim3_2 = std::chrono::steady_clock::now();
-#endif
   // Check the BoW candidates if the geometric candidate list is empty
   // Loop candidates
   if (!bLoopDetectedInKF && !vpLoopBowCand.empty()) {
@@ -540,15 +443,6 @@ bool LoopClosing::NewDetectCommonRegions() {
     );
     _logger->info("Merge detection {}", mbMergeDetected ? "succeeded" : "failed");
   }
-
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_EndEstSim3_2 = std::chrono::steady_clock::now();
-  timeEstSim3 += std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                   time_EndEstSim3_2 - time_StartEstSim3_2
-  )
-                   .count();
-  vdEstSim3_ms.push_back(timeEstSim3);
-#endif
 
   mpKeyFrameDB->add(mpCurrentKF);
   _logger->info("Key frame {} added to database", mpCurrentKF->mnId);
@@ -1115,18 +1009,6 @@ void LoopClosing::CorrectLoop() {
 
   Map* pLoopMap = mpCurrentKF->GetMap();
 
-#ifdef REGISTER_TIMES
-  /*KeyFrame* pKF = mpCurrentKF;
-  int numKFinLoop = 0;
-  while (pKF && pKF->mnId > mpLoopMatchedKF->mnId) {
-    pKF = pKF->GetParent();
-    numKFinLoop += 1;
-  }
-  vnLoopKFs.push_back(numKFinLoop);*/
-
-  std::chrono::steady_clock::time_point time_StartFusion = std::chrono::steady_clock::now();
-#endif
-
   {
     // Get Map Mutex
     const std::unique_lock<std::mutex> lock(pLoopMap->mMutexMapUpdate);
@@ -1266,15 +1148,6 @@ void LoopClosing::CorrectLoop() {
     bFixedScale = false;
   }
 
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_EndFusion = std::chrono::steady_clock::now();
-
-  double timeFusion = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                        time_EndFusion - time_StartFusion
-  )
-                        .count();
-  vdLoopFusion_ms.push_back(timeFusion);
-#endif
   if (pLoopMap->IsInertial() && pLoopMap->isImuInitialized()) {
     _logger->info("Optimizing essential graph 4DoF...");
     Optimizer::OptimizeEssentialGraph4DoF(
@@ -1297,14 +1170,6 @@ void LoopClosing::CorrectLoop() {
       bFixedScale
     );
   }
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_EndOpt = std::chrono::steady_clock::now();
-  double timeOptEss = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                        time_EndOpt - time_EndFusion
-  )
-                        .count();
-  vdLoopOptEss_ms.push_back(timeOptEss);
-#endif
 
   mpAtlas->InformNewBigChange();
 
@@ -1383,10 +1248,6 @@ void LoopClosing::MergeLocal() {
     pCurrentMap->GetId(),
     pMergeMap->GetId()
   );
-
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_StartMerge = std::chrono::steady_clock::now();
-#endif
 
   // Ensure current keyframe is updated
   mpCurrentKF->UpdateConnections();
@@ -1519,10 +1380,6 @@ void LoopClosing::MergeLocal() {
   vCorrectedSim3[mpCurrentKF]    = g2oCorrectedScw;
   vNonCorrectedSim3[mpCurrentKF] = g2oNonCorrectedScw;
 
-#ifdef REGISTER_TIMES
-  vnMergeKFs.push_back(spLocalWindowKFs.size() + spMergeConnectedKFs.size());
-  vnMergeMPs.push_back(spLocalWindowMPs.size() + spMapPointMerge.size());
-#endif
   for (KeyFrame* pKFi : spLocalWindowKFs) {
     if (!pKFi || pKFi->isBad()) {
       continue;
@@ -1691,15 +1548,6 @@ void LoopClosing::MergeLocal() {
 
   _logger->info("MergeLocal: starting welding bundle adjustment...");
 
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_StartWeldingBA = std::chrono::steady_clock::now();
-  double timeMergeMaps = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                           time_StartWeldingBA - time_StartMerge
-  )
-                           .count();
-  vdMergeMaps_ms.push_back(timeMergeMaps);
-#endif
-
   bool bStop = false;
   vpLocalCurrentWindowKFs.clear();
   vpMergeConnectedKFs.clear();
@@ -1725,14 +1573,6 @@ void LoopClosing::MergeLocal() {
     );
   }
 
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_EndWeldingBA = std::chrono::steady_clock::now();
-  double timeWeldingBA = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                           time_EndWeldingBA - time_StartWeldingBA
-  )
-                           .count();
-  vdWeldingBA_ms.push_back(timeWeldingBA);
-#endif
   _logger->info("MergeLocal: welding bundle adjustment finished");
 
   // Loop closed. Release Local Mapping.
@@ -1857,15 +1697,6 @@ void LoopClosing::MergeLocal() {
       }
     }
   }
-
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_EndOptEss = std::chrono::steady_clock::now();
-  double timeOptEss = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                        time_EndOptEss - time_EndWeldingBA
-  )
-                        .count();
-  vdMergeOptEss_ms.push_back(timeOptEss);
-#endif
 
   _logger->info("MergeLocal: releasing local mapping...");
   mpLocalMapper->Release();
@@ -2280,13 +2111,6 @@ void LoopClosing::ResetIfRequested() {
 void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, FrameId nLoopKF) {
   _logger->info("Starting global bundle adjustment...");
 
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_StartFGBA  = std::chrono::steady_clock::now();
-  nFGBA_exec                                           += 1;
-  vnGBAKFs.push_back(pActiveMap->GetAllKeyFrames().size());
-  vnGBAMPs.push_back(pActiveMap->GetAllMapPoints().size());
-#endif
-
   const bool bImuInit = pActiveMap->isImuInitialized();
 
   if (!bImuInit) {
@@ -2294,19 +2118,6 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, FrameId nLoopKF) {
   } else {
     Optimizer::FullInertialBA(pActiveMap, 7, false, nLoopKF, &mbStopGBA);
   }
-
-#ifdef REGISTER_TIMES
-  std::chrono::steady_clock::time_point time_EndGBA = std::chrono::steady_clock::now();
-  double timeGBA = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                     time_EndGBA - time_StartFGBA
-  )
-                     .count();
-  vdGBA_ms.push_back(timeGBA);
-
-  if (mbStopGBA) {
-    nFGBA_abort += 1;
-  }
-#endif
 
   const int idx = mnFullBAIdx;
   // Optimizer::GlobalBundleAdjustment(mpMap,10,&mbStopGBA,nLoopKF,false);
@@ -2376,18 +2187,6 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, FrameId nLoopKF) {
         // Update pose
         pKF->mTcwBefGBA = pKF->GetPose();
         pKF->SetPose(pKF->mTcwGBA);
-                if(!vpMapPointsKF[i] || vpMapPointsKF[i]->isBad())
-                {
-                    continue;
-                }
-                num_MPs += 1;
-                std::string strNumOBs = std::to_string(vpMapPointsKF[i]->Observations());
-                cv::circle(imLeft, pKF->mvKeys[i].pt, 2, cv::Scalar(0, 255, 0));
-                cv::putText(imLeft, strNumOBs, pKF->mvKeys[i].pt, CV_FONT_HERSHEY_DUPLEX, 1,
-        cv::Scalar(255, 0, 0));
-            }
-            _logger->info("--It has " << num_MPs << " MPs matched in the map");
-
 
         if (pKF->bImu) {
           // Update inertial values
@@ -2446,19 +2245,6 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, FrameId nLoopKF) {
 
       mpLocalMapper->Release();
 
-#ifdef REGISTER_TIMES
-      std::chrono::steady_clock::time_point time_EndUpdateMap = std::chrono::steady_clock::now();
-      double timeUpdateMap = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                               time_EndUpdateMap - time_EndGBA
-      )
-                               .count();
-      vdUpdateMap_ms.push_back(timeUpdateMap);
-      double timeFGBA = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
-                          time_EndUpdateMap - time_StartFGBA
-      )
-                          .count();
-      vdFGBATotal_ms.push_back(timeFGBA);
-#endif
       _logger->info("Map updated");
     }
 

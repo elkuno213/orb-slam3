@@ -36,6 +36,9 @@ public:
   static g2o::SE3Quat toSE3Quat(const Sophus::SE3f& T);
   static g2o::SE3Quat toSE3Quat(const g2o::Sim3& gSim3);
 
+  static Eigen::Vector3f toVector3f(const cv::Mat& cvVector);
+  static Eigen::Matrix3f toMatrix3f(const cv::Mat& cvMat3);
+
   // TODO: Sophus migration, to be deleted in the future
   static Sophus::SE3<float> toSophus(const cv::Mat& T);
   static Sophus::Sim3f      toSophus(const g2o::Sim3& S);
