@@ -2375,6 +2375,18 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
         // Update pose
         pKF->mTcwBefGBA = pKF->GetPose();
         pKF->SetPose(pKF->mTcwGBA);
+                if(!vpMapPointsKF[i] || vpMapPointsKF[i]->isBad())
+                {
+                    continue;
+                }
+                num_MPs += 1;
+                std::string strNumOBs = std::to_string(vpMapPointsKF[i]->Observations());
+                cv::circle(imLeft, pKF->mvKeys[i].pt, 2, cv::Scalar(0, 255, 0));
+                cv::putText(imLeft, strNumOBs, pKF->mvKeys[i].pt, CV_FONT_HERSHEY_DUPLEX, 1,
+        cv::Scalar(255, 0, 0));
+            }
+            _logger->info("--It has " << num_MPs << " MPs matched in the map");
+
 
         if (pKF->bImu) {
           // Update inertial values
