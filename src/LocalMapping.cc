@@ -361,7 +361,7 @@ void LocalMapping::ProcessNewKeyFrame() {
   mpCurrentKeyFrame->UpdateConnections();
 
   // Insert Keyframe in Map
-  ORB_SLAM3::Atlas::AddKeyFrame(mpCurrentKeyFrame);
+  mpAtlas->AddKeyFrame(mpCurrentKeyFrame);
 }
 
 void LocalMapping::EmptyQueue() {
@@ -492,21 +492,21 @@ void LocalMapping::CreateNewMapPoints() {
       const int& idx1 = vMatchedIndices[ikp].first;
       const int& idx2 = vMatchedIndices[ikp].second;
 
-      const cv::KeyPoint& kp1 = (mpCurrentKeyFrame->NLeft == -1) ? mpCurrentKeyFrame->mvKeysUn[idx1]
+      const cv::KeyPoint& kp1 = (!mpCurrentKeyFrame->isFisheye()) ? mpCurrentKeyFrame->mvKeysUn[idx1]
                               : (idx1 < mpCurrentKeyFrame->NLeft)
                                 ? mpCurrentKeyFrame->mvKeys[idx1]
                                 : mpCurrentKeyFrame->mvKeysRight[idx1 - mpCurrentKeyFrame->NLeft];
       const float         kp1_ur   = mpCurrentKeyFrame->mvuRight[idx1];
       const bool          bStereo1 = (mpCurrentKeyFrame->mpCamera2 == nullptr && kp1_ur >= 0);
-      const bool bRight1 = mpCurrentKeyFrame->NLeft != -1 && idx1 >= mpCurrentKeyFrame->NLeft;
+      const bool bRight1 = !(!mpCurrentKeyFrame->isFisheye() || idx1 < mpCurrentKeyFrame->NLeft);
 
-      const cv::KeyPoint& kp2 = (pKF2->NLeft == -1)  ? pKF2->mvKeysUn[idx2]
+      const cv::KeyPoint& kp2 = (!pKF2->isFisheye()) ? pKF2->mvKeysUn[idx2]
                               : (idx2 < pKF2->NLeft) ? pKF2->mvKeys[idx2]
                                                      : pKF2->mvKeysRight[idx2 - pKF2->NLeft];
 
       const float kp2_ur   = pKF2->mvuRight[idx2];
       const bool  bStereo2 = (pKF2->mpCamera2 == nullptr && kp2_ur >= 0);
-      const bool  bRight2  = pKF2->NLeft != -1 && idx2 >= pKF2->NLeft;
+      const bool  bRight2  = !(!pKF2->isFisheye() || idx2 < pKF2->NLeft);
 
       if (mpCurrentKeyFrame->mpCamera2 && pKF2->mpCamera2) {
         if (bRight1 && bRight2) {
@@ -697,7 +697,7 @@ void LocalMapping::CreateNewMapPoints() {
 
       pMP->UpdateNormalAndDepth();
 
-      ORB_SLAM3::Atlas::AddMapPoint(pMP);
+      mpAtlas->AddMapPoint(pMP);
       mlpRecentAddedMapPoints.push_back(pMP);
     }
   }
@@ -756,7 +756,7 @@ void LocalMapping::SearchInNeighbors() {
   std::vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
   for (auto* pKFi : vpTargetKFs) {
     matcher.Fuse(pKFi, vpMapPointMatches);
-    if (pKFi->NLeft != -1) {
+    if (pKFi->isFisheye()) {
       matcher.Fuse(pKFi, vpMapPointMatches, static_cast<float>(true));
     }
   }
@@ -770,7 +770,7 @@ void LocalMapping::SearchInNeighbors() {
   vpFuseCandidates.reserve(vpTargetKFs.size() * vpMapPointMatches.size());
 
   for (auto* pKFi : vpTargetKFs) {
-    const std::vector<MapPoint*> vpMapPointsKFi = pKFi->GetMapPointMatches();
+    std::vector<MapPoint*> vpMapPointsKFi = pKFi->GetMapPointMatches();
 
     for (auto* pMP : vpMapPointsKFi) {
       if (!pMP) {
@@ -785,7 +785,7 @@ void LocalMapping::SearchInNeighbors() {
   }
 
   matcher.Fuse(mpCurrentKeyFrame, vpFuseCandidates);
-  if (mpCurrentKeyFrame->NLeft != -1) {
+  if (mpCurrentKeyFrame->isFisheye()) {
     matcher.Fuse(mpCurrentKeyFrame, vpFuseCandidates, static_cast<float>(true));
   }
 
@@ -881,7 +881,7 @@ void LocalMapping::KeyFrameCulling() {
   // We only consider close stereo points
   const int Nd = 21;
   mpCurrentKeyFrame->UpdateBestCovisibles();
-  const std::vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
+  std::vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
 
   float redundant_th = 0.0F;
   if (!mbInertial) {
@@ -931,7 +931,7 @@ void LocalMapping::KeyFrameCulling() {
 
           nMPs++;
           if (pMP->Observations() > thObs) {
-            const int& scaleLevel = (pKF->NLeft == -1) ? pKF->mvKeysUn[i].octave
+            const int& scaleLevel = (!pKF->isFisheye()) ? pKF->mvKeysUn[i].octave
                                   : (i < static_cast<std::size_t>(pKF->NLeft))
                                     ? pKF->mvKeys[i].octave
                                     : pKF->mvKeysRight[i].octave;
@@ -944,7 +944,7 @@ void LocalMapping::KeyFrameCulling() {
               const int leftIndex   = get<0>(indexes);
               const int rightIndex  = get<1>(indexes);
               int       scaleLeveli = -1;
-              if (pKFi->NLeft == -1) {
+              if (!pKFi->isFisheye()) {
                 scaleLeveli = pKFi->mvKeysUn[leftIndex].octave;
               } else {
                 if (leftIndex != -1) {
@@ -1382,6 +1382,8 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
   bInitializing     = false;
 
   mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();
+
+  return;
 }
 
 void LocalMapping::ScaleRefinement() {
@@ -1436,6 +1438,8 @@ void LocalMapping::ScaleRefinement() {
 
   // To perform pose-inertial opt w.r.t. last keyframe
   mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();
+
+  return;
 }
 
 bool LocalMapping::IsInitializing() const {

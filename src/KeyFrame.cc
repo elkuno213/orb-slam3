@@ -181,17 +181,17 @@ KeyFrame::KeyFrame(Frame& F, Map* pMap, KeyFrameDatabase* pKFDB)
   mnId = nNextId++;
 
   mGrid.resize(mnGridCols);
-  if (F.Nleft != -1) {
+  if (F.isFisheye()) {
     mGridRight.resize(mnGridCols);
   }
   for (int i = 0; i < mnGridCols; i++) {
     mGrid[i].resize(mnGridRows);
-    if (F.Nleft != -1) {
+    if (F.isFisheye()) {
       mGridRight[i].resize(mnGridRows);
     }
     for (int j = 0; j < mnGridRows; j++) {
       mGrid[i][j] = F.mGrid[i][j];
-      if (F.Nleft != -1) {
+      if (F.isFisheye()) {
         mGridRight[i][j] = F.mGridRight[i][j];
       }
     }
@@ -782,9 +782,9 @@ std::vector<std::size_t> KeyFrame::GetFeaturesInArea(
     for (int iy = nMinCellY; iy <= nMaxCellY; iy++) {
       const std::vector<std::size_t>& vCell = (!bRight) ? mGrid[ix][iy] : mGridRight[ix][iy];
       for (const auto idx : vCell) {
-        const cv::KeyPoint& kpUn  = (NLeft == -1) ? mvKeysUn[idx]
-                                  : (!bRight)     ? mvKeys[idx]
-                                                  : mvKeysRight[idx];
+        const cv::KeyPoint& kpUn  = (!isFisheye()) ? mvKeysUn[idx]
+                                  : (!bRight)      ? mvKeys[idx]
+                                                   : mvKeysRight[idx];
         const float         distx = kpUn.pt.x - x;
         const float         disty = kpUn.pt.y - y;
 

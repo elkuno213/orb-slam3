@@ -534,7 +534,7 @@ void Frame::AssignFeaturesToGrid() {
   for (unsigned int i = 0; i < kFrameGridCols; i++) {
     for (unsigned int j = 0; j < kFrameGridRows; j++) {
       mGrid[i][j].reserve(nReserve);
-      if (Nleft != -1) {
+      if (isFisheye()) {
         mGridRight[i][j].reserve(nReserve);
       }
     }
@@ -542,14 +542,14 @@ void Frame::AssignFeaturesToGrid() {
 
   for (int i = 0; i < N; i++) {
     const cv::KeyPoint& kp // NOLINT(readability-avoid-nested-conditional-operator)
-      = (Nleft == -1) ? mvKeysUn[i]
-      : (i < Nleft)   ? mvKeys[i]
-                      : mvKeysRight[i - Nleft];
+      = (!isFisheye()) ? mvKeysUn[i]
+      : (i < Nleft)    ? mvKeys[i]
+                       : mvKeysRight[i - Nleft];
 
     int nGridPosX = 0;
     int nGridPosY = 0;
     if (PosInGrid(kp, nGridPosX, nGridPosY)) {
-      if (Nleft == -1 || i < Nleft) {
+      if (!isFisheye() || i < Nleft) {
         mGrid[nGridPosX][nGridPosY].push_back(i);
       } else {
         mGridRight[nGridPosX][nGridPosY].push_back(i - Nleft);
@@ -648,7 +648,7 @@ Eigen::Vector3f Frame::GetRelativePoseTlr_translation() {
 }
 
 bool Frame::isInFrustum(MapPoint* pMP, float viewingCosLimit) {
-  if (Nleft == -1) {
+  if (!isFisheye()) {
     pMP->mbTrackInView = false;
     pMP->mTrackProjX   = -1;
     pMP->mTrackProjY   = -1;
@@ -845,9 +845,9 @@ std::vector<std::size_t> Frame::GetFeaturesInArea(
 
       for (const auto j : vCell) {
         const cv::KeyPoint& kpUn // NOLINT(readability-avoid-nested-conditional-operator)
-          = (Nleft == -1) ? mvKeysUn[j]
-          : (!bRight)     ? mvKeys[j]
-                          : mvKeysRight[j];
+          = (!isFisheye()) ? mvKeysUn[j]
+          : (!bRight)      ? mvKeys[j]
+                           : mvKeysRight[j];
         if (bCheckLevels) {
           if (kpUn.octave < minLevel) {
             continue;

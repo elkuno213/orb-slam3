@@ -144,7 +144,7 @@ MapPoint::MapPoint(const Eigen::Vector3f& Pos, Map* pMap, Frame* pFrame, const i
   SetWorldPos(Pos);
 
   Eigen::Vector3f Ow;
-  if (pFrame->Nleft == -1 || idxF < pFrame->Nleft) {
+  if (!pFrame->isFisheye() || idxF < pFrame->Nleft) {
     Ow = pFrame->GetCameraCenter();
   } else {
     const Eigen::Matrix3f Rwl = pFrame->GetRwc();
@@ -158,9 +158,9 @@ MapPoint::MapPoint(const Eigen::Vector3f& Pos, Map* pMap, Frame* pFrame, const i
 
   const Eigen::Vector3f PC               = mWorldPos - Ow;
   const float           dist             = PC.norm();
-  const int             level            = (pFrame->Nleft == -1)  ? pFrame->mvKeysUn[idxF].octave
-                                         : (idxF < pFrame->Nleft) ? pFrame->mvKeys[idxF].octave
-                                                                  : pFrame->mvKeysRight[idxF].octave;
+  const int             level            = (!pFrame->isFisheye())  ? pFrame->mvKeysUn[idxF].octave
+                                         : (idxF < pFrame->Nleft)  ? pFrame->mvKeys[idxF].octave
+                                                                   : pFrame->mvKeysRight[idxF].octave;
   const float           levelScaleFactor = pFrame->mvScaleFactors[level];
   const int             nLevels          = pFrame->mnScaleLevels;
 
@@ -205,7 +205,7 @@ void MapPoint::AddObservation(KeyFrame* pKF, int idx) {
     indexes = std::tuple<int, int>(-1, -1);
   }
 
-  if (pKF->NLeft != -1 && idx >= pKF->NLeft) {
+  if (pKF->isFisheye() && idx >= pKF->NLeft) {
     std::get<1>(indexes) = idx;
   } else {
     std::get<0>(indexes) = idx;
@@ -498,7 +498,7 @@ void MapPoint::UpdateNormalAndDepth() {
 
   const auto [leftIndex, rightIndex] = observations[pRefKF];
   int level                          = 0;
-  if (pRefKF->NLeft == -1) {
+  if (!pRefKF->isFisheye()) {
     level = pRefKF->mvKeysUn[leftIndex].octave;
   } else if (leftIndex != -1) {
     level = pRefKF->mvKeys[leftIndex].octave;

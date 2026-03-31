@@ -4261,7 +4261,7 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
   // Set MapPoint vertices
   const int  N      = pFrame->N;
   const int  Nleft  = pFrame->Nleft;
-  const bool bRight = (Nleft != -1);
+  const bool bRight = pFrame->isFisheye();
 
   std::vector<EdgeMonoOnlyPose*>   vpEdgesMono;
   std::vector<EdgeStereoOnlyPose*> vpEdgesStereo;
@@ -4631,7 +4631,7 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
   // Set MapPoint vertices
   const int  N      = pFrame->N;
   const int  Nleft  = pFrame->Nleft;
-  const bool bRight = (Nleft != -1);
+  const bool bRight = pFrame->isFisheye();
 
   std::vector<EdgeMonoOnlyPose*>   vpEdgesMono;
   std::vector<EdgeStereoOnlyPose*> vpEdgesStereo;

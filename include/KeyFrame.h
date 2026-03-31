@@ -169,6 +169,9 @@ public:
   Eigen::Vector3f GetVelocity();
   bool            isVelocitySet();
 
+  /// True when this keyframe uses a fisheye stereo camera pair.
+  bool isFisheye() const noexcept { return NLeft != -1; }
+
   // Bag of Words Representation
   void ComputeBoW();
 

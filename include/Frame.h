@@ -193,6 +193,9 @@ public:
     return mbHasVelocity;
   }
 
+  /// True when this frame uses a fisheye stereo camera pair.
+  bool isFisheye() const noexcept { return Nleft != -1; }
+
 private:
   // Sophus/Eigen migration
   Sophus::SE3f    mTcw;
