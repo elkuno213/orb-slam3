@@ -1152,13 +1152,13 @@ Sophus::SE3f KeyFrame::GetRelativePoseTlr() {
   return mTlr;
 }
 
-Sophus::SE3<float> KeyFrame::GetRightPose() {
+Sophus::SE3f KeyFrame::GetRightPose() {
   const std::unique_lock<std::mutex> lock(mMutexPose);
 
   return mTrl * mTcw;
 }
 
-Sophus::SE3<float> KeyFrame::GetRightPoseInverse() {
+Sophus::SE3f KeyFrame::GetRightPoseInverse() {
   const std::unique_lock<std::mutex> lock(mMutexPose);
 
   return mTwc * mTlr;
@@ -1170,7 +1170,7 @@ Eigen::Vector3f KeyFrame::GetRightCameraCenter() {
   return (mTwc * mTlr).translation();
 }
 
-Eigen::Matrix<float, 3, 3> KeyFrame::GetRightRotation() {
+Eigen::Matrix3f KeyFrame::GetRightRotation() {
   const std::unique_lock<std::mutex> lock(mMutexPose);
 
   return (mTrl.so3() * mTcw.so3()).matrix();

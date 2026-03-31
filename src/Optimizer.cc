@@ -772,7 +772,7 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
 
   // Set Frame vertex
   auto*              vSE3 = new g2o::VertexSE3Expmap();
-  Sophus::SE3<float> Tcw  = pFrame->GetPose();
+  Sophus::SE3f Tcw  = pFrame->GetPose();
   vSE3->setEstimate(
     g2o::SE3Quat(Tcw.unit_quaternion().cast<double>(), Tcw.translation().cast<double>())
   );
@@ -1040,7 +1040,7 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
   // Recover optimized pose and return number of inliers
   auto*                    vSE3_recov    = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(0));
   const g2o::SE3Quat       SE3quat_recov = vSE3_recov->estimate();
-  const Sophus::SE3<float> pose(
+  const Sophus::SE3f pose(
     SE3quat_recov.rotation().cast<float>(),
     SE3quat_recov.translation().cast<float>()
   );

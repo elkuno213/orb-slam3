@@ -466,7 +466,7 @@ void KannalaBrandt8::Triangulate(
   const Eigen::Matrix<float, 3, 4>& Tcw2,
   Eigen::Vector3f&                  x3D
 ) {
-  Eigen::Matrix<float, 4, 4> A;
+  Eigen::Matrix4f A;
   A.row(0) = p1.x * Tcw1.row(2) - Tcw1.row(0);
   A.row(1) = p1.y * Tcw1.row(2) - Tcw1.row(1);
   A.row(2) = p2.x * Tcw2.row(2) - Tcw2.row(0);

@@ -24,11 +24,11 @@
 namespace ORB_SLAM3 {
 
 Eigen::Matrix3f GeometricTools::ComputeF12(KeyFrame*& pKF1, KeyFrame*& pKF2) {
-  const Sophus::SE3<float>                    Tc1w  = pKF1->GetPose();
+  const Sophus::SE3f                          Tc1w  = pKF1->GetPose();
   const Sophus::Matrix3<float>                Rc1w  = Tc1w.rotationMatrix();
   const auto& tc1w = Tc1w.translation();
 
-  const Sophus::SE3<float>                    Tc2w  = pKF2->GetPose();
+  const Sophus::SE3f                          Tc2w  = pKF2->GetPose();
   const Sophus::Matrix3<float>                Rc2w  = Tc2w.rotationMatrix();
   const auto& tc2w = Tc2w.translation();
 
