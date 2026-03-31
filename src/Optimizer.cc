@@ -3831,8 +3831,8 @@ void Optimizer::MergeInertialBA(
 
   // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
   int i = 0;
-  for (auto& pair : pairs) {
-    std::map<KeyFrame*, std::tuple<int, int>> observations = pair.first->GetObservations();
+  for (auto& [pMP, obsCount] : pairs) {
+    std::map<KeyFrame*, std::tuple<int, int>> observations = pMP->GetObservations();
     if (i >= maxCovKF) {
       break;
     }

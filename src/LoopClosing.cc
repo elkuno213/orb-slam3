@@ -2159,8 +2159,8 @@ void LoopClosing::CheckObservations(
         pKFi1->mnId,
         mMatchedMP.size()
       );
-      for (std::pair<KeyFrame*, int> matchedKF : mMatchedMP) {
-        _logger->debug("Key frame {}: {} matches", matchedKF.first->mnId, matchedKF.second);
+      for (const auto& [pKF, count] : mMatchedMP) {
+        _logger->debug("Key frame {}: {} matches", pKF->mnId, count);
       }
     }
   }

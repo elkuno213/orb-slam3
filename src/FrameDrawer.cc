@@ -116,15 +116,15 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
         cv::line(im, pt1, pt2, standardColor);
       }
     }
-    for (const auto& track : vTracks) {
+    for (const auto& [from, to] : vTracks) {
       cv::Point2f pt1;
       cv::Point2f pt2;
       if (imageScale != 1.F) {
-        pt1 = track.first / imageScale;
-        pt2 = track.second / imageScale;
+        pt1 = from / imageScale;
+        pt2 = to / imageScale;
       } else {
-        pt1 = track.first;
-        pt2 = track.second;
+        pt1 = from;
+        pt2 = to;
       }
       cv::line(im, pt1, pt2, standardColor, 5);
     }
