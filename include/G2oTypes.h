@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <fstream>
 #include <utility>
 #include <vector>
 #include <Eigen/Core>
