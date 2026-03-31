@@ -186,9 +186,9 @@ void MapDrawer::DrawKeyFrames(
       } else {
         glLineWidth(mKeyFrameLineWidth);
         if (bDrawOptLba) {
-          if (sOptKFs.find(pKF->mnId) != sOptKFs.end()) {
+          if (sOptKFs.contains(pKF->mnId)) {
             glColor3f(0.0F, 1.0F, 0.0F); // Green -> Opt KFs
-          } else if (sFixedKFs.find(pKF->mnId) != sFixedKFs.end()) {
+          } else if (sFixedKFs.contains(pKF->mnId)) {
             glColor3f(1.0F, 0.0F, 0.0F); // Red -> Fixed KFs
           } else {
             glColor3f(0.0F, 0.0F, 1.0F); // Basic color

@@ -292,7 +292,7 @@ void KeyFrameDatabase::DetectBestCandidates(
       const std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
 
       for (auto* pKFi : lKFs) {
-        if (spConnectedKF.find(pKFi) != spConnectedKF.end()) {
+        if (spConnectedKF.contains(pKFi)) {
           continue;
         }
         if (pKFi->mnPlaceRecognitionQuery != pKF->mnId) {

@@ -579,7 +579,7 @@ void MapPoint::UpdateMap(Map* pMap) {
 
 void MapPoint::PreSave(set<KeyFrame*>& spKF, set<MapPoint*>& spMP) {
   mBackupReplacedId = -1;
-  if (mpReplaced != nullptr && spMP.find(mpReplaced) != spMP.end()) {
+  if (mpReplaced != nullptr && spMP.contains(mpReplaced)) {
     mBackupReplacedId = mpReplaced->mnId;
   }
 
@@ -587,7 +587,7 @@ void MapPoint::PreSave(set<KeyFrame*>& spKF, set<MapPoint*>& spMP) {
   mBackupObservationsId2.clear();
   // Save the id and position in each KF who view it
   for (const auto& [pKFi, indexes] : mObservations) {
-    if (spKF.find(pKFi) != spKF.end()) {
+    if (spKF.contains(pKFi)) {
       mBackupObservationsId1[pKFi->mnId] = std::get<0>(indexes);
       mBackupObservationsId2[pKFi->mnId] = std::get<1>(indexes);
     } else {
@@ -596,7 +596,7 @@ void MapPoint::PreSave(set<KeyFrame*>& spKF, set<MapPoint*>& spMP) {
   }
 
   // Save the id of the reference KF
-  if (spKF.find(mpRefKF) != spKF.end()) {
+  if (spKF.contains(mpRefKF)) {
     mBackupRefKFId = mpRefKF->mnId;
   }
 }

@@ -681,7 +681,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
 
     bool bAbortByNearKF = false;
     for (auto* pKF : vpCovKFi) {
-      if (spConnectedKeyFrames.find(pKF) != spConnectedKeyFrames.end()) {
+      if (spConnectedKeyFrames.contains(pKF)) {
         bAbortByNearKF = true;
         break;
       }
@@ -722,7 +722,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
           continue;
         }
 
-        if (spMatchedMPi.find(pMPi_j) == spMatchedMPi.end()) {
+        if (!spMatchedMPi.contains(pMPi_j)) {
           spMatchedMPi.insert(pMPi_j);
           numBoWMatches++;
 
@@ -783,7 +783,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
               continue;
             }
 
-            if (spMapPoints.find(pCovMPij) == spMapPoints.end()) {
+            if (!spMapPoints.contains(pCovMPij)) {
               spMapPoints.insert(pCovMPij);
               vpMapPoints.push_back(pCovMPij);
               vpKeyFrames.push_back(pCovKFi);
@@ -1014,8 +1014,8 @@ int LoopClosing::FindMatchesByProjection(
       int                    nInserted = 0;
       int                    j         = 0;
       while (j < static_cast<int>(vpKFs.size()) && nInserted < nNumCovisibles) {
-        if (spCheckKFs.find(vpKFs[j]) == spCheckKFs.end()
-            && spCurrentCovisbles.find(vpKFs[j]) == spCurrentCovisbles.end()) {
+        if (!spCheckKFs.contains(vpKFs[j])
+            && !spCurrentCovisbles.contains(vpKFs[j])) {
           spCheckKFs.insert(vpKFs[j]);
           ++nInserted;
         }
@@ -1033,7 +1033,7 @@ int LoopClosing::FindMatchesByProjection(
         continue;
       }
 
-      if (spMapPoints.find(pMPij) == spMapPoints.end()) {
+      if (!spMapPoints.contains(pMPij)) {
         spMapPoints.insert(pMPij);
         vpMapPoints.push_back(pMPij);
       }
@@ -1434,7 +1434,7 @@ void LoopClosing::MergeLocal() {
         = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
       for (KeyFrame* pKFcov : vpKFiCov) {
         if (pKFcov != nullptr && !pKFcov->isBad()
-            && spLocalWindowKFs.find(pKFcov) == spLocalWindowKFs.end()) {
+            && !spLocalWindowKFs.contains(pKFcov)) {
           vpNewCovKFs.push_back(pKFcov);
         }
       }
@@ -1484,7 +1484,7 @@ void LoopClosing::MergeLocal() {
         = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
       for (KeyFrame* pKFcov : vpKFiCov) {
         if (pKFcov != nullptr && !pKFcov->isBad()
-            && spMergeConnectedKFs.find(pKFcov) == spMergeConnectedKFs.end()) {
+            && !spMergeConnectedKFs.contains(pKFcov)) {
           vpNewCovKFs.push_back(pKFcov);
         }
       }
@@ -1574,7 +1574,7 @@ void LoopClosing::MergeLocal() {
     }
 
     KeyFrame* pKFref = pMPi->GetReferenceKeyFrame();
-    if (vCorrectedSim3.find(pKFref) == vCorrectedSim3.end()) {
+    if (!vCorrectedSim3.contains(pKFref)) {
       itMP = spLocalWindowMPs.erase(itMP);
       continue;
     }
@@ -2137,8 +2137,8 @@ void LoopClosing::CheckObservations(
 
       std::map<KeyFrame*, std::tuple<int, int>> mMPijObs = pMPij->GetObservations();
       for (KeyFrame* pKFi2 : spKFsMap2) {
-        if (mMPijObs.find(pKFi2) != mMPijObs.end()) {
-          if (mMatchedMP.find(pKFi2) != mMatchedMP.end()) {
+        if (mMPijObs.contains(pKFi2)) {
+          if (mMatchedMP.contains(pKFi2)) {
             mMatchedMP[pKFi2] = mMatchedMP[pKFi2] + 1;
           } else {
             mMatchedMP[pKFi2] = 1;

@@ -1856,7 +1856,7 @@ void Optimizer::OptimizeEssentialGraph(
     KeyFrame* pParentKFi = pKFi->GetParent();
 
     // Spanning tree edge
-    if (pParentKFi && spKFs.find(pParentKFi) != spKFs.end()) {
+    if (pParentKFi && spKFs.contains(pParentKFi)) {
       const int nIDj = pParentKFi->mnId;
 
       g2o::Sim3 Sjw;
@@ -1887,7 +1887,7 @@ void Optimizer::OptimizeEssentialGraph(
     // Loop edges
     const std::set<KeyFrame*> sLoopEdges = pKFi->GetLoopEdges();
     for (auto* pLKF : sLoopEdges) {
-      if (spKFs.find(pLKF) != spKFs.end() && pLKF->mnId < pKFi->mnId) {
+      if (spKFs.contains(pLKF) && pLKF->mnId < pKFi->mnId) {
         g2o::Sim3 Slw;
         bool      bHasRelation = false;
 
@@ -1919,7 +1919,7 @@ void Optimizer::OptimizeEssentialGraph(
     const std::vector<KeyFrame*> vpConnectedKFs = pKFi->GetCovisiblesByWeight(minFeat);
     for (auto* pKFn : vpConnectedKFs) {
       if (pKFn && pKFn != pParentKFi && !pKFi->hasChild(pKFn) && !sLoopEdges.contains(pKFn)
-          && spKFs.find(pKFn) != spKFs.end()) {
+          && spKFs.contains(pKFn)) {
         if (!pKFn->isBad() && pKFn->mnId < pKFi->mnId) {
           g2o::Sim3 Snw          = vScw[pKFn->mnId];
           bool      bHasRelation = false;
