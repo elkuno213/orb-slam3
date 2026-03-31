@@ -37,6 +37,7 @@
 #include "Map.h"
 #include "MapPoint.h"
 #include "OptimizableTypes.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 bool sortByVal(const std::pair<MapPoint*, int>& a, const std::pair<MapPoint*, int>& b) {
@@ -130,7 +131,7 @@ void Optimizer::BundleAdjustment(
   }
 
   const float thHuber2D = std::sqrt(5.99);
-  const float thHuber3D = std::sqrt(7.815);
+  const float thHuber3D = std::sqrt(kChi2Stereo);
 
   // Set MapPoint vertices
   for (std::size_t i = 0; i < vpMP.size(); i++) {
@@ -312,7 +313,7 @@ void Optimizer::BundleAdjustment(
             continue;
           }
 
-          if (e->chi2() <= 5.991 && e->isDepthPositive()) {
+          if (e->chi2() <= kChi2Mono && e->isDepthPositive()) {
             vpMonoMPsOpt.push_back(pMP);
           }
         }
@@ -330,7 +331,7 @@ void Optimizer::BundleAdjustment(
             continue;
           }
 
-          if (e->chi2() <= 7.815 && e->isDepthPositive()) {
+          if (e->chi2() <= kChi2Stereo && e->isDepthPositive()) {
             vpStereoMPsOpt.push_back(pMP);
           }
         }
@@ -553,8 +554,8 @@ void Optimizer::FullInertialBA(
     optimizer.addEdge(epg);
   }
 
-  const float thHuberMono   = std::sqrt(5.991);
-  const float thHuberStereo = std::sqrt(7.815);
+  const float thHuberMono   = std::sqrt(kChi2Mono);
+  const float thHuberStereo = std::sqrt(kChi2Stereo);
 
   const unsigned long iniMPid = maxKFid * 5;
 
@@ -797,8 +798,8 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
   vpEdgesStereo.reserve(N);
   vnIndexEdgeStereo.reserve(N);
 
-  const float deltaMono   = std::sqrt(5.991);
-  const float deltaStereo = std::sqrt(7.815);
+  const float deltaMono   = std::sqrt(kChi2Mono);
+  const float deltaStereo = std::sqrt(kChi2Stereo);
 
   {
     const std::unique_lock<std::mutex> lock(MapPoint::mGlobalMutex);
@@ -942,8 +943,8 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
   // We perform 4 optimizations, after each optimization we classify observation as inlier/outlier
   // At the next optimization, outliers are not included, but at the end they can be classified as
   // inliers again.
-  const float chi2Mono[4]   = {5.991F, 5.991F, 5.991F, 5.991F};
-  const float chi2Stereo[4] = {7.815F, 7.815F, 7.815F, 7.815F};
+  const float chi2Mono[4]   = {kChi2Mono, kChi2Mono, kChi2Mono, kChi2Mono};
+  const float chi2Stereo[4] = {kChi2Stereo, kChi2Stereo, kChi2Stereo, kChi2Stereo};
   const int   its[4]        = {10, 10, 10, 10};
 
   int nBad = 0;
@@ -1206,8 +1207,8 @@ void Optimizer::LocalBundleAdjustment(
   std::vector<MapPoint*> vpMapPointEdgeStereo;
   vpMapPointEdgeStereo.reserve(nExpectedSize);
 
-  const float thHuberMono   = std::sqrt(5.991);
-  const float thHuberStereo = std::sqrt(7.815);
+  const float thHuberMono   = std::sqrt(kChi2Mono);
+  const float thHuberStereo = std::sqrt(kChi2Stereo);
 
   int nEdges = 0;
 
@@ -1359,7 +1360,7 @@ void Optimizer::LocalBundleAdjustment(
       continue;
     }
 
-    if (e->chi2() > 5.991 || !e->isDepthPositive()) {
+    if (e->chi2() > kChi2Mono || !e->isDepthPositive()) {
       KeyFrame* pKFi = vpEdgeKFMono[i];
       vToErase.emplace_back(pKFi, pMP);
     }
@@ -1373,7 +1374,7 @@ void Optimizer::LocalBundleAdjustment(
       continue;
     }
 
-    if (e->chi2() > 5.991 || !e->isDepthPositive()) {
+    if (e->chi2() > kChi2Mono || !e->isDepthPositive()) {
       KeyFrame* pKFi = vpEdgeKFBody[i];
       vToErase.emplace_back(pKFi, pMP);
     }
@@ -1387,7 +1388,7 @@ void Optimizer::LocalBundleAdjustment(
       continue;
     }
 
-    if (e->chi2() > 7.815 || !e->isDepthPositive()) {
+    if (e->chi2() > kChi2Stereo || !e->isDepthPositive()) {
       KeyFrame* pKFi = vpEdgeKFStereo[i];
       vToErase.emplace_back(pKFi, pMP);
     }
@@ -2543,10 +2544,10 @@ void Optimizer::LocalInertialBA(
   std::vector<MapPoint*> vpMapPointEdgeStereo;
   vpMapPointEdgeStereo.reserve(nExpectedSize);
 
-  const float thHuberMono   = std::sqrt(5.991);
-  const float chi2Mono2     = 5.991;
-  const float thHuberStereo = std::sqrt(7.815);
-  const float chi2Stereo2   = 7.815;
+  const float thHuberMono   = std::sqrt(kChi2Mono);
+  const float chi2Mono2     = kChi2Mono;
+  const float thHuberStereo = std::sqrt(kChi2Stereo);
+  const float chi2Stereo2   = kChi2Stereo;
 
   const unsigned long iniMPid = maxKFid * 5;
 
@@ -3434,7 +3435,7 @@ void Optimizer::LocalBundleAdjustment(
   vpMapPointEdgeStereo.reserve(nExpectedSize);
 
   const float thHuber2D = std::sqrt(5.99);
-  const float thHuber3D = std::sqrt(7.815);
+  const float thHuber3D = std::sqrt(kChi2Stereo);
 
   // Set MapPoint vertices
   std::map<KeyFrame*, int> mpObsKFs;
@@ -3552,7 +3553,7 @@ void Optimizer::LocalBundleAdjustment(
         continue;
       }
 
-      if (e->chi2() > 5.991 || !e->isDepthPositive()) {
+      if (e->chi2() > kChi2Mono || !e->isDepthPositive()) {
         e->setLevel(1);
       }
       e->setRobustKernel(0);
@@ -3566,7 +3567,7 @@ void Optimizer::LocalBundleAdjustment(
         continue;
       }
 
-      if (e->chi2() > 7.815 || !e->isDepthPositive()) {
+      if (e->chi2() > kChi2Stereo || !e->isDepthPositive()) {
         e->setLevel(1);
       }
 
@@ -3591,7 +3592,7 @@ void Optimizer::LocalBundleAdjustment(
       continue;
     }
 
-    if (e->chi2() > 5.991 || !e->isDepthPositive()) {
+    if (e->chi2() > kChi2Mono || !e->isDepthPositive()) {
       KeyFrame* pKFi = vpEdgeKFMono[i];
       vToErase.emplace_back(pKFi, pMP);
       mWrongObsKF[pKFi->mnId]++;
@@ -3609,7 +3610,7 @@ void Optimizer::LocalBundleAdjustment(
       continue;
     }
 
-    if (e->chi2() > 7.815 || !e->isDepthPositive()) {
+    if (e->chi2() > kChi2Stereo || !e->isDepthPositive()) {
       KeyFrame* pKFi = vpEdgeKFStereo[i];
       vToErase.emplace_back(pKFi, pMP);
       mWrongObsKF[pKFi->mnId]++;
@@ -3677,7 +3678,7 @@ void Optimizer::LocalBundleAdjustment(
         continue;
       }
 
-      if (e->chi2() > 5.991 || !e->isDepthPositive()) {
+      if (e->chi2() > kChi2Mono || !e->isDepthPositive()) {
         vpMonoMPsBad.push_back(pMP);
       } else {
         vpMonoMPsOpt.push_back(pMP);
@@ -3697,7 +3698,7 @@ void Optimizer::LocalBundleAdjustment(
         continue;
       }
 
-      if (e->chi2() > 7.815 || !e->isDepthPositive()) {
+      if (e->chi2() > kChi2Stereo || !e->isDepthPositive()) {
         vpStereoMPsBad.push_back(pMP);
       } else {
         vpStereoMPsOpt.push_back(pMP);
@@ -4016,10 +4017,10 @@ void Optimizer::MergeInertialBA(
   std::vector<MapPoint*> vpMapPointEdgeStereo;
   vpMapPointEdgeStereo.reserve(nExpectedSize);
 
-  const float thHuberMono   = std::sqrt(5.991);
-  const float chi2Mono2     = 5.991;
-  const float thHuberStereo = std::sqrt(7.815);
-  const float chi2Stereo2   = 7.815;
+  const float thHuberMono   = std::sqrt(kChi2Mono);
+  const float chi2Mono2     = kChi2Mono;
+  const float thHuberStereo = std::sqrt(kChi2Stereo);
+  const float chi2Stereo2   = kChi2Stereo;
 
   const unsigned long iniMPid = maxKFid * 5;
 
@@ -4271,8 +4272,8 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
   vnIndexEdgeMono.reserve(N);
   vnIndexEdgeStereo.reserve(N);
 
-  const float thHuberMono   = std::sqrt(5.991);
-  const float thHuberStereo = std::sqrt(7.815);
+  const float thHuberMono   = std::sqrt(kChi2Mono);
+  const float thHuberStereo = std::sqrt(kChi2Stereo);
 
   {
     const std::unique_lock<std::mutex> lock(MapPoint::mGlobalMutex);
@@ -4424,8 +4425,8 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
   // We perform 4 optimizations, after each optimization we classify observation as inlier/outlier
   // At the next optimization, outliers are not included, but at the end they can be classified as
   // inliers again.
-  const float chi2Mono[4]   = {12.0F, 7.5F, 5.991F, 5.991F};
-  const float chi2Stereo[4] = {15.6F, 9.8F, 7.815F, 7.815F};
+  const float chi2Mono[4]   = {12.0F, 7.5F, kChi2Mono, kChi2Mono};
+  const float chi2Stereo[4] = {15.6F, 9.8F, kChi2Stereo, kChi2Stereo};
 
   const int its[4] = {10, 10, 10, 10};
 
@@ -4641,8 +4642,8 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
   vnIndexEdgeMono.reserve(N);
   vnIndexEdgeStereo.reserve(N);
 
-  const float thHuberMono   = std::sqrt(5.991);
-  const float thHuberStereo = std::sqrt(7.815);
+  const float thHuberMono   = std::sqrt(kChi2Mono);
+  const float thHuberStereo = std::sqrt(kChi2Stereo);
 
   {
     const std::unique_lock<std::mutex> lock(MapPoint::mGlobalMutex);
@@ -4815,8 +4816,8 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
   // We perform 4 optimizations, after each optimization we classify observation as inlier/outlier
   // At the next optimization, outliers are not included, but at the end they can be classified as
   // inliers again.
-  const float chi2Mono[4]   = {5.991F, 5.991F, 5.991F, 5.991F};
-  const float chi2Stereo[4] = {15.6F, 9.8F, 7.815F, 7.815F};
+  const float chi2Mono[4]   = {kChi2Mono, kChi2Mono, kChi2Mono, kChi2Mono};
+  const float chi2Stereo[4] = {15.6F, 9.8F, kChi2Stereo, kChi2Stereo};
   const int   its[4]        = {10, 10, 10, 10};
 
   int nBad           = 0;

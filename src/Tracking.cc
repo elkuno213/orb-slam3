@@ -38,6 +38,7 @@
 #include "Pinhole.h"
 #include "Settings.h"
 #include "System.h"
+#include "Types.h"
 #include "Viewer.h"
 using namespace std::chrono_literals;
 
@@ -3432,7 +3433,7 @@ bool Tracking::Relocalization() {
         continue;
       } else {
         auto* pSolver = new MLPnPsolver(mCurrentFrame, vvpMapPointMatches[i]);
-        pSolver->SetRansacParameters(0.99, 10, 300, 6, 0.5, 5.991); // This solver needs at least 6
+        pSolver->SetRansacParameters(0.99, 10, 300, 6, 0.5, kChi2Mono); // This solver needs at least 6
                                                                     // points
         vpMLPnPsolvers[i] = pSolver;
         nCandidates++;

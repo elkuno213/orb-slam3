@@ -21,6 +21,7 @@
 #include <cassert>
 #include <opencv2/calib3d.hpp>
 #include "TwoViewReconstruction.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -340,7 +341,7 @@ bool KannalaBrandt8::matchAndtriangulate(
   const float errX1 = uv1(0) - kp1.pt.x;
   const float errY1 = uv1(1) - kp1.pt.y;
 
-  if ((errX1 * errX1 + errY1 * errY1) > 5.991 * sigmaLevel1) { // Reprojection error is high
+  if ((errX1 * errX1 + errY1 * errY1) > kChi2Mono * sigmaLevel1) { // Reprojection error is high
     return false;
   }
 
@@ -352,7 +353,7 @@ bool KannalaBrandt8::matchAndtriangulate(
   const float errX2 = uv2(0) - kp2.pt.x;
   const float errY2 = uv2(1) - kp2.pt.y;
 
-  if ((errX2 * errX2 + errY2 * errY2) > 5.991 * sigmaLevel2) { // Reprojection error is high
+  if ((errX2 * errX2 + errY2 * errY2) > kChi2Mono * sigmaLevel2) { // Reprojection error is high
     return false;
   }
 
@@ -423,7 +424,7 @@ float KannalaBrandt8::TriangulateMatches(
   const float errX1 = uv1(0) - kp1.pt.x;
   const float errY1 = uv1(1) - kp1.pt.y;
 
-  if ((errX1 * errX1 + errY1 * errY1) > 5.991 * sigmaLevel) { // Reprojection error is high
+  if ((errX1 * errX1 + errY1 * errY1) > kChi2Mono * sigmaLevel) { // Reprojection error is high
     return -4;
   }
 
@@ -433,7 +434,7 @@ float KannalaBrandt8::TriangulateMatches(
   const float errX2 = uv2(0) - kp2.pt.x;
   const float errY2 = uv2(1) - kp2.pt.y;
 
-  if ((errX2 * errX2 + errY2 * errY2) > 5.991 * unc) { // Reprojection error is high
+  if ((errX2 * errX2 + errY2 * errY2) > kChi2Mono * unc) { // Reprojection error is high
     return -5;
   }
 

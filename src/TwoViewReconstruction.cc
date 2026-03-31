@@ -24,6 +24,7 @@
 #include <thread>
 #include <DBoW2/DUtils/Random.h>
 #include "GeometricTools.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 TwoViewReconstruction::TwoViewReconstruction(
@@ -352,7 +353,7 @@ float TwoViewReconstruction::CheckHomography(
 
   float score = 0;
 
-  const float th = 5.991;
+  const float th = kChi2Mono;
 
   const float invSigmaSquare = 1.0 / (sigma * sigma);
 
@@ -430,8 +431,8 @@ float TwoViewReconstruction::CheckFundamental(
 
   float score = 0;
 
-  const float th      = 3.841;
-  const float thScore = 5.991;
+  const float th      = kChi2OneDof;
+  const float thScore = kChi2Mono;
 
   const float invSigmaSquare = 1.0 / (sigma * sigma);
 
