@@ -1328,7 +1328,6 @@ void LoopClosing::CorrectLoop() {
   _logger->info("CorrectLoop: loop corrected, releasing local mapping...");
   mpLocalMapper->Release();
 
-  mLastLoopKFid = mpCurrentKF->mnId; // TODO old varible, it is not use in the new algorithm
 }
 
 void LoopClosing::MergeLocal() {
@@ -2261,7 +2260,6 @@ void LoopClosing::ResetIfRequested() {
   if (mbResetRequested) {
     _logger->info("Requesting to reset loop closing...");
     mlpLoopKeyFrameQueue.clear();
-    mLastLoopKFid             = 0; // TODO old variable, it is not use in the new algorithm
     mbResetRequested          = false;
     mbResetActiveMapRequested = false;
   } else if (mbResetActiveMapRequested) {
@@ -2274,8 +2272,6 @@ void LoopClosing::ResetIfRequested() {
       }
     }
 
-    mLastLoopKFid
-      = mpAtlas->GetLastInitKFid(); // TODO old variable, it is not use in the new algorithm
     mbResetActiveMapRequested = false;
   }
 }
@@ -2379,62 +2375,6 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
         // Update pose
         pKF->mTcwBefGBA = pKF->GetPose();
         pKF->SetPose(pKF->mTcwGBA);
-        /*cv::Mat Tco_cn = pKF->mTcwBefGBA * pKF->mTcwGBA.inv();
-        cv::Vec3d trasl = Tco_cn.rowRange(0,3).col(3);
-        double dist = cv::norm(trasl);
-        std::cout << "GBA: KF " << pKF->mnId << " had been moved " << dist << " meters" <<
-        std::endl; double desvX = 0; double desvY = 0; double desvZ = 0; if(pKF->mbHasHessian)
-        {
-            cv::Mat hessianInv = pKF->mHessianPose.inv();
-
-            double covX = hessianInv.at<double>(3,3);
-            desvX = std::sqrt(covX);
-            double covY = hessianInv.at<double>(4,4);
-            desvY = std::sqrt(covY);
-            double covZ = hessianInv.at<double>(5,5);
-            desvZ = std::sqrt(covZ);
-            pKF->mbHasHessian = false;
-        }
-        if(dist > 1)
-        {
-            std::cout << "--To much distance correction: It has " <<
-        pKF->GetConnectedKeyFrames().size()
-        << " connected KFs" << std::endl; std::cout << "--It has " <<
-        pKF->GetCovisiblesByWeight(80).size() << " connected KF with 80 common matches or more" <<
-        std::endl; std::cout << "--It has " << pKF->GetCovisiblesByWeight(50).size() << " connected
-        KF with 50 common matches or more" << std::endl; std::cout << "--It has " <<
-        pKF->GetCovisiblesByWeight(20).size() << " connected KF with 20 common matches or more" <<
-        std::endl;
-
-            std::cout << "--STD in meters(x, y, z): " << desvX << ", " << desvY << ", " << desvZ <<
-        std::endl;
-
-
-            std::string strNameFile = pKF->mNameFile;
-            cv::Mat imLeft = cv::imread(strNameFile, CV_LOAD_IMAGE_UNCHANGED);
-
-            cv::cvtColor(imLeft, imLeft, CV_GRAY2BGR);
-
-            std:vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
-            int num_MPs = 0;
-            for(int i=0; i<vpMapPointsKF.size(); ++i)
-            {
-                if(!vpMapPointsKF[i] || vpMapPointsKF[i]->isBad())
-                {
-                    continue;
-                }
-                num_MPs += 1;
-                std::string strNumOBs = std::to_string(vpMapPointsKF[i]->Observations());
-                cv::circle(imLeft, pKF->mvKeys[i].pt, 2, cv::Scalar(0, 255, 0));
-                cv::putText(imLeft, strNumOBs, pKF->mvKeys[i].pt, CV_FONT_HERSHEY_DUPLEX, 1,
-        cv::Scalar(255, 0, 0));
-            }
-            _logger->info("--It has " << num_MPs << " MPs matched in the map");
-
-            std::string namefile = "./test_GBA/GBA_" + std::to_string(nLoopKF) + "_KF" +
-        std::to_string(pKF->mnId)
-        +"_D" + std::to_string(dist) +".png"; cv::imwrite(namefile, imLeft);
-        }*/
 
         if (pKF->bImu) {
           // Update inertial values

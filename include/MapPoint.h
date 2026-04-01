@@ -129,10 +129,6 @@ public:
   void              IncreaseVisible(int n = 1);
   void              IncreaseFound(int n = 1);
   float             GetFoundRatio();
-  [[nodiscard]] int GetFound() const {
-    return mnFound;
-  }
-
   void ComputeDistinctiveDescriptors();
 
   cv::Mat GetDescriptor();

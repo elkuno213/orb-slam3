@@ -42,9 +42,6 @@ namespace ORB_SLAM3 {
 class Viewer;
 class KeyFrameDatabase;
 
-// BOOST_CLASS_EXPORT_GUID(Pinhole, "Pinhole")
-// BOOST_CLASS_EXPORT_GUID(KannalaBrandt8, "KannalaBrandt8")
-
 class Atlas {
   friend class boost::serialization::access;
 
@@ -84,8 +81,7 @@ public:
   // Method for change components in the current map
   static void AddKeyFrame(KeyFrame* pKF);
   static void AddMapPoint(MapPoint* pMP);
-  // void EraseMapPoint(MapPoint* pMP);
-  // void EraseKeyFrame(KeyFrame* pKF);
+
 
   GeometricCamera*              AddCamera(GeometricCamera* pCam);
   std::vector<GeometricCamera*> GetAllCameras();

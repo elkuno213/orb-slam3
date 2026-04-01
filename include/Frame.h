@@ -174,11 +174,6 @@ public:
     return mOw;
   }
 
-  // Returns inverse of rotation
-  Eigen::Matrix3f GetRotationInverse() {
-    return mRwc;
-  }
-
   [[nodiscard]] Sophus::SE3<float> GetPose() const {
     // TODO: can the Frame pose be accsessed from several threads? should this be protected somehow?
     return mTcw;

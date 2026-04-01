@@ -28,7 +28,6 @@
 #include <Eigen/Core>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
-#include <pangolin/pangolin.h>
 #include <sophus/se3.hpp>
 #include <spdlog/logger.h>
 #include "ORBVocabulary.h"
@@ -101,7 +100,6 @@ public:
   void SetCurrentMap();
   void SetStoredMap();
 
-  bool HasThumbnail();
   bool IsInUse() const;
 
   void SetBad();
@@ -126,8 +124,6 @@ public:
   bool GetIniertialBA1();
   bool GetIniertialBA2();
 
-  void PrintEssentialGraph();
-  bool CheckEssentialGraph();
   void ChangeId(long unsigned int nId);
 
   unsigned int GetLowerKFID();
@@ -139,13 +135,6 @@ public:
     std::map<unsigned int, GeometricCamera*>& mpCams
   );
 
-  void printReprojectionError(
-    std::list<KeyFrame*>& lpLocalWindowKFs,
-    KeyFrame*             mpCurrentKF,
-    std::string&          name,
-    std::string&          name_folder
-  );
-
   std::vector<KeyFrame*>         mvpKeyFrameOrigins;
   std::vector<unsigned long int> mvBackupKeyFrameOriginsId;
   KeyFrame*                      mpFirstRegionKF;
@@ -153,12 +142,6 @@ public:
 
   // This avoid that two points are created simultaneously in separate threads (id conflict)
   std::mutex mMutexPointCreation;
-
-  bool mbFail;
-
-  // Size of the thumbnail (always in power of 2)
-  static const int THUMB_WIDTH  = 512;
-  static const int THUMB_HEIGHT = 512;
 
   static long unsigned int nNextId;
 
@@ -196,9 +179,6 @@ protected:
 
   // Index related to a big change in the map (loop closure, global BA)
   int mnBigChangeIdx;
-
-  // View of the map in aerial sight (for the AtlasViewer)
-  GLubyte* mThumbnail;
 
   bool mIsInUse;
   bool mHasTumbnail;

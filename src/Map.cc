@@ -29,7 +29,6 @@ long unsigned int Map::nNextId = 0;
 
 Map::Map()
   : mpFirstRegionKF(nullptr)
-  , mbFail(false)
   , mbImuInitialized(false)
   , mnMapChange(0)
   , mnMapChangeNotified(0)
@@ -41,13 +40,11 @@ Map::Map()
   , mbIMU_BA1(false)
   , mbIMU_BA2(false)
   , _logger(logging::CreateModuleLogger("Map")) {
-  mnId       = nNextId++;
-  mThumbnail = nullptr;
+  mnId = nNextId++;
 }
 
 Map::Map(int initKFid)
   : mpFirstRegionKF(nullptr)
-  , mbFail(false)
   , mbImuInitialized(false)
   , mnMapChange(0)
   , mnMapChangeNotified(0)
@@ -60,8 +57,7 @@ Map::Map(int initKFid)
   , mbIMU_BA1(false)
   , mbIMU_BA2(false)
   , _logger(logging::CreateModuleLogger("Map")) {
-  mnId       = nNextId++;
-  mThumbnail = nullptr;
+  mnId = nNextId++;
 }
 
 Map::~Map() {
@@ -72,11 +68,6 @@ Map::~Map() {
 
   // TODO: erase all keyframes from memory
   mspKeyFrames.clear();
-
-  if (mThumbnail) {
-    delete mThumbnail;
-  }
-  mThumbnail = nullptr;
 
   mvpReferenceMapPoints.clear();
   mvpKeyFrameOrigins.clear();

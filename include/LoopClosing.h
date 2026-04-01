@@ -77,11 +77,6 @@ public:
     const std::unique_lock<std::mutex> lock(mMutexGBA);
     return mbRunningGBA;
   }
-  bool isFinishedGBA() {
-    const std::unique_lock<std::mutex> lock(mMutexGBA);
-    return mbFinishedGBA;
-  }
-
   void RequestFinish();
 
   bool isFinished();
@@ -236,8 +231,6 @@ protected:
 
   g2o::Sim3 mSold_new;
   //-------
-
-  long unsigned int mLastLoopKFid{0};
 
   // Variables related to Global Bundle Adjustment
   bool         mbRunningGBA{false};
