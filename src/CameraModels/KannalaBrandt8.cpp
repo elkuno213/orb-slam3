@@ -22,10 +22,7 @@
 #include <opencv2/calib3d.hpp>
 #include "TwoViewReconstruction.h"
 
-// BOOST_CLASS_EXPORT_IMPLEMENT(ORB_SLAM3::KannalaBrandt8)
-
 namespace ORB_SLAM3 {
-// BOOST_CLASS_EXPORT_GUID(KannalaBrandt8, "KannalaBrandt8")
 
 KannalaBrandt8::KannalaBrandt8() : precision(1e-6) {
   mvParameters.resize(8);
@@ -112,14 +109,6 @@ Eigen::Vector2f KannalaBrandt8::project(const Eigen::Vector3f& v3D) {
   res[1] = mvParameters[1] * r * std::sin(psi) + mvParameters[3];
 
   return res;
-
-  /*cv::Point2f cvres = project(cv::Point3f(v3D[0],v3D[1],v3D[2]));
-
-  Eigen::Vector2d res;
-  res[0] = cvres.x;
-  res[1] = cvres.y;
-
-  return res;*/
 }
 
 Eigen::Vector2f KannalaBrandt8::projectMat(const cv::Point3f& p3D) {

@@ -64,8 +64,6 @@ public:
 
   void Release();
 
-  // void SetTrackingPause();
-
   bool both{false};
 
 private:

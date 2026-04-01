@@ -581,35 +581,11 @@ void System::Shutdown() {
 
   mpLocalMapper->RequestFinish();
   mpLoopCloser->RequestFinish();
-  /*if(mpViewer)
-  {
-      mpViewer->RequestFinish();
-      while(!mpViewer->isFinished())
-          std::this_thread::sleep_for(std::chrono::microseconds(5000));
-  }*/
-
-  // Wait until all thread have effectively stopped
-  /*while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() ||
-  mpLoopCloser->isRunningGBA())
-  {
-      if(!mpLocalMapper->isFinished())
-          _logger->info("mpLocalMapper is not finished");*/
-  /*if(!mpLoopCloser->isFinished())
-      _logger->info("mpLocalMapper is not finished");
-  if(mpLoopCloser->isRunningGBA()){
-      _logger->info("mpLoopCloser is running GBA, break anyway...");
-      break;
-  }*/
-  /*std::this_thread::sleep_for(std::chrono::microseconds(5000));
-}*/
 
   if (!mStrSaveAtlasToFile.empty()) {
     _logger->info("Saving Atlas to {}", mStrSaveAtlasToFile);
     SaveAtlas(FileType::BINARY_FILE);
   }
-
-  /*if(mpViewer)
-      pangolin::BindToContext("ORB-SLAM2: Map Viewer");*/
 
 #ifdef REGISTER_TIMES
   mpTracker->PrintTimeStats();
@@ -1176,63 +1152,6 @@ void System::SaveKeyFrameTrajectoryEuRoC(const std::string& filename, Map* pMap)
   f.close();
   _logger->info("Trajectory saved at {}", filename);
 }
-
-/*void System::SaveTrajectoryKITTI(const std::string &filename)
-{
-    std::cout << std::endl << "Saving camera trajectory to " << filename << " ..." << std::endl;
-    if(mSensor==MONOCULAR)
-    {
-        std::cerr << "ERROR: SaveTrajectoryKITTI cannot be used for monocular." << std::endl;
-        return;
-    }
-
-    std::vector<KeyFrame*> vpKFs = mpAtlas->GetAllKeyFrames();
-    std::sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
-
-    // Transform all keyframes so that the first keyframe is at the origin.
-    // After a loop closure the first keyframe might not be at the origin.
-    cv::Mat Two = vpKFs[0]->GetPoseInverse();
-
-    std::ofstream f;
-    f.open(filename);
-    f << std::fixed;
-
-    // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose
-graph).
-    // We need to get first the keyframe pose and then concatenate the relative transformation.
-    // Frames not localized (tracking failure) are not saved.
-
-    // For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
-    // which is true when tracking failed (lbL).
-    std::list<ORB_SLAM3::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
-    std::list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
-    for(std::list<cv::Mat>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
-lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++)
-    {
-        ORB_SLAM3::KeyFrame* pKF = *lRit;
-
-        cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
-
-        while(pKF->isBad())
-        {
-            Trw = Trw * Converter::toCvMat(pKF->mTcp.matrix());
-            pKF = pKF->GetParent();
-        }
-
-        Trw = Trw * pKF->GetPoseCv() * Two;
-
-        cv::Mat Tcw = (*lit)*Trw;
-        cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
-        cv::Mat twc = -Rwc*Tcw.rowRange(0,3).col(3);
-
-        f << std::setprecision(9) << Rwc.at<float>(0,0) << " " << Rwc.at<float>(0,1)  << " " <<
-Rwc.at<float>(0,2) << " "  << twc.at<float>(0) << " " << Rwc.at<float>(1,0) << " " <<
-Rwc.at<float>(1,1)  << " " << Rwc.at<float>(1,2) << " "  << twc.at<float>(1) << " " <<
-             Rwc.at<float>(2,0) << " " << Rwc.at<float>(2,1)  << " " << Rwc.at<float>(2,2) << " " <<
-twc.at<float>(2) << std::endl;
-    }
-    f.close();
-}*/
 
 void System::SaveTrajectoryKITTI(const std::string& filename) {
   if (mSensor == MONOCULAR) {

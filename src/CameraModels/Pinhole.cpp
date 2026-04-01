@@ -21,10 +21,7 @@
 #include <cassert>
 #include "TwoViewReconstruction.h"
 
-// BOOST_CLASS_EXPORT_IMPLEMENT(ORB_SLAM3::Pinhole)
-
 namespace ORB_SLAM3 {
-// BOOST_CLASS_EXPORT_GUID(Pinhole, "Pinhole")
 
 long unsigned int GeometricCamera::nNextId = 0;
 

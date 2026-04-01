@@ -212,11 +212,6 @@ void Atlas::clearMap() {
 
 void Atlas::clearAtlas() {
   const std::unique_lock<std::mutex> lock(mMutexAtlas);
-  /*for(std::set<Map*>::iterator it=mspMaps.begin(), send=mspMaps.end(); it!=send; it++)
-  {
-      (*it)->clear();
-      delete *it;
-  }*/
   mspMaps.clear();
   mpCurrentMap      = nullptr;
   mnLastInitKFidMap = 0;
@@ -242,11 +237,6 @@ void Atlas::SetMapBad(Map* pMap) {
 }
 
 void Atlas::RemoveBadMaps() {
-  /*for(Map* pMap : mspBadMaps)
-  {
-      delete pMap;
-      pMap = nullptr;
-  }*/
   mspBadMaps.clear();
 }
 

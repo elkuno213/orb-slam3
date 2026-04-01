@@ -802,19 +802,6 @@ void ORBextractor::ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint>
           true
         );
 
-        /*if(bRight && j <= 13){
-            cv::FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                 vKeysCell,10,true);
-        }
-        else if(!bRight && j >= 16){
-            cv::FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                 vKeysCell,10,true);
-        }
-        else{
-            cv::FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                 vKeysCell,iniThFAST,true);
-        }*/
-
         if (vKeysCell.empty()) {
           cv::FAST(
             mvImagePyramid[level].rowRange(iniY, maxY).colRange(iniX, maxX),
@@ -822,18 +809,6 @@ void ORBextractor::ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint>
             minThFAST,
             true
           );
-          /*if(bRight && j <= 13){
-              cv::FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                   vKeysCell,5,true);
-          }
-          else if(!bRight && j >= 16){
-              cv::FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                   vKeysCell,5,true);
-          }
-          else{
-              cv::FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                   vKeysCell,minThFAST,true);
-          }*/
         }
 
         if (!vKeysCell.empty()) {
