@@ -20,7 +20,6 @@
 #include "Sim3Solver.h"
 #include <cmath>
 #include <opencv2/core.hpp>
-#include "Converter.h"
 #include "GeometricCamera.h"
 #include "KeyFrame.h"
 #include "LoggingUtils.h"
@@ -362,15 +361,7 @@ void Sim3Solver::ComputeSim3(Eigen::Matrix3f& P1, Eigen::Matrix3f& P2) {
 
   // Step 6: Scale
   if (!mbFixScale) {
-    double cvnom = Converter::toCvMat(Pr1).dot(Converter::toCvMat(P3));
-    double nom   = (Pr1.array() * P3.array()).sum();
-    if (std::abs(nom - cvnom) > 1e-3) {
-      _logger->warn(
-        "Large scale calculation discrepancy: matrix-based: {:.6f} vs ppenCV-based: {:.6f}",
-        nom,
-        cvnom
-      );
-    }
+    const double nom = (Pr1.array() * P3.array()).sum();
     Eigen::Array<float, 3, 3> aux_P3;
     aux_P3           = P3.array() * P3.array();
     const double den = aux_P3.sum();
