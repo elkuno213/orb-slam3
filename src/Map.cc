@@ -128,7 +128,7 @@ void Map::EraseKeyFrame(KeyFrame* pKF) {
       mpKFlowerID = vpKFs[0];
     }
   } else {
-    mpKFlowerID = 0;
+    mpKFlowerID = nullptr;
   }
 
   // TODO: This only erase the pointer.

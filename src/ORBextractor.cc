@@ -453,8 +453,8 @@ ORBextractor::ORBextractor(
 
   int          v    = 0;
   int          v0   = 0;
-  const int    vmax = cvFloor(HALF_PATCH_SIZE * std::sqrt(2.F) / 2.0F + 1.0F);
-  const int    vmin = cvCeil(HALF_PATCH_SIZE * std::sqrt(2.F) / 2.0F);
+  const int    vmax = cvFloor(HALF_PATCH_SIZE * std::numbers::sqrt2_v<float> / 2.0F + 1.0F);
+  const int    vmin = cvCeil(HALF_PATCH_SIZE * std::numbers::sqrt2_v<float> / 2.0F);
   const double hp2  = HALF_PATCH_SIZE * HALF_PATCH_SIZE;
   for (v = 0; v <= vmax; ++v) {
     umax[v] = cvRound(std::sqrt(hp2 - v * v));

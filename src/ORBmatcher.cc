@@ -42,7 +42,7 @@ int ORBmatcher::SearchByProjection(
   const float                   th,
   const bool                    bFarPoints,
   const float                   thFarPoints
-) {
+) const {
   int nmatches = 0;
 
   const bool bFactor = th != 1.0;
@@ -224,7 +224,8 @@ float ORBmatcher::RadiusByViewingCos(const float& viewCos) {
   }
 }
 
-int ORBmatcher::SearchByBoW(KeyFrame* pKF, Frame& F, std::vector<MapPoint*>& vpMapPointMatches) {
+int ORBmatcher::SearchByBoW(KeyFrame* pKF, Frame& F, std::vector<MapPoint*>& vpMapPointMatches)
+  const {
   const std::vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
 
   vpMapPointMatches = std::vector<MapPoint*>(F.N, nullptr);
@@ -637,7 +638,7 @@ int ORBmatcher::SearchForInitialization(
   std::vector<cv::Point2f>& vbPrevMatched,
   std::vector<int>&         vnMatches12,
   int                       windowSize
-) {
+) const {
   int nmatches = 0;
   vnMatches12  = std::vector<int>(F1.mvKeysUn.size(), -1);
 
@@ -657,7 +658,7 @@ int ORBmatcher::SearchForInitialization(
       continue;
     }
 
-    std::vector<std::size_t> vIndices2
+    const std::vector<std::size_t> vIndices2
       = F2.GetFeaturesInArea(vbPrevMatched[i1].x, vbPrevMatched[i1].y, windowSize, level1, level1);
 
     if (vIndices2.empty()) {
@@ -745,7 +746,8 @@ int ORBmatcher::SearchForInitialization(
   return nmatches;
 }
 
-int ORBmatcher::SearchByBoW(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint*>& vpMatches12) {
+int ORBmatcher::SearchByBoW(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint*>& vpMatches12)
+  const {
   const std::vector<cv::KeyPoint>& vKeysUn1     = pKF1->mvKeysUn;
   const DBoW2::FeatureVector&      vFeatVec1    = pKF1->mFeatVec;
   const std::vector<MapPoint*>     vpMapPoints1 = pKF1->GetMapPointMatches();
@@ -881,7 +883,7 @@ int ORBmatcher::SearchForTriangulation(
   std::vector<std::pair<std::size_t, std::size_t> >& vMatchedPairs,
   const bool                                         bOnlyStereo,
   const bool                                         bCoarse
-) {
+) const {
   const DBoW2::FeatureVector& vFeatVec1 = pKF1->mFeatVec;
   const DBoW2::FeatureVector& vFeatVec2 = pKF2->mFeatVec;
 
@@ -970,7 +972,7 @@ int ORBmatcher::SearchForTriangulation(
                                   ? pKF1->mvKeys[idx1]
                                   : pKF1->mvKeysRight[idx1 - pKF1->NLeft];
 
-        const bool bRight1 = !(pKF1->NLeft == -1 || idx1 < static_cast<std::size_t>(pKF1->NLeft));
+        const bool bRight1 = pKF1->NLeft != -1 && idx1 >= static_cast<std::size_t>(pKF1->NLeft);
 
         const cv::Mat& d1 = pKF1->mDescriptors.row(idx1);
 
@@ -1005,7 +1007,7 @@ int ORBmatcher::SearchForTriangulation(
                                   : (idx2 < static_cast<std::size_t>(pKF2->NLeft))
                                     ? pKF2->mvKeys[idx2]
                                     : pKF2->mvKeysRight[idx2 - pKF2->NLeft];
-          const bool bRight2 = !(pKF2->NLeft == -1 || idx2 < static_cast<std::size_t>(pKF2->NLeft));
+          const bool bRight2 = pKF2->NLeft != -1 && idx2 >= static_cast<std::size_t>(pKF2->NLeft);
 
           if (!bStereo1 && !bStereo2 && !pKF1->mpCamera2) {
             const float distex = ep(0) - kp2.pt.x;
@@ -1626,7 +1628,7 @@ int ORBmatcher::SearchBySim3(
 
 int ORBmatcher::SearchByProjection(
   Frame& CurrentFrame, const Frame& LastFrame, const float th, const bool bMono
-) {
+) const {
   int nmatches = 0;
 
   // Rotation Histogram (to check rotation consistency)
@@ -1846,7 +1848,7 @@ int ORBmatcher::SearchByProjection(
   const std::set<MapPoint*>& sAlreadyFound,
   const float                th,
   const int                  ORBdist
-) {
+) const {
   int nmatches = 0;
 
   const Sophus::SE3f    Tcw = CurrentFrame.GetPose();

@@ -44,9 +44,7 @@ Pinhole::Pinhole(Pinhole* pPinhole) : GeometricCamera(pPinhole->mvParameters), t
 }
 
 Pinhole::~Pinhole() {
-  if (tvr) {
     delete tvr;
-  }
 }
 
 cv::Point2f Pinhole::project(const cv::Point3f& p3D) {

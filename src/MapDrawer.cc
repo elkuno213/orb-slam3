@@ -297,7 +297,7 @@ void MapDrawer::DrawKeyFrames(
         continue;
       }
 
-      std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
+      const std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
 
       for (auto* pKF : vpKFs) {
         Eigen::Matrix4f                     Twc         = pKF->GetPoseInverse().matrix();

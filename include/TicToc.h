@@ -53,7 +53,7 @@ public:
 
 private:
   using Clock = std::chrono::steady_clock;
-  Clock::time_point _start{};
+  Clock::time_point _start;
 };
 
 } // namespace ORB_SLAM3

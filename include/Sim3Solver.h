@@ -55,7 +55,7 @@ public:
   Eigen::Matrix4f GetEstimatedTransformation();
   Eigen::Matrix3f GetEstimatedRotation();
   Eigen::Vector3f GetEstimatedTranslation();
-  float           GetEstimatedScale() const;
+  [[nodiscard]] float GetEstimatedScale() const;
 
 protected:
   static void ComputeCentroid(Eigen::Matrix3f& P, Eigen::Matrix3f& Pr, Eigen::Vector3f& C);
@@ -64,13 +64,13 @@ protected:
 
   void CheckInliers();
 
-  void Project(
+  static void Project(
     const std::vector<Eigen::Vector3f>& vP3Dw,
     std::vector<Eigen::Vector2f>&       vP2D,
     Eigen::Matrix4f                     Tcw,
     GeometricCamera*                    pCamera
   );
-  void FromCameraToImage(
+  static void FromCameraToImage(
     const std::vector<Eigen::Vector3f>& vP3Dc,
     std::vector<Eigen::Vector2f>&       vP2D,
     GeometricCamera*                    pCamera

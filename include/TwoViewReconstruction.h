@@ -50,10 +50,10 @@ private:
   void FindHomography(std::vector<bool>& vbMatchesInliers, float& score, Eigen::Matrix3f& H21);
   void FindFundamental(std::vector<bool>& vbInliers, float& score, Eigen::Matrix3f& F21);
 
-  Eigen::Matrix3f ComputeH21(
+  static Eigen::Matrix3f ComputeH21(
     const std::vector<cv::Point2f>& vP1, const std::vector<cv::Point2f>& vP2
   );
-  Eigen::Matrix3f ComputeF21(
+  static Eigen::Matrix3f ComputeF21(
     const std::vector<cv::Point2f>& vP1, const std::vector<cv::Point2f>& vP2
   );
 
@@ -90,13 +90,13 @@ private:
     int                       minTriangulated
   );
 
-  void Normalize(
+  static void Normalize(
     const std::vector<cv::KeyPoint>& vKeys,
     std::vector<cv::Point2f>&        vNormalizedPoints,
     Eigen::Matrix3f&                 T
   );
 
-  int CheckRT(
+  static int CheckRT(
     const Eigen::Matrix3f&           R,
     const Eigen::Vector3f&           t,
     const std::vector<cv::KeyPoint>& vKeys1,
@@ -110,7 +110,7 @@ private:
     float&                           parallax
   );
 
-  void DecomposeE(
+  static void DecomposeE(
     const Eigen::Matrix3f& E, Eigen::Matrix3f& R1, Eigen::Matrix3f& R2, Eigen::Vector3f& t
   );
 

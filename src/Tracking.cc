@@ -19,6 +19,7 @@
 
 #include "Tracking.h"
 #include <chrono>
+#include <ranges>
 #include <thread>
 #include <utility>
 #include <opencv2/imgproc.hpp>
@@ -2293,7 +2294,7 @@ void Tracking::StereoInitialization() {
     auto* pKFini = new KeyFrame(mCurrentFrame, mpAtlas->GetCurrentMap(), mpKeyFrameDB);
 
     // Insert KeyFrame in the map
-    mpAtlas->AddKeyFrame(pKFini);
+    ORB_SLAM3::Atlas::AddKeyFrame(pKFini);
 
     // Create MapPoints and asscoiate to KeyFrame
     if (!mpCamera2) {
@@ -2307,7 +2308,7 @@ void Tracking::StereoInitialization() {
           pKFini->AddMapPoint(pNewMP, i);
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          mpAtlas->AddMapPoint(pNewMP);
+          ORB_SLAM3::Atlas::AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i] = pNewMP;
         }
@@ -2328,7 +2329,7 @@ void Tracking::StereoInitialization() {
 
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          mpAtlas->AddMapPoint(pNewMP);
+          ORB_SLAM3::Atlas::AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i]                                = pNewMP;
           mCurrentFrame.mvpMapPoints[rightIndex + mCurrentFrame.Nleft] = pNewMP;
@@ -2392,7 +2393,7 @@ void Tracking::MonocularInitialization() {
     }
 
     // Find correspondences
-    ORBmatcher matcher(0.9, true);
+    const ORBmatcher matcher(0.9, true);
     int        nmatches
       = matcher
           .SearchForInitialization(mInitialFrame, mCurrentFrame, mvbPrevMatched, mvIniMatches, 100);
@@ -2443,8 +2444,8 @@ void Tracking::CreateInitialMapMonocular() {
   pKFcur->ComputeBoW();
 
   // Insert KFs in the map
-  mpAtlas->AddKeyFrame(pKFini);
-  mpAtlas->AddKeyFrame(pKFcur);
+  ORB_SLAM3::Atlas::AddKeyFrame(pKFini);
+  ORB_SLAM3::Atlas::AddKeyFrame(pKFcur);
 
   for (std::size_t i = 0; i < mvIniMatches.size(); i++) {
     if (mvIniMatches[i] < 0) {
@@ -2470,7 +2471,7 @@ void Tracking::CreateInitialMapMonocular() {
     mCurrentFrame.mvbOutlier[mvIniMatches[i]]   = false;
 
     // Add to Map
-    mpAtlas->AddMapPoint(pMP);
+    ORB_SLAM3::Atlas::AddMapPoint(pMP);
   }
 
   // Update Connections
@@ -2504,7 +2505,7 @@ void Tracking::CreateInitialMapMonocular() {
   pKFcur->SetPose(Tc2w);
 
   // Scale points
-  std::vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
+  const std::vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
   for (auto* pMP : vpAllMapPoints) {
     if (pMP != nullptr) {
       pMP->SetWorldPos(pMP->GetWorldPos() * invMedianDepth);
@@ -2623,7 +2624,7 @@ bool Tracking::TrackReferenceKeyFrame() {
 
   // We perform first an ORB matching with the reference keyframe
   // If enough matches are found we setup a PnP solver
-  ORBmatcher             matcher(0.7, true);
+  const ORBmatcher       matcher(0.7, true);
   std::vector<MapPoint*> vpMapPointMatches;
 
   int nmatches = matcher.SearchByBoW(mpReferenceKF, mCurrentFrame, vpMapPointMatches);
@@ -2740,7 +2741,7 @@ void Tracking::UpdateLastFrame() {
 }
 
 bool Tracking::TrackWithMotionModel() {
-  ORBmatcher matcher(0.9, true);
+  const ORBmatcher matcher(0.9, true);
 
   // Update last frame pose according to its reference keyframe
   // Create "visual odometry" points if in Localization Mode
@@ -2893,10 +2894,8 @@ bool Tracking::TrackLocalMap() {
   }
 
   if (mSensor == System::IMU_MONOCULAR) {
-    return !(
-      (mnMatchesInliers < 15 && mpAtlas->isImuInitialized())
-      || (mnMatchesInliers < 50 && !mpAtlas->isImuInitialized())
-    );
+    return (mnMatchesInliers >= 15 || !mpAtlas->isImuInitialized())
+        && (mnMatchesInliers >= 50 || mpAtlas->isImuInitialized());
   } else if (mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) {
     return mnMatchesInliers >= 15;
   } else {
@@ -3139,7 +3138,7 @@ void Tracking::CreateNewKeyFrame() {
           pKF->AddMapPoint(pNewMP, i);
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          mpAtlas->AddMapPoint(pNewMP);
+          ORB_SLAM3::Atlas::AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i] = pNewMP;
           nPoints++;
@@ -3198,7 +3197,7 @@ void Tracking::SearchLocalPoints() {
   }
 
   if (nToMatch > 0) {
-    ORBmatcher matcher(0.8);
+    const ORBmatcher matcher(0.8);
     int        th = 1;
     if (mSensor == System::RGBD || mSensor == System::IMU_RGBD) {
       th = 3;
@@ -3245,9 +3244,7 @@ void Tracking::UpdateLocalMap() {
 void Tracking::UpdateLocalPoints() {
   mvpLocalMapPoints.clear();
 
-  for (auto itKF = mvpLocalKeyFrames.rbegin(), itEndKF = mvpLocalKeyFrames.rend(); itKF != itEndKF;
-       ++itKF) {
-    KeyFrame*                    pKF   = *itKF;
+  for (auto pKF : std::ranges::reverse_view(mvpLocalKeyFrames)) {
     const std::vector<MapPoint*> vpMPs = pKF->GetMapPointMatches();
 
     for (auto* pMP : vpMPs) {
@@ -3410,7 +3407,7 @@ bool Tracking::Relocalization() {
 
   // We perform first an ORB matching with each candidate
   // If enough matches are found we setup a PnP solver
-  ORBmatcher matcher(0.75, true);
+  const ORBmatcher matcher(0.75, true);
 
   std::vector<MLPnPsolver*> vpMLPnPsolvers;
   vpMLPnPsolvers.resize(nKFs);
@@ -3445,7 +3442,7 @@ bool Tracking::Relocalization() {
   // Alternatively perform some iterations of P4P RANSAC
   // Until we found a camera pose supported by enough inliers
   bool       bMatch = false;
-  ORBmatcher matcher2(0.9, true);
+  const ORBmatcher matcher2(0.9, true);
 
   while (nCandidates > 0 && !bMatch) {
     for (int i = 0; i < nKFs; i++) {

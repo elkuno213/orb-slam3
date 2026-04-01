@@ -64,7 +64,7 @@ public:
   /*
    * Getter methods
    */
-  CameraType cameraType() const {
+  [[nodiscard]] CameraType cameraType() const {
     return cameraType_;
   }
   GeometricCamera* camera1() {
@@ -80,136 +80,136 @@ public:
     return {static_cast<int>(vPinHoleDistorsion2_.size()), 1, CV_32F, vPinHoleDistorsion1_.data()};
   }
 
-  Sophus::SE3f Tlr() const {
+  [[nodiscard]] Sophus::SE3f Tlr() const {
     return Tlr_;
   }
-  float bf() const {
+  [[nodiscard]] float bf() const {
     return bf_;
   }
-  float b() const {
+  [[nodiscard]] float b() const {
     return b_;
   }
-  float thDepth() const {
+  [[nodiscard]] float thDepth() const {
     return thDepth_;
   }
 
-  bool needToUndistort() const {
+  [[nodiscard]] bool needToUndistort() const {
     return bNeedToUndistort_;
   }
 
-  cv::Size newImSize() const {
+  [[nodiscard]] cv::Size newImSize() const {
     return newImSize_;
   }
-  float fps() const {
+  [[nodiscard]] float fps() const {
     return fps_;
   }
-  bool rgb() const {
+  [[nodiscard]] bool rgb() const {
     return bRGB_;
   }
-  bool needToResize() const {
+  [[nodiscard]] bool needToResize() const {
     return bNeedToResize1_;
   }
-  bool needToRectify() const {
+  [[nodiscard]] bool needToRectify() const {
     return bNeedToRectify_;
   }
 
-  float noiseGyro() const {
+  [[nodiscard]] float noiseGyro() const {
     return noiseGyro_;
   }
-  float noiseAcc() const {
+  [[nodiscard]] float noiseAcc() const {
     return noiseAcc_;
   }
-  float gyroWalk() const {
+  [[nodiscard]] float gyroWalk() const {
     return gyroWalk_;
   }
-  float accWalk() const {
+  [[nodiscard]] float accWalk() const {
     return accWalk_;
   }
-  float imuFrequency() const {
+  [[nodiscard]] float imuFrequency() const {
     return imuFrequency_;
   }
-  Sophus::SE3f Tbc() const {
+  [[nodiscard]] Sophus::SE3f Tbc() const {
     return Tbc_;
   }
-  bool insertKFsWhenLost() const {
+  [[nodiscard]] bool insertKFsWhenLost() const {
     return insertKFsWhenLost_;
   }
 
-  float depthMapFactor() const {
+  [[nodiscard]] float depthMapFactor() const {
     return depthMapFactor_;
   }
 
-  int nFeatures() const {
+  [[nodiscard]] int nFeatures() const {
     return nFeatures_;
   }
-  int nLevels() const {
+  [[nodiscard]] int nLevels() const {
     return nLevels_;
   }
-  float initThFAST() const {
+  [[nodiscard]] float initThFAST() const {
     return initThFAST_;
   }
-  float minThFAST() const {
+  [[nodiscard]] float minThFAST() const {
     return minThFAST_;
   }
-  float scaleFactor() const {
+  [[nodiscard]] float scaleFactor() const {
     return scaleFactor_;
   }
 
-  float keyFrameSize() const {
+  [[nodiscard]] float keyFrameSize() const {
     return keyFrameSize_;
   }
-  float keyFrameLineWidth() const {
+  [[nodiscard]] float keyFrameLineWidth() const {
     return keyFrameLineWidth_;
   }
-  float graphLineWidth() const {
+  [[nodiscard]] float graphLineWidth() const {
     return graphLineWidth_;
   }
-  float pointSize() const {
+  [[nodiscard]] float pointSize() const {
     return pointSize_;
   }
-  float cameraSize() const {
+  [[nodiscard]] float cameraSize() const {
     return cameraSize_;
   }
-  float cameraLineWidth() const {
+  [[nodiscard]] float cameraLineWidth() const {
     return cameraLineWidth_;
   }
-  float viewPointX() const {
+  [[nodiscard]] float viewPointX() const {
     return viewPointX_;
   }
-  float viewPointY() const {
+  [[nodiscard]] float viewPointY() const {
     return viewPointY_;
   }
-  float viewPointZ() const {
+  [[nodiscard]] float viewPointZ() const {
     return viewPointZ_;
   }
-  float viewPointF() const {
+  [[nodiscard]] float viewPointF() const {
     return viewPointF_;
   }
-  float imageViewerScale() const {
+  [[nodiscard]] float imageViewerScale() const {
     return imageViewerScale_;
   }
 
-  std::string atlasLoadFile() const {
+  [[nodiscard]] std::string atlasLoadFile() const {
     return sLoadFrom_;
   }
-  std::string atlasSaveFile() const {
+  [[nodiscard]] std::string atlasSaveFile() const {
     return sSaveto_;
   }
 
-  float thFarPoints() const {
+  [[nodiscard]] float thFarPoints() const {
     return thFarPoints_;
   }
 
-  cv::Mat M1l() const {
+  [[nodiscard]] cv::Mat M1l() const {
     return M1l_;
   }
-  cv::Mat M2l() const {
+  [[nodiscard]] cv::Mat M2l() const {
     return M2l_;
   }
-  cv::Mat M1r() const {
+  [[nodiscard]] cv::Mat M1r() const {
     return M1r_;
   }
-  cv::Mat M2r() const {
+  [[nodiscard]] cv::Mat M2r() const {
     return M2r_;
   }
 

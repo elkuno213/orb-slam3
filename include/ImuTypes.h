@@ -227,8 +227,8 @@ private:
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     integrable() = default;
-    integrable(const Eigen::Vector3f& a_, const Eigen::Vector3f& w_, const float& t_)
-      : a(a_), w(w_), t(t_) {
+    integrable(Eigen::Vector3f a_, Eigen::Vector3f w_, const float& t_)
+      : a(std::move(a_)), w(std::move(w_)), t(t_) {
     }
     Eigen::Vector3f a, w;
     float           t;

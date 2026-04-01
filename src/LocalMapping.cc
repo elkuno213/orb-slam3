@@ -358,7 +358,7 @@ void LocalMapping::ProcessNewKeyFrame() {
   mpCurrentKeyFrame->UpdateConnections();
 
   // Insert Keyframe in Map
-  mpAtlas->AddKeyFrame(mpCurrentKeyFrame);
+  ORB_SLAM3::Atlas::AddKeyFrame(mpCurrentKeyFrame);
 }
 
 void LocalMapping::EmptyQueue() {
@@ -495,7 +495,7 @@ void LocalMapping::CreateNewMapPoints() {
                                 : mpCurrentKeyFrame->mvKeysRight[idx1 - mpCurrentKeyFrame->NLeft];
       const float         kp1_ur   = mpCurrentKeyFrame->mvuRight[idx1];
       const bool          bStereo1 = (mpCurrentKeyFrame->mpCamera2 == nullptr && kp1_ur >= 0);
-      const bool bRight1 = !(mpCurrentKeyFrame->NLeft == -1 || idx1 < mpCurrentKeyFrame->NLeft);
+      const bool bRight1 = mpCurrentKeyFrame->NLeft != -1 && idx1 >= mpCurrentKeyFrame->NLeft;
 
       const cv::KeyPoint& kp2 = (pKF2->NLeft == -1)  ? pKF2->mvKeysUn[idx2]
                               : (idx2 < pKF2->NLeft) ? pKF2->mvKeys[idx2]
@@ -503,7 +503,7 @@ void LocalMapping::CreateNewMapPoints() {
 
       const float kp2_ur   = pKF2->mvuRight[idx2];
       const bool  bStereo2 = (pKF2->mpCamera2 == nullptr && kp2_ur >= 0);
-      const bool  bRight2  = !(pKF2->NLeft == -1 || idx2 < pKF2->NLeft);
+      const bool  bRight2  = pKF2->NLeft != -1 && idx2 >= pKF2->NLeft;
 
       if (mpCurrentKeyFrame->mpCamera2 && pKF2->mpCamera2) {
         if (bRight1 && bRight2) {
@@ -694,7 +694,7 @@ void LocalMapping::CreateNewMapPoints() {
 
       pMP->UpdateNormalAndDepth();
 
-      mpAtlas->AddMapPoint(pMP);
+      ORB_SLAM3::Atlas::AddMapPoint(pMP);
       mlpRecentAddedMapPoints.push_back(pMP);
     }
   }
@@ -767,7 +767,7 @@ void LocalMapping::SearchInNeighbors() {
   vpFuseCandidates.reserve(vpTargetKFs.size() * vpMapPointMatches.size());
 
   for (auto* pKFi : vpTargetKFs) {
-    std::vector<MapPoint*> vpMapPointsKFi = pKFi->GetMapPointMatches();
+    const std::vector<MapPoint*> vpMapPointsKFi = pKFi->GetMapPointMatches();
 
     for (auto* pMP : vpMapPointsKFi) {
       if (!pMP) {
@@ -878,7 +878,7 @@ void LocalMapping::KeyFrameCulling() {
   // We only consider close stereo points
   const int Nd = 21;
   mpCurrentKeyFrame->UpdateBestCovisibles();
-  std::vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
+  const std::vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
 
   float redundant_th = 0.0F;
   if (!mbInertial) {
@@ -1379,8 +1379,6 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
   bInitializing     = false;
 
   mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();
-
-  return;
 }
 
 void LocalMapping::ScaleRefinement() {
@@ -1435,8 +1433,6 @@ void LocalMapping::ScaleRefinement() {
 
   // To perform pose-inertial opt w.r.t. last keyframe
   mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();
-
-  return;
 }
 
 bool LocalMapping::IsInitializing() const {

@@ -94,7 +94,7 @@ void KeyFrameDatabase::DetectCandidates(
     const std::unique_lock<std::mutex> lock(mMutex);
 
     for (const auto& [wordId, wordValue] : pKF->mBowVec) {
-      std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
+      const std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
 
       for (auto* pKFi : lKFs) {
         if (pKFi->GetMap() == pKF->GetMap()) { // For consider a loop candidate it a candidate it
@@ -156,7 +156,7 @@ void KeyFrameDatabase::DetectCandidates(
 
       // Lets now accumulate score by covisibility
       for (auto& [score, pKFi] : lScoreAndMatch) {
-        std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
+        const std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
 
         float     bestScore = score;
         float     accScore  = score;
@@ -225,7 +225,7 @@ void KeyFrameDatabase::DetectCandidates(
 
       // Lets now accumulate score by covisibility
       for (auto& [score, pKFi] : lScoreAndMatch) {
-        std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
+        const std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
 
         float     bestScore = score;
         float     accScore  = score;
@@ -264,7 +264,7 @@ void KeyFrameDatabase::DetectCandidates(
   }
 
   for (const auto& [wordId, wordValue] : pKF->mBowVec) {
-    std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
+    const std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
 
     for (auto* pKFi : lKFs) {
       pKFi->mnLoopQuery  = -1;
@@ -289,7 +289,7 @@ void KeyFrameDatabase::DetectBestCandidates(
     spConnectedKF = pKF->GetConnectedKeyFrames();
 
     for (const auto& [wordId, wordValue] : pKF->mBowVec) {
-      std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
+      const std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
 
       for (auto* pKFi : lKFs) {
         if (spConnectedKF.find(pKFi) != spConnectedKF.end()) {
@@ -342,7 +342,7 @@ void KeyFrameDatabase::DetectBestCandidates(
 
   // Lets now accumulate score by covisibility
   for (auto& [score, pKFi] : lScoreAndMatch) {
-    std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
+    const std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
 
     float     bestScore = score;
     float     accScore  = bestScore;
@@ -403,7 +403,7 @@ void KeyFrameDatabase::DetectNBestCandidates(
     spConnectedKF = pKF->GetConnectedKeyFrames();
 
     for (const auto& [wordId, wordValue] : pKF->mBowVec) {
-      std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
+      const std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
 
       for (auto* pKFi : lKFs) {
         if (pKFi->mnPlaceRecognitionQuery != pKF->mnId) {
@@ -451,7 +451,7 @@ void KeyFrameDatabase::DetectNBestCandidates(
 
   // Lets now accumulate score by covisibility
   for (auto& [score, pKFi] : lScoreAndMatch) {
-    std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
+    const std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
 
     float     bestScore = score;
     float     accScore  = bestScore;
@@ -513,7 +513,7 @@ std::vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame* F
     const std::unique_lock<std::mutex> lock(mMutex);
 
     for (const auto& [wordId, wordValue] : F->mBowVec) {
-      std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
+      const std::list<KeyFrame*>& lKFs = mvInvertedFile[wordId];
 
       for (auto* pKFi : lKFs) {
         if (pKFi->mnRelocQuery != F->mnId) {
@@ -559,7 +559,7 @@ std::vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame* F
 
   // Lets now accumulate score by covisibility
   for (auto& [score, pKFi] : lScoreAndMatch) {
-    std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
+    const std::vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
 
     float     bestScore = score;
     float     accScore  = bestScore;
