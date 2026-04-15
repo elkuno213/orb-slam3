@@ -51,7 +51,6 @@ public:
   Eigen::Vector3f a;
   Eigen::Vector3f w;
   double          t;
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 // IMU biases (gyro and accelerometer)
@@ -83,7 +82,6 @@ public:
 
   float bax, bay, baz;
   float bwx, bwy, bwz;
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 // IMU calibration (Tbc, Tcb, noise)
@@ -137,7 +135,6 @@ public:
   float           deltaT; // integration time
   Eigen::Matrix3f deltaR;
   Eigen::Matrix3f rightJ; // right jacobian
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 // Preintegration of Imu Measurements
@@ -168,7 +165,6 @@ class Preintegrated {
   }
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Preintegrated();
   Preintegrated(const Bias& b_, const Calib& calib);
   explicit Preintegrated(Preintegrated* pImuPre);
@@ -226,8 +222,6 @@ private:
       ar& boost::serialization::make_array(w.data(), w.size());
       ar& t;
     }
-
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     integrable() = default;
     integrable(const Eigen::Vector3f& a_, const Eigen::Vector3f& w_, const float& t_)
       : a(a_), w(w_), t(t_) {

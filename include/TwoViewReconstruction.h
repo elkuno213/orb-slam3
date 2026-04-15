@@ -31,7 +31,6 @@ class TwoViewReconstruction {
   using Match = std::pair<int, int>;
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // Fix the reference frame
   explicit TwoViewReconstruction(const Eigen::Matrix3f& k, float sigma = 1.0, int iterations = 200);
 

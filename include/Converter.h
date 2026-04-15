@@ -30,7 +30,6 @@ namespace ORB_SLAM3 {
 
 class Converter {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   static std::vector<cv::Mat> toDescriptorVector(const cv::Mat& Descriptors);
 
   static cv::Mat toCvMat(const Eigen::Matrix<float, 3, 3>& m);

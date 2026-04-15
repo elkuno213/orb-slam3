@@ -44,8 +44,6 @@ class KeyFrameDatabase {
   }
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   KeyFrameDatabase();
   explicit KeyFrameDatabase(const ORBVocabulary& voc);
 
