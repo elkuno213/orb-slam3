@@ -66,7 +66,7 @@ public:
   // Used in loop detection (Loop Closing)
   int SearchByProjection(
     KeyFrame*                     pKF,
-    Sophus::Sim3<float>&          Scw,
+    Sophus::Sim3f&          Scw,
     const std::vector<MapPoint*>& vpPoints,
     std::vector<MapPoint*>&       vpMatched,
     int                           th,
@@ -77,7 +77,7 @@ public:
   // Used in Place Recognition (Loop Closing and Merging)
   int SearchByProjection(
     KeyFrame*                     pKF,
-    Sophus::Sim3<float>&          Scw,
+    Sophus::Sim3f&          Scw,
     const std::vector<MapPoint*>& vpPoints,
     const std::vector<KeyFrame*>& vpPointsKFs,
     std::vector<MapPoint*>&       vpMatched,

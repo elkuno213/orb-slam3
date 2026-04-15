@@ -131,18 +131,18 @@ public:
 #endif
 
   // Tracking states
-  enum eTrackingState {
-    SYSTEM_NOT_READY = -1,
-    NO_IMAGES_YET    = 0,
-    NOT_INITIALIZED  = 1,
-    OK               = 2,
-    RECENTLY_LOST    = 3,
-    LOST             = 4,
-    OK_KLT           = 5
+  enum class State : int8_t {
+    SystemNotReady = -1,
+    NoImagesYet    = 0,
+    NotInitialized = 1,
+    Ok             = 2,
+    RecentlyLost   = 3,
+    Lost           = 4,
+    OkKlt          = 5
   };
 
-  eTrackingState mState{NO_IMAGES_YET};
-  eTrackingState mLastProcessedState;
+  State mState{State::NoImagesYet};
+  State mLastProcessedState;
 
   // Input sensor
   System::Sensor mSensor;

@@ -80,7 +80,7 @@ Eigen::Vector2f Pinhole::projectMat(const cv::Point3f& p3D) {
   return {point.x, point.y};
 }
 
-float Pinhole::uncertainty2(const Eigen::Matrix<double, 2, 1>& /*p2D*/) {
+float Pinhole::uncertainty2(const Eigen::Vector2d& /*p2D*/) {
   return 1.0;
 }
 

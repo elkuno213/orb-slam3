@@ -44,15 +44,15 @@ cv::Mat Converter::toCvMat(const Eigen::Matrix3f& m) {
   return cvMat.clone();
 }
 
-Eigen::Matrix<float, 3, 1> Converter::toVector3f(const cv::Mat& cvVector) {
-  Eigen::Matrix<float, 3, 1> v;
+Eigen::Vector3f Converter::toVector3f(const cv::Mat& cvVector) {
+  Eigen::Vector3f v;
   v << cvVector.at<float>(0), cvVector.at<float>(1), cvVector.at<float>(2);
 
   return v;
 }
 
-Eigen::Matrix<float, 3, 3> Converter::toMatrix3f(const cv::Mat& cvMat3) {
-  Eigen::Matrix<float, 3, 3> M;
+Eigen::Matrix3f Converter::toMatrix3f(const cv::Mat& cvMat3) {
+  Eigen::Matrix3f M;
 
   M << cvMat3.at<float>(0, 0), cvMat3.at<float>(0, 1), cvMat3.at<float>(0, 2),
     cvMat3.at<float>(1, 0), cvMat3.at<float>(1, 1), cvMat3.at<float>(1, 2), cvMat3.at<float>(2, 0),
@@ -61,10 +61,10 @@ Eigen::Matrix<float, 3, 3> Converter::toMatrix3f(const cv::Mat& cvMat3) {
   return M;
 }
 
-Sophus::SE3<float> Converter::toSophus(const cv::Mat& T) {
-  const Eigen::Matrix<float, 3, 3> eigMat = toMatrix3f(T.rowRange(0, 3).colRange(0, 3));
+Sophus::SE3f Converter::toSophus(const cv::Mat& T) {
+  const Eigen::Matrix3f eigMat = toMatrix3f(T.rowRange(0, 3).colRange(0, 3));
   const Eigen::Quaternionf         q(eigMat);
-  const Eigen::Matrix<float, 3, 1> t = toVector3f(T.rowRange(0, 3).col(3));
+  const Eigen::Vector3f t = toVector3f(T.rowRange(0, 3).col(3));
   return {q, t};
 }
 

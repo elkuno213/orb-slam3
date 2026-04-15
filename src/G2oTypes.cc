@@ -266,10 +266,10 @@ void InvDepthPoint::Update(const double* pu) {
 }
 
 bool VertexPose::read(std::istream& is) {
-  std::vector<Eigen::Matrix<double, 3, 3> > Rcw;
-  std::vector<Eigen::Matrix<double, 3, 1> > tcw;
-  std::vector<Eigen::Matrix<double, 3, 3> > Rbc;
-  std::vector<Eigen::Matrix<double, 3, 1> > tbc;
+  std::vector<Eigen::Matrix3d > Rcw;
+  std::vector<Eigen::Vector3d > tcw;
+  std::vector<Eigen::Matrix3d > Rbc;
+  std::vector<Eigen::Vector3d > tbc;
 
   const int num_cams = _estimate.Rbc.size();
   for (int idx = 0; idx < num_cams; idx++) {
@@ -307,11 +307,11 @@ bool VertexPose::read(std::istream& is) {
 }
 
 bool VertexPose::write(std::ostream& os) const {
-  std::vector<Eigen::Matrix<double, 3, 3> > Rcw = _estimate.Rcw;
-  std::vector<Eigen::Matrix<double, 3, 1> > tcw = _estimate.tcw;
+  std::vector<Eigen::Matrix3d > Rcw = _estimate.Rcw;
+  std::vector<Eigen::Vector3d > tcw = _estimate.tcw;
 
-  std::vector<Eigen::Matrix<double, 3, 3> > Rbc = _estimate.Rbc;
-  std::vector<Eigen::Matrix<double, 3, 1> > tbc = _estimate.tbc;
+  std::vector<Eigen::Matrix3d > Rbc = _estimate.Rbc;
+  std::vector<Eigen::Vector3d > tbc = _estimate.tbc;
 
   const int num_cams = tcw.size();
 
@@ -398,7 +398,7 @@ void EdgeStereo::linearizeOplus() {
   const double           bf  = VPose->estimate().bf;
   const double           inv_z2 = 1.0 / (Xc(2) * Xc(2));
 
-  Eigen::Matrix<double, 3, 3> proj_jac;
+  Eigen::Matrix3d proj_jac;
   proj_jac.block<2, 3>(0, 0) = VPose->estimate().pCamera[cam_idx]->projectJac(Xc);
   proj_jac.block<1, 3>(2, 0) = proj_jac.block<1, 3>(0, 0);
   proj_jac(2, 2)             += bf * inv_z2;
@@ -426,7 +426,7 @@ void EdgeStereoOnlyPose::linearizeOplus() {
   const double           bf  = VPose->estimate().bf;
   const double           inv_z2 = 1.0 / (Xc(2) * Xc(2));
 
-  Eigen::Matrix<double, 3, 3> proj_jac;
+  Eigen::Matrix3d proj_jac;
   proj_jac.block<2, 3>(0, 0) = VPose->estimate().pCamera[cam_idx]->projectJac(Xc);
   proj_jac.block<1, 3>(2, 0) = proj_jac.block<1, 3>(0, 0);
   proj_jac(2, 2)             += bf * inv_z2;

@@ -223,7 +223,7 @@ void Preintegrated::IntegrateNewMeasurement(
   dV = dV + dR * acc * dt;
 
   // Compute velocity and position parts of matrices A and B (rely on non-updated delta rotation)
-  const Eigen::Matrix<float, 3, 3> Wacc = Sophus::SO3f::hat(acc);
+  const Eigen::Matrix3f Wacc = Sophus::SO3f::hat(acc);
 
   A.block<3, 3>(3, 0) = -dR * dt * Wacc;
   A.block<3, 3>(6, 0) = -0.5F * dR * dt * dt * Wacc;
@@ -430,7 +430,7 @@ std::ostream& operator<<(std::ostream& out, const Bias& b) {
 }
 
 void Calib::Set(
-  const Sophus::SE3<float>& sophTbc,
+  const Sophus::SE3f& sophTbc,
   const float&              ng,
   const float&              na,
   const float&              ngw,
@@ -450,7 +450,7 @@ void Calib::Set(
 }
 
 Calib::Calib(
-  const Sophus::SE3<float>& Tbc,
+  const Sophus::SE3f& Tbc,
   const float&              ng,
   const float&              na,
   const float&              ngw,

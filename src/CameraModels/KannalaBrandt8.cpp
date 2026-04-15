@@ -127,8 +127,8 @@ Eigen::Vector2f KannalaBrandt8::projectMat(const cv::Point3f& p3D) {
   return {point.x, point.y};
 }
 
-float KannalaBrandt8::uncertainty2(const Eigen::Matrix<double, 2, 1>& /*p2D*/) {
-  /*Eigen::Matrix<double,2,1> c;
+float KannalaBrandt8::uncertainty2(const Eigen::Vector2d& /*p2D*/) {
+  /*Eigen::Vector2d c;
   c << mvParameters[2], mvParameters[3];
   if ((p2D-c).squaredNorm()>57600) // 240*240 (256)
       return 100.f;
@@ -477,7 +477,7 @@ void KannalaBrandt8::Triangulate(
   const Eigen::Matrix<float, 3, 4>& Tcw2,
   Eigen::Vector3f&                  x3D
 ) {
-  Eigen::Matrix<float, 4, 4> A;
+  Eigen::Matrix4f A;
   A.row(0) = p1.x * Tcw1.row(2) - Tcw1.row(0);
   A.row(1) = p1.y * Tcw1.row(2) - Tcw1.row(1);
   A.row(2) = p2.x * Tcw2.row(2) - Tcw2.row(0);

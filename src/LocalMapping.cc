@@ -171,7 +171,7 @@ void LocalMapping::Run() {
         if ((mTinit < 50.0F) && mbInertial) {
           if (mpCurrentKeyFrame->GetMap()->isImuInitialized()
               && mpTracker->mState
-                   == Tracking::OK) { // Enter here everytime local-mapping is called
+                   == Tracking::State::Ok) { // Enter here everytime local-mapping is called
             if (!mpCurrentKeyFrame->GetMap()->GetIniertialBA1()) {
               if (mTinit > 5.0F) {
                 _logger->info("Starting visual-inertial bundle adjustment 1...");
@@ -345,10 +345,10 @@ void LocalMapping::CreateNewMapPoints() {
 
   ORBmatcher matcher(th, false);
 
-  Sophus::SE3<float>         sophTcw1 = mpCurrentKeyFrame->GetPose();
+  Sophus::SE3f         sophTcw1 = mpCurrentKeyFrame->GetPose();
   Eigen::Matrix<float, 3, 4> eigTcw1  = sophTcw1.matrix3x4();
-  Eigen::Matrix<float, 3, 3> Rcw1     = eigTcw1.block<3, 3>(0, 0);
-  Eigen::Matrix<float, 3, 3> Rwc1     = Rcw1.transpose();
+  Eigen::Matrix3f Rcw1     = eigTcw1.block<3, 3>(0, 0);
+  Eigen::Matrix3f Rwc1     = Rcw1.transpose();
   Eigen::Vector3f            tcw1     = sophTcw1.translation();
   Eigen::Vector3f            Ow1      = mpCurrentKeyFrame->GetCameraCenter();
 
@@ -388,15 +388,15 @@ void LocalMapping::CreateNewMapPoints() {
 
     // Search matches that fullfil epipolar constraint
     std::vector<std::pair<std::size_t, std::size_t>> vMatchedIndices;
-    const bool bCoarse = mbInertial && mpTracker->mState == Tracking::RECENTLY_LOST
+    const bool bCoarse = mbInertial && mpTracker->mState == Tracking::State::RecentlyLost
                       && mpCurrentKeyFrame->GetMap()->GetIniertialBA2();
 
     matcher.SearchForTriangulation(mpCurrentKeyFrame, pKF2, vMatchedIndices, false, bCoarse);
 
-    Sophus::SE3<float>         sophTcw2 = pKF2->GetPose();
+    Sophus::SE3f         sophTcw2 = pKF2->GetPose();
     Eigen::Matrix<float, 3, 4> eigTcw2  = sophTcw2.matrix3x4();
-    Eigen::Matrix<float, 3, 3> Rcw2     = eigTcw2.block<3, 3>(0, 0);
-    Eigen::Matrix<float, 3, 3> Rwc2     = Rcw2.transpose();
+    Eigen::Matrix3f Rcw2     = eigTcw2.block<3, 3>(0, 0);
+    Eigen::Matrix3f Rwc2     = Rcw2.transpose();
     Eigen::Vector3f            tcw2     = sophTcw2.translation();
 
     const float& fx2 = pKF2->fx;
@@ -1295,7 +1295,7 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
   }
   mlNewKeyFrames.clear();
 
-  mpTracker->mState = Tracking::OK;
+  mpTracker->mState = Tracking::State::Ok;
   bInitializing     = false;
 
   mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();

@@ -229,7 +229,7 @@ private:
   bool mbShutDown{false};
 
   // Tracking state
-  int                       mTrackingState;
+  Tracking::State           mTrackingState;
   std::vector<MapPoint*>    mTrackedMapPoints;
   std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
   std::mutex                mMutexState;

@@ -1384,7 +1384,7 @@ bool System::isLost() {
   if (!mpAtlas->isImuInitialized()) {
     return false;
   }
-  return mpTracker->mState == Tracking::LOST;
+  return mpTracker->mState == Tracking::State::Lost;
 }
 
 bool System::isFinished() {
