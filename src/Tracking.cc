@@ -140,7 +140,7 @@ void Tracking::newParameterLoader(Settings* settings) {
 
   if ((mSensor == Sensor::Stereo || mSensor == Sensor::InertialStereo
        || mSensor == Sensor::InertialRgbd)
-      && settings->cameraType() == Settings::KannalaBrandt) {
+      && settings->cameraType() == Settings::CameraType::KannalaBrandt) {
     mpCamera2 = settings->camera2();
     mpCamera2 = mpAtlas->AddCamera(mpCamera2);
 
@@ -1427,8 +1427,7 @@ void Tracking::Track() {
             CreateMapInAtlas();
           }
         } else {
-          _logger->warn(
-            "Timestamp jump detected before IMU initialization. Resetting active map..."
+          _logger->warn("Timestamp jump detected before IMU initialization. Resetting active map..."
           );
           mpSystem->ResetActiveMap();
         }
@@ -1808,8 +1807,8 @@ void Tracking::StereoInitialization() {
       }
 
       if (!mFastInit
-          && (mCurrentFrame.mpImuPreintegratedFrame->avgA
-              - mLastFrame.mpImuPreintegratedFrame->avgA)
+          && (mCurrentFrame.mpImuPreintegratedFrame->avgA - mLastFrame.mpImuPreintegratedFrame->avgA
+             )
                  .norm()
                < 0.5) {
         _logger->warn("No enough acceleration");
@@ -2393,13 +2392,11 @@ bool Tracking::TrackLocalMap() {
       // if(!mbMapUpdated && mState == OK) //  && (mnMatchesInliers>30))
       if (!mbMapUpdated) { // && (mnMatchesInliers>30))
         _logger->debug("Optimizing pose with IMU from last frame when tracking local map...");
-        Optimizer::PoseInertialOptimizationLastFrame(
-          &mCurrentFrame
+        Optimizer::PoseInertialOptimizationLastFrame(&mCurrentFrame
         ); // , !mpLastKeyFrame->GetMap()->GetIniertialBA1());
       } else {
         _logger->debug("Optimizing pose with IMU from last key frame when tracking local map...");
-        Optimizer::PoseInertialOptimizationLastKeyFrame(
-          &mCurrentFrame
+        Optimizer::PoseInertialOptimizationLastKeyFrame(&mCurrentFrame
         ); // , !mpLastKeyFrame->GetMap()->GetIniertialBA1());
       }
     }
