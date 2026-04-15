@@ -356,7 +356,7 @@ Sophus::SE3f System::TrackStereo(
   mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
   _logger->debug(
     "Tracking states updated: state {} | {} map points | {} keypoints",
-    mTrackingState,
+    static_cast<int>(mTrackingState),
     mTrackedMapPoints.size(),
     mTrackedKeyPointsUn.size()
   );
@@ -443,7 +443,7 @@ Sophus::SE3f System::TrackRGBD(
   mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
   _logger->debug(
     "Tracking states updated: state {} | {} map points | {} keypoints",
-    mTrackingState,
+    static_cast<int>(mTrackingState),
     mTrackedMapPoints.size(),
     mTrackedKeyPointsUn.size()
   );
@@ -534,7 +534,7 @@ Sophus::SE3f System::TrackMonocular(
   mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
   _logger->debug(
     "Tracking states updated: state {} | {} map points | {} keypoints",
-    mTrackingState,
+    static_cast<int>(mTrackingState),
     mTrackedMapPoints.size(),
     mTrackedKeyPointsUn.size()
   );
@@ -1365,7 +1365,7 @@ void System::SaveDebugData(const int& initIdx) {
   f.close();
 }
 
-int System::GetTrackingState() {
+TrackingState System::GetTrackingState() {
   const std::unique_lock<std::mutex> lock(mMutexState);
   return mTrackingState;
 }
@@ -1393,7 +1393,7 @@ bool System::isLost() {
   if (!mpAtlas->isImuInitialized()) {
     return false;
   }
-  return mpTracker->mState == Tracking::LOST;
+  return mpTracker->mState == TrackingState::Lost;
 }
 
 bool System::isFinished() {

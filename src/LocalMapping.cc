@@ -168,7 +168,7 @@ void LocalMapping::Run() {
         if ((mTinit < 50.0F) && mbInertial) {
           if (mpCurrentKeyFrame->GetMap()->isImuInitialized()
               && mpTracker->mState
-                   == Tracking::OK) { // Enter here everytime local-mapping is called
+                   == TrackingState::Ok) { // Enter here everytime local-mapping is called
             if (!mpCurrentKeyFrame->GetMap()->GetIniertialBA1()) {
               if (mTinit > 5.0F) {
                 _logger->info("Starting visual-inertial bundle adjustment 1...");
@@ -385,7 +385,7 @@ void LocalMapping::CreateNewMapPoints() {
 
     // Search matches that fullfil epipolar constraint
     std::vector<std::pair<std::size_t, std::size_t>> vMatchedIndices;
-    const bool bCoarse = mbInertial && mpTracker->mState == Tracking::RECENTLY_LOST
+    const bool bCoarse = mbInertial && mpTracker->mState == TrackingState::RecentlyLost
                       && mpCurrentKeyFrame->GetMap()->GetIniertialBA2();
 
     matcher.SearchForTriangulation(mpCurrentKeyFrame, pKF2, vMatchedIndices, false, bCoarse);
@@ -1292,7 +1292,7 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
   }
   mlNewKeyFrames.clear();
 
-  mpTracker->mState = Tracking::OK;
+  mpTracker->mState = TrackingState::Ok;
   bInitializing     = false;
 
   mpCurrentKeyFrame->GetMap()->IncreaseChangeIndex();

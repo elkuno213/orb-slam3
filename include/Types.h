@@ -33,4 +33,15 @@ enum class Sensor : uint8_t {
   InertialRgbd   = 5,
 };
 
+// Tracking state enum (extracted to avoid circular dependency)
+enum class TrackingState : int8_t {
+  SystemNotReady = -1,
+  NoImagesYet    = 0,
+  NotInitialized = 1,
+  Ok             = 2,
+  RecentlyLost   = 3,
+  Lost           = 4,
+  OkKlt          = 5
+};
+
 } // namespace ORB_SLAM3
