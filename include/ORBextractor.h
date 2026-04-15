@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <list>
 #include <vector>
 #include <opencv2/core.hpp>
@@ -39,9 +40,9 @@ public:
 
 class ORBextractor {
 public:
-  enum {
-    HARRIS_SCORE = 0,
-    FAST_SCORE   = 1
+  enum class ScoreType : uint8_t {
+    Harris = 0,
+    Fast   = 1
   };
 
   ORBextractor(int nfeatures, float scaleFactor, int nlevels, int iniThFAST, int minThFAST);
