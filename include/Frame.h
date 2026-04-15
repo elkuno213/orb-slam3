@@ -105,7 +105,7 @@ public:
   void ComputeBoW();
 
   // Set the camera pose. (Imu pose is not modified!)
-  void SetPose(const Sophus::SE3<float>& Tcw);
+  void SetPose(const Sophus::SE3f& Tcw);
 
   // Set IMU velocity
   void SetVelocity(const Eigen::Vector3f& Vw);
@@ -117,9 +117,9 @@ public:
     const Eigen::Matrix3f& Rwb, const Eigen::Vector3f& twb, const Eigen::Vector3f& Vwb
   );
 
-  [[nodiscard]] Eigen::Matrix<float, 3, 1> GetImuPosition() const;
-  Eigen::Matrix<float, 3, 3>               GetImuRotation();
-  Sophus::SE3<float>                       GetImuPose();
+  [[nodiscard]] Eigen::Vector3f GetImuPosition() const;
+  Eigen::Matrix3f               GetImuRotation();
+  Sophus::SE3f                  GetImuPose();
 
   Sophus::SE3f    GetRelativePoseTrl();
   Sophus::SE3f    GetRelativePoseTlr();
@@ -179,7 +179,7 @@ public:
     return mRwc;
   }
 
-  [[nodiscard]] Sophus::SE3<float> GetPose() const {
+  [[nodiscard]] Sophus::SE3f GetPose() const {
     // TODO: can the Frame pose be accsessed from several threads? should this be protected somehow?
     return mTcw;
   }
@@ -202,21 +202,21 @@ public:
 
 private:
   // Sophus/Eigen migration
-  Sophus::SE3<float>         mTcw;
-  Eigen::Matrix<float, 3, 3> mRwc;
-  Eigen::Matrix<float, 3, 1> mOw;
-  Eigen::Matrix<float, 3, 3> mRcw;
-  Eigen::Matrix<float, 3, 1> mtcw;
-  bool                       mbHasPose;
+  Sophus::SE3f    mTcw;
+  Eigen::Matrix3f mRwc;
+  Eigen::Vector3f mOw;
+  Eigen::Matrix3f mRcw;
+  Eigen::Vector3f mtcw;
+  bool            mbHasPose;
 
   // Rcw_ not necessary as Sophus has a method for extracting the rotation matrix:
   // Tcw_.rotationMatrix() tcw_ not necessary as Sophus has a method for extracting the translation
   // vector: Tcw_.translation() Twc_ not necessary as Sophus has a method for easily computing the
   // inverse pose: Tcw_.inverse()
 
-  Sophus::SE3<float>         mTlr, mTrl;
-  Eigen::Matrix<float, 3, 3> mRlr;
-  Eigen::Vector3f            mtlr;
+  Sophus::SE3f    mTlr, mTrl;
+  Eigen::Matrix3f mRlr;
+  Eigen::Vector3f mtlr;
 
   // IMU linear velocity
   Eigen::Vector3f mVw;
@@ -399,7 +399,7 @@ public:
 
   cv::Mat imgLeft, imgRight;
 
-  Sophus::SE3<double> T_test;
+  Sophus::SE3d T_test;
 
   std::shared_ptr<spdlog::logger> _logger;
 };

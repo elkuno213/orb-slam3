@@ -426,10 +426,10 @@ public:
   // The following variables need to be accessed trough a mutex to be thread safe.
 protected:
   // sophus poses
-  Sophus::SE3<float> mTcw;
-  Eigen::Matrix3f    mRcw;
-  Sophus::SE3<float> mTwc;
-  Eigen::Matrix3f    mRwc;
+  Sophus::SE3f    mTcw;
+  Eigen::Matrix3f mRcw;
+  Sophus::SE3f    mTwc;
+  Eigen::Matrix3f mRwc;
 
   // IMU position
   Eigen::Vector3f mOwb;
@@ -438,8 +438,8 @@ protected:
   bool            mbHasVelocity;
 
   // Transformation matrix between cameras in stereo fisheye
-  Sophus::SE3<float> mTlr;
-  Sophus::SE3<float> mTrl;
+  Sophus::SE3f mTlr;
+  Sophus::SE3f mTrl;
 
   // Imu bias
   IMU::Bias mImuBias;
@@ -518,12 +518,12 @@ public:
 
   std::vector<std::vector<std::vector<std::size_t>>> mGridRight;
 
-  Sophus::SE3<float> GetRightPose();
-  Sophus::SE3<float> GetRightPoseInverse();
+  Sophus::SE3f GetRightPose();
+  Sophus::SE3f GetRightPoseInverse();
 
-  Eigen::Vector3f            GetRightCameraCenter();
-  Eigen::Matrix<float, 3, 3> GetRightRotation();
-  Eigen::Vector3f            GetRightTranslation();
+  Eigen::Vector3f GetRightCameraCenter();
+  Eigen::Matrix3f GetRightRotation();
+  Eigen::Vector3f GetRightTranslation();
 };
 
 } // namespace ORB_SLAM3

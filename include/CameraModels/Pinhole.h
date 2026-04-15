@@ -51,7 +51,7 @@ public:
   Eigen::Vector2f project(const Eigen::Vector3f& v3D) override;
   Eigen::Vector2f projectMat(const cv::Point3f& p3D) override;
 
-  float uncertainty2(const Eigen::Matrix<double, 2, 1>& p2D) override;
+  float uncertainty2(const Eigen::Vector2d& p2D) override;
 
   Eigen::Vector3f unprojectEig(const cv::Point2f& p2D) override;
   cv::Point3f     unproject(const cv::Point2f& p2D) override;
@@ -104,4 +104,3 @@ private:
 } // namespace ORB_SLAM3
 
 // BOOST_CLASS_EXPORT_KEY(ORBSLAM2::Pinhole)
-

@@ -104,8 +104,7 @@ IntegratedRotation::IntegratedRotation(
     deltaR = Eigen::Matrix3f::Identity() + W;
     rightJ = Eigen::Matrix3f::Identity();
   } else {
-    deltaR
-      = Eigen::Matrix3f::Identity() + W * std::sin(d) / d + W * W * (1.0F - std::cos(d)) / d2;
+    deltaR = Eigen::Matrix3f::Identity() + W * std::sin(d) / d + W * W * (1.0F - std::cos(d)) / d2;
     rightJ = Eigen::Matrix3f::Identity() - W * (1.0F - std::cos(d)) / d2
            + W * W * (d - std::sin(d)) / (d2 * d);
   }
@@ -223,7 +222,7 @@ void Preintegrated::IntegrateNewMeasurement(
   dV = dV + dR * acc * dt;
 
   // Compute velocity and position parts of matrices A and B (rely on non-updated delta rotation)
-  const Eigen::Matrix<float, 3, 3> Wacc = Sophus::SO3f::hat(acc);
+  const Eigen::Matrix3f Wacc = Sophus::SO3f::hat(acc);
 
   A.block<3, 3>(3, 0) = -dR * dt * Wacc;
   A.block<3, 3>(6, 0) = -0.5F * dR * dt * dt * Wacc;
@@ -246,7 +245,7 @@ void Preintegrated::IntegrateNewMeasurement(
   B.block<3, 3>(0, 0) = dRi.rightJ * dt;
 
   // Update covariance
-  C.block<9, 9>(0, 0) = A * C.block<9, 9>(0, 0) * A.transpose() + B * Nga * B.transpose();
+  C.block<9, 9>(0, 0)  = A * C.block<9, 9>(0, 0) * A.transpose() + B * Nga * B.transpose();
   C.block<6, 6>(9, 9) += NgaWalk;
 
   // Update rotation jacobian wrt bias correction
@@ -263,7 +262,7 @@ void Preintegrated::MergePrevious(Preintegrated* pPrev) {
 
   const std::unique_lock<std::mutex> lock1(mMutex);
   const std::unique_lock<std::mutex> lock2(pPrev->mMutex);
-  Bias                         bav;
+  Bias                               bav;
   bav.bwx = bu.bwx;
   bav.bwy = bu.bwy;
   bav.bwz = bu.bwz;
@@ -309,15 +308,15 @@ IMU::Bias Preintegrated::GetDeltaBias(const Bias& b_) {
 
 Eigen::Matrix3f Preintegrated::GetDeltaRotation(const Bias& b_) {
   const std::unique_lock<std::mutex> lock(mMutex);
-  Eigen::Vector3f              dbg;
+  Eigen::Vector3f                    dbg;
   dbg << b_.bwx - b.bwx, b_.bwy - b.bwy, b_.bwz - b.bwz;
   return NormalizeRotation(dR * Sophus::SO3f::exp(JRg * dbg).matrix());
 }
 
 Eigen::Vector3f Preintegrated::GetDeltaVelocity(const Bias& b_) {
   const std::unique_lock<std::mutex> lock(mMutex);
-  Eigen::Vector3f              dbg;
-  Eigen::Vector3f              dba;
+  Eigen::Vector3f                    dbg;
+  Eigen::Vector3f                    dba;
   dbg << b_.bwx - b.bwx, b_.bwy - b.bwy, b_.bwz - b.bwz;
   dba << b_.bax - b.bax, b_.bay - b.bay, b_.baz - b.baz;
   return dV + JVg * dbg + JVa * dba;
@@ -325,8 +324,8 @@ Eigen::Vector3f Preintegrated::GetDeltaVelocity(const Bias& b_) {
 
 Eigen::Vector3f Preintegrated::GetDeltaPosition(const Bias& b_) {
   const std::unique_lock<std::mutex> lock(mMutex);
-  Eigen::Vector3f              dbg;
-  Eigen::Vector3f              dba;
+  Eigen::Vector3f                    dbg;
+  Eigen::Vector3f                    dba;
   dbg << b_.bwx - b.bwx, b_.bwy - b.bwy, b_.bwz - b.bwz;
   dba << b_.bax - b.bax, b_.bay - b.bay, b_.baz - b.baz;
   return dP + JPg * dbg + JPa * dba;
@@ -430,11 +429,7 @@ std::ostream& operator<<(std::ostream& out, const Bias& b) {
 }
 
 void Calib::Set(
-  const Sophus::SE3<float>& sophTbc,
-  const float&              ng,
-  const float&              na,
-  const float&              ngw,
-  const float&              naw
+  const Sophus::SE3f& sophTbc, const float& ng, const float& na, const float& ngw, const float& naw
 ) {
   mbIsSet          = true;
   const float ng2  = ng * ng;
@@ -450,11 +445,7 @@ void Calib::Set(
 }
 
 Calib::Calib(
-  const Sophus::SE3<float>& Tbc,
-  const float&              ng,
-  const float&              na,
-  const float&              ngw,
-  const float&              naw
+  const Sophus::SE3f& Tbc, const float& ng, const float& na, const float& ngw, const float& naw
 ) {
   Set(Tbc, ng, na, ngw, naw);
 }

@@ -518,7 +518,7 @@ bool Frame::isSet() const {
   return mbIsSet;
 }
 
-void Frame::SetPose(const Sophus::SE3<float>& Tcw) {
+void Frame::SetPose(const Sophus::SE3f& Tcw) {
   mTcw = Tcw;
 
   UpdatePoseMatrices();
@@ -559,22 +559,22 @@ void Frame::SetImuPoseVelocity(
 }
 
 void Frame::UpdatePoseMatrices() {
-  Sophus::SE3<float> Twc = mTcw.inverse();
-  mRwc                   = Twc.rotationMatrix();
-  mOw                    = Twc.translation();
-  mRcw                   = mTcw.rotationMatrix();
-  mtcw                   = mTcw.translation();
+  Sophus::SE3f Twc = mTcw.inverse();
+  mRwc             = Twc.rotationMatrix();
+  mOw              = Twc.translation();
+  mRcw             = mTcw.rotationMatrix();
+  mtcw             = mTcw.translation();
 }
 
-Eigen::Matrix<float, 3, 1> Frame::GetImuPosition() const {
+Eigen::Vector3f Frame::GetImuPosition() const {
   return mRwc * mImuCalib.mTcb.translation() + mOw;
 }
 
-Eigen::Matrix<float, 3, 3> Frame::GetImuRotation() {
+Eigen::Matrix3f Frame::GetImuRotation() {
   return mRwc * mImuCalib.mTcb.rotationMatrix();
 }
 
-Sophus::SE3<float> Frame::GetImuPose() {
+Sophus::SE3f Frame::GetImuPose() {
   return mTcw.inverse() * mImuCalib.mTcb;
 }
 
@@ -601,11 +601,11 @@ bool Frame::isInFrustum(MapPoint* pMP, float viewingCosLimit) {
     pMP->mTrackProjY   = -1;
 
     // 3D in absolute coordinates
-    const Eigen::Matrix<float, 3, 1> P = pMP->GetWorldPos();
+    const Eigen::Vector3f P = pMP->GetWorldPos();
 
     // 3D in camera coordinates
-    const Eigen::Matrix<float, 3, 1> Pc      = mRcw * P + mtcw;
-    const float                      Pc_dist = Pc.norm();
+    const Eigen::Vector3f Pc      = mRcw * P + mtcw;
+    const float           Pc_dist = Pc.norm();
 
     // Check positive depth
     const float& PcZ  = Pc(2);

@@ -80,7 +80,7 @@ Eigen::Vector2f Pinhole::projectMat(const cv::Point3f& p3D) {
   return {point.x, point.y};
 }
 
-float Pinhole::uncertainty2(const Eigen::Matrix<double, 2, 1>& /*p2D*/) {
+float Pinhole::uncertainty2(const Eigen::Vector2d& /*p2D*/) {
   return 1.0;
 }
 
@@ -122,7 +122,7 @@ bool Pinhole::ReconstructWithTwoViews(
 ) {
   if (!tvr) {
     const Eigen::Matrix3f K = toK_();
-    tvr               = new TwoViewReconstruction(K);
+    tvr                     = new TwoViewReconstruction(K);
   }
 
   return tvr->Reconstruct(vKeys1, vKeys2, vMatches12, T21, vP3D, vbTriangulated);
@@ -146,14 +146,14 @@ bool Pinhole::epipolarConstrain(
   const cv::KeyPoint&    kp2,
   const Eigen::Matrix3f& R12,
   const Eigen::Vector3f& t12,
-  const float            /*sigmaLevel*/,
-  const float            unc
+  const float /*sigmaLevel*/,
+  const float unc
 ) {
   // Compute Fundamental Matrix
   const Eigen::Matrix3f t12x = Sophus::SO3f::hat(t12);
   const Eigen::Matrix3f K1   = toK_();
   const Eigen::Matrix3f K2   = pCamera2->toK_();
-  Eigen::Matrix3f F12  = K1.transpose().inverse() * t12x * R12 * K2.inverse();
+  Eigen::Matrix3f       F12  = K1.transpose().inverse() * t12x * R12 * K2.inverse();
 
   // Epipolar line in second image l = x1'F12 = [a b c]
   const float a = kp1.pt.x * F12(0, 0) + kp1.pt.y * F12(1, 0) + F12(2, 0);
@@ -176,12 +176,12 @@ bool Pinhole::epipolarConstrain(
 bool Pinhole::matchAndtriangulate(
   const cv::KeyPoint& /*kp1*/,
   const cv::KeyPoint& /*kp2*/,
-  GeometricCamera*    /*pOther*/,
-  Sophus::SE3f&       /*Tcw1*/,
-  Sophus::SE3f&       /*Tcw2*/,
-  const float         /*sigmaLevel1*/,
-  const float         /*sigmaLevel2*/,
-  Eigen::Vector3f&    /*x3Dtriangulated*/
+  GeometricCamera* /*pOther*/,
+  Sophus::SE3f& /*Tcw1*/,
+  Sophus::SE3f& /*Tcw2*/,
+  const float /*sigmaLevel1*/,
+  const float /*sigmaLevel2*/,
+  Eigen::Vector3f& /*x3Dtriangulated*/
 ) {
   return false;
 }

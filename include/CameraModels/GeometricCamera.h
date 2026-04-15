@@ -32,9 +32,9 @@ class GeometricCamera {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int /*version*/) {
-    ar& mnId;
-    ar& mnType;
-    ar& mvParameters;
+    ar & mnId;
+    ar & mnType;
+    ar & mvParameters;
   }
 
 public:
@@ -48,7 +48,7 @@ public:
   virtual Eigen::Vector2f project(const Eigen::Vector3f& v3D) = 0;
   virtual Eigen::Vector2f projectMat(const cv::Point3f& p3D)  = 0;
 
-  virtual float uncertainty2(const Eigen::Matrix<double, 2, 1>& p2D) = 0;
+  virtual float uncertainty2(const Eigen::Vector2d& p2D) = 0;
 
   virtual Eigen::Vector3f unprojectEig(const cv::Point2f& p2D) = 0;
   virtual cv::Point3f     unproject(const cv::Point2f& p2D)    = 0;
@@ -124,4 +124,3 @@ protected:
   unsigned int mnType;
 };
 } // namespace ORB_SLAM3
-

@@ -758,8 +758,10 @@ std::vector<std::size_t> KeyFrame::GetFeaturesInArea(
     return vIndices;
   }
 
-  const int nMaxCellX
-    = std::min(mnGridCols - 1, static_cast<int>(std::ceil((x - mnMinX + factorX) * mfGridElementWidthInv)));
+  const int nMaxCellX = std::min(
+    mnGridCols - 1,
+    static_cast<int>(std::ceil((x - mnMinX + factorX) * mfGridElementWidthInv))
+  );
   if (nMaxCellX < 0) {
     return vIndices;
   }
@@ -1152,13 +1154,13 @@ Sophus::SE3f KeyFrame::GetRelativePoseTlr() {
   return mTlr;
 }
 
-Sophus::SE3<float> KeyFrame::GetRightPose() {
+Sophus::SE3f KeyFrame::GetRightPose() {
   const std::unique_lock<std::mutex> lock(mMutexPose);
 
   return mTrl * mTcw;
 }
 
-Sophus::SE3<float> KeyFrame::GetRightPoseInverse() {
+Sophus::SE3f KeyFrame::GetRightPoseInverse() {
   const std::unique_lock<std::mutex> lock(mMutexPose);
 
   return mTwc * mTlr;
@@ -1170,7 +1172,7 @@ Eigen::Vector3f KeyFrame::GetRightCameraCenter() {
   return (mTwc * mTlr).translation();
 }
 
-Eigen::Matrix<float, 3, 3> KeyFrame::GetRightRotation() {
+Eigen::Matrix3f KeyFrame::GetRightRotation() {
   const std::unique_lock<std::mutex> lock(mMutexPose);
 
   return (mTrl.so3() * mTcw.so3()).matrix();

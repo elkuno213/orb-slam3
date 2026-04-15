@@ -86,8 +86,8 @@ MLPnPsolver::MLPnPsolver(const Frame& F, const std::vector<MapPoint*>& vpMapPoin
         mvBearingVecs.push_back(br);
 
         // 3D coordinates
-        Eigen::Matrix<float, 3, 1> posEig = pMP->GetWorldPos();
-        const point_t              pos(posEig(0), posEig(1), posEig(2));
+        Eigen::Vector3f posEig = pMP->GetWorldPos();
+        const point_t   pos(posEig(0), posEig(1), posEig(2));
         mvP3Dw.push_back(pos);
 
         mvKeyPointIndices.push_back(i);

@@ -616,13 +616,13 @@ public:
     return J.transpose() * information() * J;
   }
 
-  Eigen::Matrix<double, 3, 3> GetHessianBiasGyro() {
+  Eigen::Matrix3d GetHessianBiasGyro() {
     linearizeOplus();
     Eigen::Matrix<double, 9, 3> J = _jacobianOplus[2];
     return J.transpose() * information() * J;
   }
 
-  Eigen::Matrix<double, 3, 3> GetHessianBiasAcc() {
+  Eigen::Matrix3d GetHessianBiasAcc() {
     linearizeOplus();
     Eigen::Matrix<double, 9, 3> J = _jacobianOplus[3];
     return J.transpose() * information() * J;
@@ -793,7 +793,7 @@ public:
   }
   void linearizeOplus() override;
 
-  Eigen::Matrix<double, 3, 3> GetHessian() {
+  Eigen::Matrix3d GetHessian() {
     linearizeOplus();
     return _jacobianOplusXi.transpose() * information() * _jacobianOplusXi;
   }
@@ -819,7 +819,7 @@ public:
   }
   void linearizeOplus() override;
 
-  Eigen::Matrix<double, 3, 3> GetHessian() {
+  Eigen::Matrix3d GetHessian() {
     linearizeOplus();
     return _jacobianOplusXi.transpose() * information() * _jacobianOplusXi;
   }

@@ -32,13 +32,13 @@ class Converter {
 public:
   static std::vector<cv::Mat> toDescriptorVector(const cv::Mat& Descriptors);
 
-  static cv::Mat toCvMat(const Eigen::Matrix<float, 3, 3>& m);
+  static cv::Mat toCvMat(const Eigen::Matrix3f& m);
 
-  static Eigen::Matrix<float, 3, 1> toVector3f(const cv::Mat& cvVector);
-  static Eigen::Matrix<float, 3, 3> toMatrix3f(const cv::Mat& cvMat3);
+  static Eigen::Vector3f toVector3f(const cv::Mat& cvVector);
+  static Eigen::Matrix3f toMatrix3f(const cv::Mat& cvMat3);
 
-  static Sophus::SE3<float> toSophus(const cv::Mat& T);
-  static Sophus::Sim3f      toSophus(const g2o::Sim3& S);
+  static Sophus::SE3f  toSophus(const cv::Mat& T);
+  static Sophus::Sim3f toSophus(const g2o::Sim3& S);
 };
 
 } // namespace ORB_SLAM3

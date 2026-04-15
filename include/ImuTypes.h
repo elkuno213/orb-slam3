@@ -101,27 +101,23 @@ class Calib {
 public:
   Calib();
   Calib(
-    const Sophus::SE3<float>& Tbc,
-    const float&              ng,
-    const float&              na,
-    const float&              ngw,
-    const float&              naw
+    const Sophus::SE3f& Tbc, const float& ng, const float& na, const float& ngw, const float& naw
   );
   Calib(const Calib& calib);
 
   // void Set(const cv::Mat &cvTbc, const float &ng, const float &na, const float &ngw, const float
   // &naw);
   void Set(
-    const Sophus::SE3<float>& sophTbc,
-    const float&              ng,
-    const float&              na,
-    const float&              ngw,
-    const float&              naw
+    const Sophus::SE3f& sophTbc,
+    const float&        ng,
+    const float&        na,
+    const float&        ngw,
+    const float&        naw
   );
 
   // Sophus/Eigen implementation
-  Sophus::SE3<float>              mTcb;
-  Sophus::SE3<float>              mTbc;
+  Sophus::SE3f                    mTcb;
+  Sophus::SE3f                    mTbc;
   Eigen::DiagonalMatrix<float, 6> Cov, CovWalk;
   bool                            mbIsSet;
 };

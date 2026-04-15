@@ -510,7 +510,7 @@ int ORBmatcher::SearchByProjection(
 
 int ORBmatcher::SearchByProjection(
   KeyFrame*                     pKF,
-  Sophus::Sim3<float>&          Scw,
+  Sophus::Sim3f&                Scw,
   const std::vector<MapPoint*>& vpPoints,
   const std::vector<KeyFrame*>& vpPointsKFs,
   std::vector<MapPoint*>&       vpMatched,
