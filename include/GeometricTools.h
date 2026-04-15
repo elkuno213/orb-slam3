@@ -31,7 +31,6 @@ class KeyFrame;
 
 class GeometricTools {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // Compute the Fundamental matrix between KF1 and KF2
   static Eigen::Matrix3f ComputeF12(KeyFrame*& pKF1, KeyFrame*& pKF2);
 
@@ -54,7 +53,8 @@ public:
     }
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
-        if ((cvMat.at<float>(i, j) > (eigMat(i, j) + epsilon)) || (cvMat.at<float>(i, j) < (eigMat(i, j) - epsilon))) {
+        if ((cvMat.at<float>(i, j) > (eigMat(i, j) + epsilon))
+            || (cvMat.at<float>(i, j) < (eigMat(i, j) - epsilon))) {
           std::ostringstream oss;
           oss << "CheckMatrices mismatch:\ncv mat:\n" << cvMat << "\neig mat:\n" << eigMat;
           spdlog::warn("{}", oss.str());
@@ -72,7 +72,8 @@ public:
     const float epsilon = 1e-3;
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
-        if ((eigMat1(i, j) > (eigMat2(i, j) + epsilon)) || (eigMat1(i, j) < (eigMat2(i, j) - epsilon))) {
+        if ((eigMat1(i, j) > (eigMat2(i, j) + epsilon))
+            || (eigMat1(i, j) < (eigMat2(i, j) - epsilon))) {
           std::ostringstream oss;
           oss << "CheckMatrices mismatch:\neig mat 1:\n" << eigMat1 << "\neig mat 2:\n" << eigMat2;
           spdlog::warn("{}", oss.str());
@@ -85,4 +86,3 @@ public:
 };
 
 } // namespace ORB_SLAM3
-

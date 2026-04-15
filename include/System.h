@@ -62,8 +62,6 @@ public:
     TEXT_FILE   = 0,
     BINARY_FILE = 1,
   };
-
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
   System(
     const std::string& strVocFile,
@@ -171,12 +169,6 @@ public:
   void ChangeDataset();
 
   float GetImageScale();
-
-#ifdef REGISTER_TIMES
-  void InsertRectTime(double& time);
-  void InsertResizeTime(double& time);
-  void InsertTrackTime(double& time);
-#endif
 
 private:
   void SaveAtlas(int type);

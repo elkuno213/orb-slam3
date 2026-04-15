@@ -50,7 +50,6 @@ class Viewer;
 
 class Tracking {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Tracking(
     System*            pSys,
     ORBVocabulary*     pVoc,
@@ -124,13 +123,6 @@ public:
 
   float GetImageScale() const;
 
-#ifdef REGISTER_LOOP
-  void RequestStop();
-  bool isStopped();
-  void Release();
-  bool stopRequested();
-#endif
-
   // Tracking states
   enum eTrackingState {
     SYSTEM_NOT_READY = -1,
@@ -188,22 +180,6 @@ public:
   std::vector<MapPoint*> GetLocalMapMPS();
 
   bool mbWriteStats;
-
-#ifdef REGISTER_TIMES
-  void LocalMapStats2File();
-  void TrackStats2File();
-  void PrintTimeStats();
-
-  std::vector<double> vdRectStereo_ms;
-  std::vector<double> vdResizeImage_ms;
-  std::vector<double> vdORBExtract_ms;
-  std::vector<double> vdStereoMatch_ms;
-  std::vector<double> vdIMUInteg_ms;
-  std::vector<double> vdPosePred_ms;
-  std::vector<double> vdLMTrack_ms;
-  std::vector<double> vdNewKF_ms;
-  std::vector<double> vdTrackTotal_ms;
-#endif
 
 protected:
   // Main tracking function. It is independent of the input sensor.
@@ -370,15 +346,6 @@ protected:
   std::shared_ptr<spdlog::logger> _logger;
 
   void newParameterLoader(Settings* settings);
-
-#ifdef REGISTER_LOOP
-  bool Stop();
-
-  bool       mbStopped;
-  bool       mbStopRequested;
-  bool       mbNotStop;
-  std::mutex mMutexStop;
-#endif
 
 public:
   cv::Mat mImRight;

@@ -51,7 +51,6 @@ public:
   Eigen::Vector3f a;
   Eigen::Vector3f w;
   double          t;
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 // IMU biases (gyro and accelerometer)
@@ -59,13 +58,13 @@ class Bias {
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int /*version*/) {
-    ar& bax;
-    ar& bay;
-    ar& baz;
+    ar & bax;
+    ar & bay;
+    ar & baz;
 
-    ar& bwx;
-    ar& bwy;
-    ar& bwz;
+    ar & bwx;
+    ar & bwy;
+    ar & bwz;
   }
 
 public:
@@ -83,7 +82,6 @@ public:
 
   float bax, bay, baz;
   float bwx, bwy, bwz;
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 // IMU calibration (Tbc, Tcb, noise)
@@ -97,7 +95,7 @@ class Calib {
     ar& boost::serialization::make_array(Cov.diagonal().data(), Cov.diagonal().size());
     ar& boost::serialization::make_array(CovWalk.diagonal().data(), CovWalk.diagonal().size());
 
-    ar& mbIsSet;
+    ar & mbIsSet;
   }
 
 public:
@@ -137,7 +135,6 @@ public:
   float           deltaT; // integration time
   Eigen::Matrix3f deltaR;
   Eigen::Matrix3f rightJ; // right jacobian
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 // Preintegration of Imu Measurements
@@ -145,12 +142,12 @@ class Preintegrated {
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int /*version*/) {
-    ar& dT;
+    ar & dT;
     ar& boost::serialization::make_array(C.data(), C.size());
     ar& boost::serialization::make_array(Info.data(), Info.size());
     ar& boost::serialization::make_array(Nga.diagonal().data(), Nga.diagonal().size());
     ar& boost::serialization::make_array(NgaWalk.diagonal().data(), NgaWalk.diagonal().size());
-    ar& b;
+    ar & b;
     ar& boost::serialization::make_array(dR.data(), dR.size());
     ar& boost::serialization::make_array(dV.data(), dV.size());
     ar& boost::serialization::make_array(dP.data(), dP.size());
@@ -162,13 +159,12 @@ class Preintegrated {
     ar& boost::serialization::make_array(avgA.data(), avgA.size());
     ar& boost::serialization::make_array(avgW.data(), avgW.size());
 
-    ar& bu;
+    ar & bu;
     ar& boost::serialization::make_array(db.data(), db.size());
-    ar& mvMeasurements;
+    ar & mvMeasurements;
   }
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Preintegrated();
   Preintegrated(const Bias& b_, const Calib& calib);
   explicit Preintegrated(Preintegrated* pImuPre);
@@ -224,10 +220,8 @@ private:
     void serialize(Archive& ar, const unsigned int /*version*/) {
       ar& boost::serialization::make_array(a.data(), a.size());
       ar& boost::serialization::make_array(w.data(), w.size());
-      ar& t;
+      ar & t;
     }
-
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     integrable() = default;
     integrable(const Eigen::Vector3f& a_, const Eigen::Vector3f& w_, const float& t_)
       : a(a_), w(w_), t(t_) {

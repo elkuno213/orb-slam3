@@ -223,8 +223,6 @@ private:
   bool            mbHasVelocity;
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   // Vocabulary used for relocalization.
   ORBVocabulary* mpORBvocabulary;
 
@@ -334,11 +332,6 @@ public:
   string mNameFile;
 
   int mnDataset;
-
-#ifdef REGISTER_TIMES
-  double mTimeORB_Ext;
-  double mTimeStereoMatch;
-#endif
 
 private:
   // Undistort keypoints given OpenCV distortion parameters.
