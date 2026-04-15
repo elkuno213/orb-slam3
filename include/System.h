@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -48,13 +49,13 @@ class Viewer;
 class System {
 public:
   // Input sensor
-  enum eSensor {
-    MONOCULAR     = 0,
-    STEREO        = 1,
-    RGBD          = 2,
-    IMU_MONOCULAR = 3,
-    IMU_STEREO    = 4,
-    IMU_RGBD      = 5,
+  enum class Sensor : uint8_t {
+    Mono           = 0,
+    Stereo         = 1,
+    Rgbd           = 2,
+    InertialMono   = 3,
+    InertialStereo = 4,
+    InertialRgbd   = 5,
   };
 
   // File type
@@ -66,7 +67,7 @@ public:
   System(
     const std::string& strVocFile,
     const std::string& strSettingsFile,
-    eSensor            sensor,
+    Sensor             sensor,
     bool               bUseViewer  = true,
     int                initFr      = 0,
     const std::string& strSequence = std::string()
@@ -178,7 +179,7 @@ private:
   std::string CalculateCheckSum(std::string filename, int type);
 
   // Input sensor
-  eSensor mSensor;
+  Sensor mSensor;
 
   // ORB vocabulary used for place recognition and feature matching.
   ORBVocabulary* mpVocabulary;

@@ -41,16 +41,16 @@ void trackFrame(
   const std::vector<ORB_SLAM3::IMU::Point>& imu_meas
 ) {
   switch (sensor) {
-    case ORB_SLAM3::System::MONOCULAR:
-    case ORB_SLAM3::System::IMU_MONOCULAR:
+    case ORB_SLAM3::System::Sensor::Mono:
+    case ORB_SLAM3::System::Sensor::InertialMono:
       slam.TrackMonocular(img_left, timestamp, imu_meas);
       break;
-    case ORB_SLAM3::System::STEREO:
-    case ORB_SLAM3::System::IMU_STEREO:
+    case ORB_SLAM3::System::Sensor::Stereo:
+    case ORB_SLAM3::System::Sensor::InertialStereo:
       slam.TrackStereo(img_left, img_right, timestamp, imu_meas);
       break;
-    case ORB_SLAM3::System::RGBD:
-    case ORB_SLAM3::System::IMU_RGBD:
+    case ORB_SLAM3::System::Sensor::Rgbd:
+    case ORB_SLAM3::System::Sensor::InertialRgbd:
       slam.TrackRGBD(img_left, depth, timestamp, imu_meas);
       break;
     default:

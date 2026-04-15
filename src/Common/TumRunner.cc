@@ -149,7 +149,7 @@ void TumRunner::load() {
     auto&       sequence = _sequences[i];
     const auto& root     = _data_dirs[i];
 
-    if (_sensor == System::RGBD) {
+    if (_sensor == System::Sensor::Rgbd) {
       auto rgb_entries   = readTumFile(root / "rgb.txt");
       auto depth_entries = readTumFile(root / "depth.txt");
       associateRGBDepth(
@@ -191,7 +191,7 @@ void TumRunner::load() {
   }
 }
 
-System::eSensor TumRunner::sensor() const noexcept {
+System::Sensor TumRunner::sensor() const noexcept {
   return _sensor;
 }
 

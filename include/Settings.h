@@ -22,6 +22,7 @@
 // Flag to activate the measurement of time in each process (track,localmap, place recognition).
 // #define REGISTER_TIMES
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

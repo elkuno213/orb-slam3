@@ -156,8 +156,8 @@ void loadImu(
 
 TumViRunner::TumViRunner(const RunConfig& config)
   : _sensor(config.sensor)
-  , _inertial(_sensor == System::IMU_MONOCULAR || _sensor == System::IMU_STEREO)
-  , _is_stereo(_sensor == System::STEREO || _sensor == System::IMU_STEREO)
+  , _inertial(_sensor == System::Sensor::InertialMono || _sensor == System::Sensor::InertialStereo)
+  , _is_stereo(_sensor == System::Sensor::Stereo || _sensor == System::Sensor::InertialStereo)
   , _data_dirs(config.data_dirs)
   , _output_dir(config.output_dir) {
 }
@@ -218,7 +218,7 @@ void TumViRunner::load() {
   }
 }
 
-System::eSensor TumViRunner::sensor() const noexcept {
+System::Sensor TumViRunner::sensor() const noexcept {
   return _sensor;
 }
 

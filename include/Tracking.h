@@ -32,6 +32,7 @@
 #include "Frame.h"
 #include "ImuTypes.h"
 #include "ORBVocabulary.h"
+#include "System.h"
 
 namespace ORB_SLAM3 {
 
@@ -45,7 +46,6 @@ class Map;
 class MapDrawer;
 class ORBextractor;
 class Settings;
-class System;
 class Viewer;
 
 class Tracking {
@@ -58,7 +58,7 @@ public:
     Atlas*             pAtlas,
     KeyFrameDatabase*  pKFDB,
     const std::string& strSettingPath,
-    int                sensor,
+    System::Sensor     sensor,
     Settings*          settings,
     const std::string& /*_nameSeq*/ = std::string()
   );
@@ -145,7 +145,7 @@ public:
   eTrackingState mLastProcessedState;
 
   // Input sensor
-  int mSensor;
+  System::Sensor mSensor;
 
   // Current Frame
   Frame mCurrentFrame;
