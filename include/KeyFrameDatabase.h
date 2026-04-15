@@ -56,9 +56,6 @@ public:
   void clear();
   void clearMap(Map* pMap);
 
-  // Loop Detection(DEPRECATED)
-  std::vector<KeyFrame*> DetectLoopCandidates(KeyFrame* pKF, float minScore);
-
   // Loop and Merge Detection
   void DetectCandidates(
     KeyFrame*               pKF,
