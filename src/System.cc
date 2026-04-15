@@ -150,7 +150,7 @@ System::System(
     // Load the file with an earlier session
     // clock_t start = clock();
     _logger->info("Loading Atlas from file {}", mStrLoadAtlasFromFile);
-    const bool isRead = LoadAtlas(FileType::BINARY_FILE);
+    const bool isRead = LoadAtlas(FileType::Binary);
 
     if (!isRead) {
       throw std::runtime_error(
@@ -605,7 +605,7 @@ void System::Shutdown() {
 
   if (!mStrSaveAtlasToFile.empty()) {
     _logger->info("Saving Atlas to {}", mStrSaveAtlasToFile);
-    SaveAtlas(FileType::BINARY_FILE);
+    SaveAtlas(FileType::Binary);
   }
 
   /*if(mpViewer)
@@ -1406,7 +1406,7 @@ float System::GetImageScale() {
 }
 
 
-void System::SaveAtlas(int type) {
+void System::SaveAtlas(FileType type) {
   if (!mStrSaveAtlasToFile.empty()) {
     // clock_t start = clock();
 
@@ -1417,11 +1417,11 @@ void System::SaveAtlas(int type) {
     pathSaveFileName             = pathSaveFileName.append(mStrSaveAtlasToFile);
     pathSaveFileName             = pathSaveFileName.append(".osa");
 
-    const std::string strVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath, TEXT_FILE);
+    const std::string strVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath, FileType::Text);
     const std::size_t found                 = mStrVocabularyFilePath.find_last_of("/\\");
     const std::string strVocabularyName     = mStrVocabularyFilePath.substr(found + 1);
 
-    if (type == TEXT_FILE) { // File text
+    if (type == FileType::Text) { // File text
       _logger->info("Starting to write the save text file {}...", pathSaveFileName);
       static_cast<void>(std::remove(pathSaveFileName.c_str()));
       std::ofstream                 ofs(pathSaveFileName, std::ios::binary);
@@ -1430,7 +1430,7 @@ void System::SaveAtlas(int type) {
       oa << strVocabularyChecksum;
       oa << mpAtlas;
       _logger->info("File saved at {}", pathSaveFileName);
-    } else if (type == BINARY_FILE) { // File binary
+    } else if (type == FileType::Binary) { // File binary
       _logger->info("Starting to write the save binary file {}...", pathSaveFileName);
       static_cast<void>(std::remove(pathSaveFileName.c_str()));
       std::ofstream                   ofs(pathSaveFileName, std::ios::binary);
@@ -1443,7 +1443,7 @@ void System::SaveAtlas(int type) {
   }
 }
 
-bool System::LoadAtlas(int type) {
+bool System::LoadAtlas(FileType type) {
   std::string strFileVoc;
   std::string strVocChecksum;
   bool        isRead = false;
@@ -1452,7 +1452,7 @@ bool System::LoadAtlas(int type) {
   pathLoadFileName             = pathLoadFileName.append(mStrLoadAtlasFromFile);
   pathLoadFileName             = pathLoadFileName.append(".osa");
 
-  if (type == TEXT_FILE) { // File text
+  if (type == FileType::Text) { // File text
     _logger->info("Starting to read the save text file {}...", pathLoadFileName);
     std::ifstream ifs(pathLoadFileName, std::ios::binary);
     if (!ifs.good()) {
@@ -1465,7 +1465,7 @@ bool System::LoadAtlas(int type) {
     ia >> mpAtlas;
     isRead = true;
     _logger->info("File saved at {}", pathLoadFileName);
-  } else if (type == BINARY_FILE) { // File binary
+  } else if (type == FileType::Binary) { // File binary
     _logger->info("Starting to read the save binary file {}...", pathLoadFileName);
     std::ifstream ifs(pathLoadFileName, std::ios::binary);
     if (!ifs.good()) {
@@ -1483,7 +1483,7 @@ bool System::LoadAtlas(int type) {
   if (isRead) {
     // Check if the vocabulary is the same
     const std::string strInputVocabularyChecksum
-      = CalculateCheckSum(mStrVocabularyFilePath, TEXT_FILE);
+      = CalculateCheckSum(mStrVocabularyFilePath, FileType::Text);
 
     if (strInputVocabularyChecksum != strVocChecksum) {
       _logger->warn("The vocabulary loaded isn't the same as the one used to create the session");
@@ -1500,13 +1500,13 @@ bool System::LoadAtlas(int type) {
   return false;
 }
 
-std::string System::CalculateCheckSum(std::string filename, int type) {
+std::string System::CalculateCheckSum(std::string filename, FileType type) {
   std::string checksum;
 
   unsigned char c[MD5_DIGEST_LENGTH];
 
   std::ios_base::openmode flags = std::ios::in;
-  if (type == BINARY_FILE) { // Binary file
+  if (type == FileType::Binary) { // Binary file
     flags = std::ios::in | std::ios::binary;
   }
 

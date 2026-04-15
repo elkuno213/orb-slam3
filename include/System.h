@@ -59,9 +59,9 @@ public:
   };
 
   // File type
-  enum FileType {
-    TEXT_FILE   = 0,
-    BINARY_FILE = 1,
+  enum class FileType : uint8_t {
+    Text   = 0,
+    Binary = 1,
   };
   // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
   System(
@@ -173,10 +173,10 @@ public:
 
 
 private:
-  void SaveAtlas(int type);
-  bool LoadAtlas(int type);
+  void SaveAtlas(FileType type);
+  bool LoadAtlas(FileType type);
 
-  std::string CalculateCheckSum(std::string filename, int type);
+  std::string CalculateCheckSum(std::string filename, FileType type);
 
   // Input sensor
   Sensor mSensor;
