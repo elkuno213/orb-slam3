@@ -220,7 +220,7 @@ TEST_F(ParseUnifiedHappyPathTest, EurocStereoInertialParsesCorrectly) {
   RunConfig config;
   ASSERT_TRUE(parseArgs(ab.argc(), ab.argv(), config));
   EXPECT_EQ(config.dataset, DatasetType::EuRoC);
-  EXPECT_EQ(config.sensor, System::IMU_STEREO);
+  EXPECT_EQ(config.sensor, Sensor::InertialStereo);
   EXPECT_TRUE(config.use_viewer);
   ASSERT_EQ(config.data_dirs.size(), 2U);
   EXPECT_EQ(config.data_dirs[0], "/data/V101");
@@ -252,7 +252,7 @@ TEST_F(ParseUnifiedHappyPathTest, TumMultipleDataPathsParsesCorrectly) {
   RunConfig config;
   ASSERT_TRUE(parseArgs(ab.argc(), ab.argv(), config));
   EXPECT_EQ(config.dataset, DatasetType::TUM);
-  EXPECT_EQ(config.sensor, System::MONOCULAR);
+  EXPECT_EQ(config.sensor, Sensor::Mono);
   EXPECT_FALSE(config.use_viewer);
   ASSERT_EQ(config.data_dirs.size(), 2U);
   EXPECT_EQ(config.data_dirs[0], _tmp_dir);
@@ -284,13 +284,13 @@ TEST_F(ParseUnifiedHappyPathTest, NonExistentVocabPathThrows) {
 
 /// Parameterized case for factory dispatch tests (dataset + sensor -> runner properties).
 struct FactoryCase {
-  std::string     name;          ///< Test case name.
-  DatasetType     dataset;       ///< Dataset type to construct.
-  System::eSensor sensor;        ///< Sensor mode to construct.
-  bool            expect_clahe;  ///< Expected useClahe() return value.
-  int             expect_imread; ///< Expected imreadMode() return value.
-  std::string     output_dir;    ///< Output dir to set (empty = use default).
-  std::string     expect_param;  ///< Expected param() return value.
+  std::string name;          ///< Test case name.
+  DatasetType dataset;       ///< Dataset type to construct.
+  Sensor      sensor;        ///< Sensor mode to construct.
+  bool        expect_clahe;  ///< Expected useClahe() return value.
+  int         expect_imread; ///< Expected imreadMode() return value.
+  std::string output_dir;    ///< Output dir to set (empty = use default).
+  std::string expect_param;  ///< Expected param() return value.
 };
 
 class FactoryParamTest : public ::testing::TestWithParam<FactoryCase> {};
@@ -316,14 +316,12 @@ INSTANTIATE_TEST_SUITE_P(
   Factory,
   FactoryParamTest,
   ::testing::Values(
-    FactoryCase{
-      "EurocMono", DatasetType::EuRoC, System::MONOCULAR, false, cv::IMREAD_UNCHANGED, "", ""
-    },
-    FactoryCase{"TumRgbd", DatasetType::TUM, System::RGBD, false, cv::IMREAD_UNCHANGED, "", ""},
+    FactoryCase{"EurocMono", DatasetType::EuRoC, Sensor::Mono, false, cv::IMREAD_UNCHANGED, "", ""},
+    FactoryCase{"TumRgbd", DatasetType::TUM, Sensor::Rgbd, false, cv::IMREAD_UNCHANGED, "", ""},
     FactoryCase{
       "TumviMonoInertial",
       DatasetType::TumVI,
-      System::IMU_MONOCULAR,
+      Sensor::InertialMono,
       true,
       cv::IMREAD_GRAYSCALE,
       "/custom/output",
@@ -360,7 +358,7 @@ protected:
   void SetUp() override {
     RunConfig config;
     config.dataset   = DatasetType::EuRoC;
-    config.sensor    = System::IMU_MONOCULAR;
+    config.sensor    = Sensor::InertialMono;
     config.data_dirs = {"/dummy"};
     _runner          = std::make_unique<TestableEuRoCRunner>(config);
 
@@ -452,7 +450,7 @@ protected:
 TEST_F(TumAssociationTest, RgbdAutoAssociatesCorrectly) {
   RunConfig config;
   config.dataset   = DatasetType::TUM;
-  config.sensor    = System::RGBD;
+  config.sensor    = Sensor::Rgbd;
   config.data_dirs = {_tmp_dir};
   auto runner      = createDatasetRunner(config);
   runner->load();
@@ -468,7 +466,7 @@ TEST_F(TumAssociationTest, RgbdNoMatchesWithTightThreshold) {
   );
   RunConfig config;
   config.dataset   = DatasetType::TUM;
-  config.sensor    = System::RGBD;
+  config.sensor    = Sensor::Rgbd;
   config.data_dirs = {_tmp_dir};
   auto runner      = createDatasetRunner(config);
   EXPECT_THROW(runner->load(), std::runtime_error);
@@ -500,7 +498,7 @@ protected:
 
   static std::unique_ptr<DatasetRunner> makeRunner(
     DatasetType           dataset,
-    System::eSensor       sensor,
+    Sensor                sensor,
     std::vector<fs::path> dirs,
     const std::string&    output_dir = ""
   ) {
@@ -591,16 +589,16 @@ protected:
 
 /// Parameterized case for cross-dataset load + readFrame tests.
 struct LoadReadCase {
-  std::string     name;            ///< Test case name.
-  DatasetType     dataset;         ///< Dataset type.
-  System::eSensor sensor;          ///< Sensor mode.
-  bool            euroc_format;    ///< True = EuRoC/TumVI dir layout, false = TUM layout.
-  bool            stereo;          ///< Build stereo (cam1) images.
-  bool            rgbd;            ///< Build depth images (TUM only).
-  int             num_frames;      ///< Number of frames to generate.
-  bool            expect_right;    ///< Expect non-empty right image from readFrame().
-  bool            expect_depth;    ///< Expect non-empty depth image from readFrame().
-  bool            check_grayscale; ///< Verify left image is single-channel (TumVI).
+  std::string name;            ///< Test case name.
+  DatasetType dataset;         ///< Dataset type.
+  Sensor      sensor;          ///< Sensor mode.
+  bool        euroc_format;    ///< True = EuRoC/TumVI dir layout, false = TUM layout.
+  bool        stereo;          ///< Build stereo (cam1) images.
+  bool        rgbd;            ///< Build depth images (TUM only).
+  int         num_frames;      ///< Number of frames to generate.
+  bool        expect_right;    ///< Expect non-empty right image from readFrame().
+  bool        expect_depth;    ///< Expect non-empty depth image from readFrame().
+  bool        check_grayscale; ///< Verify left image is single-channel (TumVI).
 };
 
 class LoadReadParamTest
@@ -635,19 +633,19 @@ INSTANTIATE_TEST_SUITE_P(
     //                    name               dataset          sensor              euroc stereo rgbd
     //                    frames right depth gray
     LoadReadCase{
-      "TumMono", DatasetType::TUM, System::MONOCULAR, false, false, false, 4, false, false, false
+      "TumMono", DatasetType::TUM, Sensor::Mono, false, false, false, 4, false, false, false
     },
     LoadReadCase{
-      "TumRgbd", DatasetType::TUM, System::RGBD, false, false, true, 3, false, true, false
+      "TumRgbd", DatasetType::TUM, Sensor::Rgbd, false, false, true, 3, false, true, false
     },
     LoadReadCase{
-      "EurocMono", DatasetType::EuRoC, System::MONOCULAR, true, false, false, 4, false, false, false
+      "EurocMono", DatasetType::EuRoC, Sensor::Mono, true, false, false, 4, false, false, false
     },
     LoadReadCase{
-      "EurocStereo", DatasetType::EuRoC, System::STEREO, true, true, false, 3, true, false, false
+      "EurocStereo", DatasetType::EuRoC, Sensor::Stereo, true, true, false, 3, true, false, false
     },
     LoadReadCase{
-      "TumViMono", DatasetType::TumVI, System::MONOCULAR, true, false, false, 4, false, false, true
+      "TumViMono", DatasetType::TumVI, Sensor::Mono, true, false, false, 4, false, false, true
     }
   ),
   [](const auto& info) {
@@ -671,7 +669,7 @@ class InertialLoadParamTest
 TEST_P(InertialLoadParamTest, LoadsMonoInertialSequenceCorrectly) {
   const auto& p      = GetParam();
   auto        dir    = buildEurocDir(p.name, 3, false, true, 5);
-  auto        runner = makeRunner(p.dataset, System::IMU_MONOCULAR, {dir});
+  auto        runner = makeRunner(p.dataset, Sensor::InertialMono, {dir});
   runner->load();
   ASSERT_EQ(runner->numFrames(0), 3U);
   EXPECT_TRUE(runner->readIMU(0, 0).empty());
@@ -696,7 +694,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(DatasetStructureTest, EurocMultipleSequencesLoadCorrectly) {
   auto dir1   = buildEurocDir("euroc_s1", 4, false, false);
   auto dir2   = buildEurocDir("euroc_s2", 2, false, false);
-  auto runner = makeRunner(DatasetType::EuRoC, System::MONOCULAR, {dir1, dir2});
+  auto runner = makeRunner(DatasetType::EuRoC, Sensor::Mono, {dir1, dir2});
   runner->load();
   ASSERT_EQ(runner->numSequences(), 2U);
   ASSERT_EQ(runner->numFrames(0), 4U);
@@ -712,20 +710,14 @@ TEST_F(DatasetStructureTest, EmptyDataThrowsOnLoad) {
     auto dir = _root / "tum_empty";
     fs::create_directories(dir);
     std::ofstream((dir / "rgb.txt").string()) << "# color images\n# timestamp filename\n# ...\n";
-    EXPECT_THROW(
-      makeRunner(DatasetType::TUM, System::MONOCULAR, {dir})->load(),
-      std::runtime_error
-    );
+    EXPECT_THROW(makeRunner(DatasetType::TUM, Sensor::Mono, {dir})->load(), std::runtime_error);
   }
   {
     SCOPED_TRACE("EuRoC empty data.csv");
     auto dir = _root / "euroc_empty";
     fs::create_directories(dir / "mav0" / "cam0" / "data");
     std::ofstream((dir / "mav0" / "cam0" / "data.csv").string()) << "#timestamp [ns],filename\n";
-    EXPECT_THROW(
-      makeRunner(DatasetType::EuRoC, System::MONOCULAR, {dir})->load(),
-      std::runtime_error
-    );
+    EXPECT_THROW(makeRunner(DatasetType::EuRoC, Sensor::Mono, {dir})->load(), std::runtime_error);
   }
   {
     SCOPED_TRACE("EuRoC empty IMU");
@@ -734,7 +726,7 @@ TEST_F(DatasetStructureTest, EmptyDataThrowsOnLoad) {
     std::ofstream((dir / "mav0" / "imu0" / "data.csv").string())
       << "#timestamp [ns],w_x,w_y,w_z,a_x,a_y,a_z\n";
     EXPECT_THROW(
-      makeRunner(DatasetType::EuRoC, System::IMU_MONOCULAR, {dir})->load(),
+      makeRunner(DatasetType::EuRoC, Sensor::InertialMono, {dir})->load(),
       std::runtime_error
     );
   }
@@ -745,7 +737,7 @@ TEST_F(DatasetStructureTest, EmptyDataThrowsOnLoad) {
 
 TEST_F(DatasetStructureTest, ReadFrameResizesImage) {
   auto dir    = buildEurocDir("euroc_resize", 1, false, false);
-  auto runner = makeRunner(DatasetType::EuRoC, System::MONOCULAR, {dir});
+  auto runner = makeRunner(DatasetType::EuRoC, Sensor::Mono, {dir});
   runner->load();
 
   cv::Mat left;
@@ -761,7 +753,7 @@ TEST_F(DatasetStructureTest, ReadFrameWithMissingLeftImageThrows) {
   fs::create_directories(dir / "mav0" / "cam0" / "data");
   std::ofstream((dir / "mav0" / "cam0" / "data.csv").string())
     << "#timestamp [ns],filename\n1000000000,missing.png\n";
-  auto runner = makeRunner(DatasetType::EuRoC, System::MONOCULAR, {dir});
+  auto runner = makeRunner(DatasetType::EuRoC, Sensor::Mono, {dir});
   runner->load();
   ASSERT_EQ(runner->numFrames(0), 1U);
 
@@ -781,7 +773,7 @@ TEST_F(DatasetStructureTest, ReadFrameWithMissingLeftImageThrows) {
 /// Compile-time check: saveTrajectories has the expected function signature.
 /// If the declaration changes, this test will fail to compile.
 TEST(SaveTrajectoriesTest, FunctionSignatureMatchesDeclaration) {
-  using ExpectedSig = void (*)(System&, const fs::path&, DatasetType, System::eSensor);
+  using ExpectedSig               = void (*)(System&, const fs::path&, DatasetType, Sensor);
   [[maybe_unused]] ExpectedSig fn = &saveTrajectories;
 }
 
@@ -801,12 +793,12 @@ TEST(SaveTrajectoriesTest, OutputPathsFollowConvention) {
 /// `saves_keyframe` = true means SaveKeyFrameTrajectory{EuRoC,TUM}() is called.
 /// `format`         = "euroc" or "tum" indicating which Save*() variant is used.
 struct SaveDispatchCase {
-  std::string     name;
-  DatasetType     dataset;
-  System::eSensor sensor;
-  bool            saves_camera;
-  bool            saves_keyframe;
-  std::string     format;
+  std::string name;
+  DatasetType dataset;
+  Sensor      sensor;
+  bool        saves_camera;
+  bool        saves_keyframe;
+  std::string format;
 };
 
 class SaveTrajectoriesDispatchTest : public ::testing::TestWithParam<SaveDispatchCase> {};
@@ -832,7 +824,7 @@ TEST_P(SaveTrajectoriesDispatchTest, DispatchContractIsConsistent) {
 
   if (dataset == DatasetType::TUM) {
     EXPECT_EQ(format, "tum") << "TUM must use tum format";
-    const bool is_mono = (sensor == System::MONOCULAR || sensor == System::IMU_MONOCULAR);
+    const bool is_mono = (sensor == Sensor::Mono || sensor == Sensor::InertialMono);
     if (is_mono) {
       EXPECT_FALSE(saves_camera) << "TUM mono must not save full camera trajectory";
       EXPECT_TRUE(saves_keyframe) << "TUM mono must save keyframe trajectory";
@@ -849,23 +841,23 @@ INSTANTIATE_TEST_SUITE_P(
   ::testing::Values(
     //                     name                       dataset          sensor               camera
     //                     kf     format
-    SaveDispatchCase{"EurocMono", DatasetType::EuRoC, System::MONOCULAR, true, true, "euroc"},
-    SaveDispatchCase{"EurocStereo", DatasetType::EuRoC, System::STEREO, true, true, "euroc"},
+    SaveDispatchCase{"EurocMono", DatasetType::EuRoC, Sensor::Mono, true, true, "euroc"},
+    SaveDispatchCase{"EurocStereo", DatasetType::EuRoC, Sensor::Stereo, true, true, "euroc"},
     SaveDispatchCase{
-      "EurocMonoInertial", DatasetType::EuRoC, System::IMU_MONOCULAR, true, true, "euroc"
+      "EurocMonoInertial", DatasetType::EuRoC, Sensor::InertialMono, true, true, "euroc"
     },
     SaveDispatchCase{
-      "EurocStereoInertial", DatasetType::EuRoC, System::IMU_STEREO, true, true, "euroc"
+      "EurocStereoInertial", DatasetType::EuRoC, Sensor::InertialStereo, true, true, "euroc"
     },
-    SaveDispatchCase{"TumMono", DatasetType::TUM, System::MONOCULAR, false, true, "tum"},
-    SaveDispatchCase{"TumRgbd", DatasetType::TUM, System::RGBD, true, true, "tum"},
-    SaveDispatchCase{"TumViMono", DatasetType::TumVI, System::MONOCULAR, true, true, "euroc"},
-    SaveDispatchCase{"TumViStereo", DatasetType::TumVI, System::STEREO, true, true, "euroc"},
+    SaveDispatchCase{"TumMono", DatasetType::TUM, Sensor::Mono, false, true, "tum"},
+    SaveDispatchCase{"TumRgbd", DatasetType::TUM, Sensor::Rgbd, true, true, "tum"},
+    SaveDispatchCase{"TumViMono", DatasetType::TumVI, Sensor::Mono, true, true, "euroc"},
+    SaveDispatchCase{"TumViStereo", DatasetType::TumVI, Sensor::Stereo, true, true, "euroc"},
     SaveDispatchCase{
-      "TumViMonoInertial", DatasetType::TumVI, System::IMU_MONOCULAR, true, true, "euroc"
+      "TumViMonoInertial", DatasetType::TumVI, Sensor::InertialMono, true, true, "euroc"
     },
     SaveDispatchCase{
-      "TumViStereoInertial", DatasetType::TumVI, System::IMU_STEREO, true, true, "euroc"
+      "TumViStereoInertial", DatasetType::TumVI, Sensor::InertialStereo, true, true, "euroc"
     }
   ),
   [](const auto& info) {

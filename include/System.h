@@ -30,6 +30,7 @@
 #include <spdlog/spdlog.h>
 #include "ImuTypes.h"
 #include "ORBVocabulary.h"
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -47,16 +48,6 @@ class Viewer;
 
 class System {
 public:
-  // Input sensor
-  enum eSensor {
-    MONOCULAR     = 0,
-    STEREO        = 1,
-    RGBD          = 2,
-    IMU_MONOCULAR = 3,
-    IMU_STEREO    = 4,
-    IMU_RGBD      = 5,
-  };
-
   // File type
   enum FileType {
     TEXT_FILE   = 0,
@@ -66,7 +57,7 @@ public:
   System(
     const std::string& strVocFile,
     const std::string& strSettingsFile,
-    eSensor            sensor,
+    Sensor             sensor,
     bool               bUseViewer  = true,
     int                initFr      = 0,
     const std::string& strSequence = std::string()
@@ -177,7 +168,7 @@ private:
   std::string CalculateCheckSum(std::string filename, int type);
 
   // Input sensor
-  eSensor mSensor;
+  Sensor mSensor;
 
   // ORB vocabulary used for place recognition and feature matching.
   ORBVocabulary* mpVocabulary;

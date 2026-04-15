@@ -63,7 +63,7 @@ enum class DatasetType {
 struct RunConfig {
   // Principal arguments
   DatasetType                        dataset;
-  System::eSensor                    sensor;
+  Sensor                             sensor;
   std::vector<std::filesystem::path> data_dirs;
 
   // Required files
@@ -103,7 +103,7 @@ public:
 
   /// @brief Get the ORB-SLAM3 sensor type enum for System construction.
   /// @return Sensor type (MONOCULAR, STEREO, RGBD, or their IMU_ variants).
-  [[nodiscard]] virtual System::eSensor sensor() const noexcept = 0;
+  [[nodiscard]] virtual Sensor sensor() const noexcept = 0;
 
   /// @brief Get the number of loaded sequences.
   /// @return Number of sequences (always >= 1 after successful load()).
@@ -211,7 +211,7 @@ protected:
 /// @param dataset    Dataset type for format selection.
 /// @param sensor     Sensor type for monocular detection.
 void saveTrajectories(
-  System& slam, const std::filesystem::path& output_dir, DatasetType dataset, System::eSensor sensor
+  System& slam, const std::filesystem::path& output_dir, DatasetType dataset, Sensor sensor
 );
 
 } // namespace ORB_SLAM3

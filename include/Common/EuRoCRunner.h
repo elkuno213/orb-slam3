@@ -35,11 +35,11 @@ public:
   /// @param config Must have dataset == DatasetType::EuRoC.
   explicit EuRoCRunner(const RunConfig& config);
 
-  void                          load() override;
-  [[nodiscard]] System::eSensor sensor() const noexcept override;
+  void                 load() override;
+  [[nodiscard]] Sensor sensor() const noexcept override;
 
 private:
-  System::eSensor                    _sensor;
+  Sensor                             _sensor;
   bool                               _inertial;
   std::vector<std::filesystem::path> _data_dirs;
 };

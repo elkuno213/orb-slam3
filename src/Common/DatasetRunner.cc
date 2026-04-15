@@ -167,19 +167,19 @@ namespace {
   throw po::error("Unknown dataset: " + s + " (euroc|tum|tumvi)");
 }
 
-/// @brief Map string sensor + inertial flag to System::eSensor.
-[[nodiscard]] System::eSensor parseSensor(const std::string& s, bool inertial) {
+/// @brief Map string sensor + inertial flag to Sensor.
+[[nodiscard]] Sensor parseSensor(const std::string& s, bool inertial) {
   if (s == "mono") {
-    return inertial ? System::IMU_MONOCULAR : System::MONOCULAR;
+    return inertial ? Sensor::InertialMono : Sensor::Mono;
   }
   if (s == "stereo") {
-    return inertial ? System::IMU_STEREO : System::STEREO;
+    return inertial ? Sensor::InertialStereo : Sensor::Stereo;
   }
   if (s == "rgbd") {
     if (inertial) {
       throw po::error("rgbd does not support inertial mode");
     }
-    return System::RGBD;
+    return Sensor::Rgbd;
   }
   throw po::error("Unknown sensor: " + s + " (mono|stereo|rgbd)");
 }
@@ -188,19 +188,19 @@ namespace {
 void validateConfig(const RunConfig& config) {
   switch (config.dataset) {
     case DatasetType::EuRoC:
-      if (config.sensor != System::MONOCULAR && config.sensor != System::IMU_MONOCULAR
-          && config.sensor != System::STEREO && config.sensor != System::IMU_STEREO) {
+      if (config.sensor != Sensor::Mono && config.sensor != Sensor::InertialMono
+          && config.sensor != Sensor::Stereo && config.sensor != Sensor::InertialStereo) {
         throw po::error("euroc only supports mono and stereo sensors (with optional inertial)");
       }
       break;
     case DatasetType::TUM:
-      if (config.sensor != System::MONOCULAR && config.sensor != System::RGBD) {
+      if (config.sensor != Sensor::Mono && config.sensor != Sensor::Rgbd) {
         throw po::error("tum only supports mono and rgbd sensors (no inertial)");
       }
       break;
     case DatasetType::TumVI:
-      if (config.sensor != System::MONOCULAR && config.sensor != System::IMU_MONOCULAR
-          && config.sensor != System::STEREO && config.sensor != System::IMU_STEREO) {
+      if (config.sensor != Sensor::Mono && config.sensor != Sensor::InertialMono
+          && config.sensor != Sensor::Stereo && config.sensor != Sensor::InertialStereo) {
         throw po::error("tumvi only supports mono and stereo sensors (with optional inertial)");
       }
       break;
@@ -283,7 +283,7 @@ bool parseArgs(int argc, char** argv, RunConfig& config) {
 // Trajectory Saver                                                                               //
 
 void saveTrajectories(
-  System& slam, const fs::path& output_dir, DatasetType dataset, System::eSensor sensor
+  System& slam, const fs::path& output_dir, DatasetType dataset, Sensor sensor
 ) {
   using enum DatasetType;
   const auto camera   = (output_dir / "CameraTrajectory.txt").string();
@@ -296,7 +296,7 @@ void saveTrajectories(
       slam.SaveKeyFrameTrajectoryEuRoC(keyframe);
       break;
     case TUM:
-      if (sensor == System::MONOCULAR || sensor == System::IMU_MONOCULAR) {
+      if (sensor == Sensor::Mono || sensor == Sensor::InertialMono) {
         slam.SaveKeyFrameTrajectoryTUM(keyframe);
       } else {
         slam.SaveTrajectoryTUM(camera);
