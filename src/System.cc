@@ -349,7 +349,7 @@ Sophus::SE3f System::TrackStereo(
     = mpTracker->GrabImageStereo(imLeftToFeed, imRightToFeed, timestamp, std::move(filename));
 
   const std::unique_lock<std::mutex> lock2(mMutexState);
-  mTrackingState      = mpTracker->mState;
+  mTrackingState      = static_cast<int>(mpTracker->mState);
   mTrackedMapPoints   = mpTracker->mCurrentFrame.mvpMapPoints;
   mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
   _logger->debug(
@@ -436,7 +436,7 @@ Sophus::SE3f System::TrackRGBD(
     = mpTracker->GrabImageRGBD(imToFeed, imDepthToFeed, timestamp, std::move(filename));
 
   const std::unique_lock<std::mutex> lock2(mMutexState);
-  mTrackingState      = mpTracker->mState;
+  mTrackingState      = static_cast<int>(mpTracker->mState);
   mTrackedMapPoints   = mpTracker->mCurrentFrame.mvpMapPoints;
   mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
   _logger->debug(
@@ -527,7 +527,7 @@ Sophus::SE3f System::TrackMonocular(
   const Sophus::SE3f Tcw = mpTracker->GrabImageMonocular(imToFeed, timestamp, std::move(filename));
 
   const std::unique_lock<std::mutex> lock2(mMutexState);
-  mTrackingState      = mpTracker->mState;
+  mTrackingState      = static_cast<int>(mpTracker->mState);
   mTrackedMapPoints   = mpTracker->mCurrentFrame.mvpMapPoints;
   mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
   _logger->debug(
