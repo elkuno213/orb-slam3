@@ -1083,7 +1083,7 @@ void Frame::ComputeStereoFromRGBD(const cv::Mat& imDepth) {
   }
 }
 
-bool Frame::UnprojectStereo(const int& i, Eigen::Vector3f& x3D) {
+std::optional<Eigen::Vector3f> Frame::UnprojectStereo(int i) const {
   const float z = mvDepth[i];
   if (z > 0) {
     const float           u = mvKeysUn[i].pt.x;
@@ -1091,11 +1091,9 @@ bool Frame::UnprojectStereo(const int& i, Eigen::Vector3f& x3D) {
     const float           x = (u - cx) * z * invfx;
     const float           y = (v - cy) * z * invfy;
     const Eigen::Vector3f x3Dc(x, y, z);
-    x3D = mRwc * x3Dc + mOw;
-    return true;
-  } else {
-    return false;
+    return mRwc * x3Dc + mOw;
   }
+  return std::nullopt;
 }
 
 bool Frame::imuIsPreintegrated() {

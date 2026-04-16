@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <vector>
 #include <DBoW2/DBoW2/BowVector.h>
@@ -255,7 +256,7 @@ public:
   [[nodiscard]] std::vector<std::size_t> GetFeaturesInArea(
     const float& x, const float& y, const float& r, bool bRight = false
   ) const;
-  bool UnprojectStereo(int i, Eigen::Vector3f& x3D);
+  [[nodiscard]] std::optional<Eigen::Vector3f> UnprojectStereo(int i) const;
 
   // Image
   [[nodiscard]] bool IsInImage(const float& x, const float& y) const;
@@ -495,10 +496,10 @@ protected:
   Eigen::Matrix3f mK_;
 
   // Mutex
-  std::mutex mMutexPose; // for pose, velocity and biases
-  std::mutex mMutexConnections;
-  std::mutex mMutexFeatures;
-  std::mutex mMutexMap;
+  mutable std::mutex mMutexPose; // for pose, velocity and biases
+  std::mutex         mMutexConnections;
+  std::mutex         mMutexFeatures;
+  std::mutex         mMutexMap;
 
   std::shared_ptr<spdlog::logger> _logger;
 

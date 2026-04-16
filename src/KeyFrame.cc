@@ -804,7 +804,7 @@ bool KeyFrame::IsInImage(const float& x, const float& y) const {
   return (x >= mnMinX && x < mnMaxX && y >= mnMinY && y < mnMaxY);
 }
 
-bool KeyFrame::UnprojectStereo(int i, Eigen::Vector3f& x3D) {
+std::optional<Eigen::Vector3f> KeyFrame::UnprojectStereo(int i) const {
   const float z = mvDepth[i];
   if (z > 0) {
     const float           u = mvKeys[i].pt.x;
@@ -814,11 +814,9 @@ bool KeyFrame::UnprojectStereo(int i, Eigen::Vector3f& x3D) {
     const Eigen::Vector3f x3Dc(x, y, z);
 
     const std::unique_lock<std::mutex> lock(mMutexPose);
-    x3D = mRwc * x3Dc + mTwc.translation();
-    return true;
-  } else {
-    return false;
+    return mRwc * x3Dc + mTwc.translation();
   }
+  return std::nullopt;
 }
 
 float KeyFrame::ComputeSceneMedianDepth(const int q) {

@@ -902,16 +902,16 @@ int TwoViewReconstruction::CheckRT(
     const cv::KeyPoint& kp1 = vKeys1[vMatches12[i].first];
     const cv::KeyPoint& kp2 = vKeys2[vMatches12[i].second];
 
-    Eigen::Vector3f p3dC1;
-    Eigen::Vector3f x_p1(kp1.pt.x, kp1.pt.y, 1);
-    Eigen::Vector3f x_p2(kp2.pt.x, kp2.pt.y, 1);
+    const Eigen::Vector3f x_p1(kp1.pt.x, kp1.pt.y, 1);
+    const Eigen::Vector3f x_p2(kp2.pt.x, kp2.pt.y, 1);
 
-    GeometricTools::Triangulate(x_p1, x_p2, P1, P2, p3dC1);
-
-    if (!std::isfinite(p3dC1(0)) || !std::isfinite(p3dC1(1)) || !std::isfinite(p3dC1(2))) {
+    const auto p3dC1_opt = GeometricTools::Triangulate(x_p1, x_p2, P1, P2);
+    if (!p3dC1_opt || !std::isfinite(p3dC1_opt->x()) || !std::isfinite(p3dC1_opt->y())
+        || !std::isfinite(p3dC1_opt->z())) {
       vbGood[vMatches12[i].first] = false;
       continue;
     }
+    const Eigen::Vector3f& p3dC1 = *p3dC1_opt;
 
     // Check parallax
     const Eigen::Vector3f normal1 = p3dC1 - O1;

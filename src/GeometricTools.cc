@@ -43,12 +43,11 @@ Eigen::Matrix3f GeometricTools::ComputeF12(KeyFrame*& pKF1, KeyFrame*& pKF2) {
   return K1.transpose().inverse() * tc1c2x * Rc1c2 * K2.inverse();
 }
 
-bool GeometricTools::Triangulate(
-  Eigen::Vector3f&            x_c1,
-  Eigen::Vector3f&            x_c2,
-  Eigen::Matrix<float, 3, 4>& Tc1w,
-  Eigen::Matrix<float, 3, 4>& Tc2w,
-  Eigen::Vector3f&            x3D
+std::optional<Eigen::Vector3f> GeometricTools::Triangulate(
+  const Eigen::Vector3f&            x_c1,
+  const Eigen::Vector3f&            x_c2,
+  const Eigen::Matrix<float, 3, 4>& Tc1w,
+  const Eigen::Matrix<float, 3, 4>& Tc2w
 ) {
   Eigen::Matrix4f A;
   A.block<1, 4>(0, 0) = x_c1(0) * Tc1w.block<1, 4>(2, 0) - Tc1w.block<1, 4>(0, 0);
@@ -58,16 +57,14 @@ bool GeometricTools::Triangulate(
 
   const Eigen::JacobiSVD<Eigen::Matrix4f> svd(A, Eigen::ComputeFullV);
 
-  Eigen::Vector4f x3Dh = svd.matrixV().col(3);
+  const Eigen::Vector4f x3Dh = svd.matrixV().col(3);
 
   if (x3Dh(3) == 0) {
-    return false;
+    return std::nullopt;
   }
 
   // Euclidean coordinates
-  x3D = x3Dh.head(3) / x3Dh(3);
-
-  return true;
+  return x3Dh.head(3) / x3Dh(3);
 }
 
 } // namespace ORB_SLAM3

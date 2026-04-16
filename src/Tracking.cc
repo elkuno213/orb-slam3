@@ -1845,9 +1845,11 @@ void Tracking::StereoInitialization() {
       for (int i = 0; i < mCurrentFrame.N; i++) {
         const float z = mCurrentFrame.mvDepth[i];
         if (z > 0) {
-          Eigen::Vector3f x3D;
-          mCurrentFrame.UnprojectStereo(i, x3D);
-          auto* pNewMP = new MapPoint(x3D, pKFini, mpAtlas->GetCurrentMap());
+          const auto x3D_opt = mCurrentFrame.UnprojectStereo(i);
+          if (!x3D_opt) {
+            continue;
+          }
+          auto* pNewMP = new MapPoint(*x3D_opt, pKFini, mpAtlas->GetCurrentMap());
           pNewMP->AddObservation(pKFini, i);
           pKFini->AddMapPoint(pNewMP, i);
           pNewMP->ComputeDistinctiveDescriptors();
@@ -2264,7 +2266,11 @@ void Tracking::UpdateLastFrame() {
       Eigen::Vector3f x3D;
 
       if (mLastFrame.Nleft == -1) {
-        mLastFrame.UnprojectStereo(i, x3D);
+        const auto x3D_opt = mLastFrame.UnprojectStereo(i);
+        if (!x3D_opt) {
+          continue;
+        }
+        x3D = *x3D_opt;
       } else {
         x3D = mLastFrame.UnprojectStereoFishEye(i);
       }
@@ -2569,9 +2575,9 @@ bool Tracking::NeedNewKeyFrame() {
     }
   }
 
-  const bool c4
-    = (((mnMatchesInliers < 75) && (mnMatchesInliers > 15)) || mState == TrackingState::RecentlyLost)
-   && (mSensor == Sensor::InertialMono);
+  const bool c4 = (((mnMatchesInliers < 75) && (mnMatchesInliers > 15))
+                   || mState == TrackingState::RecentlyLost)
+               && (mSensor == Sensor::InertialMono);
 
   if (((c1a || c1b || c1c) && c2) || c3 || c4) {
     // If the mapping accepts keyframes, insert keyframe.
@@ -2665,7 +2671,11 @@ void Tracking::CreateNewKeyFrame() {
           Eigen::Vector3f x3D;
 
           if (mCurrentFrame.Nleft == -1) {
-            mCurrentFrame.UnprojectStereo(i, x3D);
+            const auto x3D_opt = mCurrentFrame.UnprojectStereo(i);
+            if (!x3D_opt) {
+              continue;
+            }
+            x3D = *x3D_opt;
           } else {
             x3D = mCurrentFrame.UnprojectStereoFishEye(i);
           }
@@ -2765,7 +2775,8 @@ void Tracking::SearchLocalPoints() {
       th = 5;
     }
 
-    if (mState == TrackingState::Lost || mState == TrackingState::RecentlyLost) { // Lost for less than 1 second
+    if (mState == TrackingState::Lost
+        || mState == TrackingState::RecentlyLost) { // Lost for less than 1 second
       th = 15;
     }
 

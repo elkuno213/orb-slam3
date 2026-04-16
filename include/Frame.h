@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <vector>
 #include <Eigen/Core>
 #include <opencv2/core.hpp>
@@ -157,7 +158,7 @@ public:
   void ComputeStereoFromRGBD(const cv::Mat& imDepth);
 
   // Backprojects a keypoint (if stereo/depth info available) into 3D world coordinates.
-  bool UnprojectStereo(const int& i, Eigen::Vector3f& x3D);
+  [[nodiscard]] std::optional<Eigen::Vector3f> UnprojectStereo(int i) const;
 
   ConstraintPoseImu* mpcpi;
 
