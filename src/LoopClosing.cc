@@ -81,10 +81,12 @@ void LoopClosing::Run() {
 
       if (bFindedRegion) {
         if (mbMergeDetected) {
-          if ((mpTracker->mSensor == Sensor::InertialMono
-               || mpTracker->mSensor == Sensor::InertialStereo
-               || mpTracker->mSensor == Sensor::InertialRgbd)
-              && (!mpCurrentKF->GetMap()->isImuInitialized())) {
+          if (
+            (mpTracker->mSensor == Sensor::InertialMono
+             || mpTracker->mSensor == Sensor::InertialStereo
+             || mpTracker->mSensor == Sensor::InertialRgbd)
+            && (!mpCurrentKF->GetMap()->isImuInitialized())
+          ) {
             _logger->warn("Merge aborted: IMU is not initialized");
           } else {
             const Sophus::SE3d               mTmw = mpMergeMatchedKF->GetPose().cast<double>();
@@ -112,10 +114,12 @@ void LoopClosing::Run() {
                 continue;
               }
               // If inertial, force only yaw
-              if ((mpTracker->mSensor == Sensor::InertialMono
-                   || mpTracker->mSensor == Sensor::InertialStereo
-                   || mpTracker->mSensor == Sensor::InertialRgbd)
-                  && mpCurrentKF->GetMap()->GetIniertialBA1()) {
+              if (
+                (mpTracker->mSensor == Sensor::InertialMono
+                 || mpTracker->mSensor == Sensor::InertialStereo
+                 || mpTracker->mSensor == Sensor::InertialRgbd)
+                && mpCurrentKF->GetMap()->GetIniertialBA1()
+              ) {
                 Eigen::Vector3d phi = LogSO3(mSold_new.rotation().toRotationMatrix());
                 phi(0)              = 0;
                 phi(1)              = 0;
@@ -132,9 +136,11 @@ void LoopClosing::Run() {
             _logger->info("Map merge successfully detected");
 
             // TODO UNCOMMENT
-            if (mpTracker->mSensor == Sensor::InertialMono
-                || mpTracker->mSensor == Sensor::InertialStereo
-                || mpTracker->mSensor == Sensor::InertialRgbd) {
+            if (
+              mpTracker->mSensor == Sensor::InertialMono
+              || mpTracker->mSensor == Sensor::InertialStereo
+              || mpTracker->mSensor == Sensor::InertialRgbd
+            ) {
               MergeLocal2();
             } else {
               MergeLocal();
@@ -189,14 +195,17 @@ void LoopClosing::Run() {
               _logger->info("phi: {}", oss.str());
             }
 
-            if (std::fabs(phi(0)) < 0.008F && std::fabs(phi(1)) < 0.008F
-                && std::fabs(phi(2)) < 0.349F) {
+            if (
+              std::fabs(phi(0)) < 0.008F && std::fabs(phi(1)) < 0.008F && std::fabs(phi(2)) < 0.349F
+            ) {
               if (mpCurrentKF->GetMap()->IsInertial()) {
                 // If inertial, force only yaw
-                if ((mpTracker->mSensor == Sensor::InertialMono
-                     || mpTracker->mSensor == Sensor::InertialStereo
-                     || mpTracker->mSensor == Sensor::InertialRgbd)
-                    && mpCurrentKF->GetMap()->GetIniertialBA2()) {
+                if (
+                  (mpTracker->mSensor == Sensor::InertialMono
+                   || mpTracker->mSensor == Sensor::InertialStereo
+                   || mpTracker->mSensor == Sensor::InertialRgbd)
+                  && mpCurrentKF->GetMap()->GetIniertialBA2()
+                ) {
                   phi(0)      = 0;
                   phi(1)      = 0;
                   g2oSww_new  = g2o::Sim3(ExpSO3(phi), g2oSww_new.translation(), 1.0);
@@ -646,21 +655,17 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
       );
       solver.SetRansacParameters(0.99, nBoWInliers, 300); // at least 15 inliers
 
-      bool              bNoMore = false;
-      std::vector<bool> vbInliers;
-      int               nInliers  = 0;
-      bool              bConverge = false;
-      Eigen::Matrix4f   mTcm;
-      while (!bConverge && !bNoMore) {
-        mTcm = solver.iterate(20, bNoMore, vbInliers, nInliers, bConverge);
+      IterateResult iter_result;
+      do {
+        iter_result = solver.iterate(20);
         _logger->debug(
           "Solver achieve {} geometrical inliers among {} BoW matches",
-          nInliers,
+          iter_result.num_inliers,
           nBoWInliers
         );
-      }
+      } while (!iter_result.converged && !iter_result.no_more);
 
-      if (bConverge) {
+      if (iter_result.converged) {
         // Match by reprojection
         vpCovKFi.clear();
         vpCovKFi = pMostBoWMatchesKF->GetBestCovisibilityKeyFrames(nNumCovisibles);
@@ -729,8 +734,9 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
           // like the correct usage at line ~592. This means IMU_MONOCULAR pre-BA2
           // never gets the unfixed scale override.
           [[maybe_unused]] bool bFixedScale = mbFixScale;
-          if (mpTracker->mSensor == Sensor::InertialMono
-              && !mpCurrentKF->GetMap()->GetIniertialBA2()) {
+          if (
+            mpTracker->mSensor == Sensor::InertialMono && !mpCurrentKF->GetMap()->GetIniertialBA2()
+          ) {
             bFixedScale = false;
           }
 
@@ -909,8 +915,10 @@ int LoopClosing::FindMatchesByProjection(
       int                    nInserted = 0;
       int                    j         = 0;
       while (j < static_cast<int>(vpKFs.size()) && nInserted < nNumCovisibles) {
-        if (spCheckKFs.find(vpKFs[j]) == spCheckKFs.end()
-            && spCurrentCovisbles.find(vpKFs[j]) == spCurrentCovisbles.end()) {
+        if (
+          spCheckKFs.find(vpKFs[j]) == spCheckKFs.end()
+          && spCurrentCovisbles.find(vpKFs[j]) == spCurrentCovisbles.end()
+        ) {
           spCheckKFs.insert(vpKFs[j]);
           ++nInserted;
         }
@@ -1179,8 +1187,9 @@ void LoopClosing::CorrectLoop() {
 
   // Launch a new thread to perform Global Bundle Adjustment (Only if few keyframes, if not it would
   // take too much time)
-  if (!pLoopMap->isImuInitialized()
-      || (pLoopMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1)) {
+  if (
+    !pLoopMap->isImuInitialized() || (pLoopMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1)
+  ) {
     mbRunningGBA    = true;
     mbFinishedGBA   = false;
     mbStopGBA       = false;
@@ -1296,8 +1305,10 @@ void LoopClosing::MergeLocal() {
       const std::vector<KeyFrame*> vpKFiCov
         = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
       for (KeyFrame* pKFcov : vpKFiCov) {
-        if (pKFcov != nullptr && !pKFcov->isBad()
-            && spLocalWindowKFs.find(pKFcov) == spLocalWindowKFs.end()) {
+        if (
+          pKFcov != nullptr && !pKFcov->isBad()
+          && spLocalWindowKFs.find(pKFcov) == spLocalWindowKFs.end()
+        ) {
           vpNewCovKFs.push_back(pKFcov);
         }
       }
@@ -1346,8 +1357,10 @@ void LoopClosing::MergeLocal() {
       const std::vector<KeyFrame*> vpKFiCov
         = pKFi->GetBestCovisibilityKeyFrames(numTemporalKFs / 2);
       for (KeyFrame* pKFcov : vpKFiCov) {
-        if (pKFcov != nullptr && !pKFcov->isBad()
-            && spMergeConnectedKFs.find(pKFcov) == spMergeConnectedKFs.end()) {
+        if (
+          pKFcov != nullptr && !pKFcov->isBad()
+          && spMergeConnectedKFs.find(pKFcov) == spMergeConnectedKFs.end()
+        ) {
           vpNewCovKFs.push_back(pKFcov);
         }
       }
@@ -1562,8 +1575,10 @@ void LoopClosing::MergeLocal() {
     spMergeConnectedKFs.end(),
     std::back_inserter(vpMergeConnectedKFs)
   );
-  if (mpTracker->mSensor == Sensor::InertialMono || mpTracker->mSensor == Sensor::InertialStereo
-      || mpTracker->mSensor == Sensor::InertialRgbd) {
+  if (
+    mpTracker->mSensor == Sensor::InertialMono || mpTracker->mSensor == Sensor::InertialStereo
+    || mpTracker->mSensor == Sensor::InertialRgbd
+  ) {
     Optimizer::MergeInertialBA(mpCurrentKF, mpMergeMatchedKF, &bStop, pCurrentMap, vCorrectedSim3);
   } else {
     Optimizer::LocalBundleAdjustment(
@@ -1702,8 +1717,10 @@ void LoopClosing::MergeLocal() {
   _logger->info("MergeLocal: releasing local mapping...");
   mpLocalMapper->Release();
 
-  if (bRelaunchBA
-      && (!pCurrentMap->isImuInitialized() || (pCurrentMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1))) {
+  if (
+    bRelaunchBA
+    && (!pCurrentMap->isImuInitialized() || (pCurrentMap->KeyFramesInMap() < 200 && mpAtlas->CountMaps() == 1))
+  ) {
     // Launch a new thread to perform Global Bundle Adjustment
     mbRunningGBA  = true;
     mbFinishedGBA = false;
@@ -1802,15 +1819,13 @@ void LoopClosing::MergeLocal2() {
 
   const int numKFnew = pCurrentMap->KeyFramesInMap();
 
-  if ((mpTracker->mSensor == Sensor::InertialMono || mpTracker->mSensor == Sensor::InertialStereo
-       || mpTracker->mSensor == Sensor::InertialRgbd)
-      && !pCurrentMap->GetIniertialBA2()) {
+  if (
+    (mpTracker->mSensor == Sensor::InertialMono || mpTracker->mSensor == Sensor::InertialStereo
+     || mpTracker->mSensor == Sensor::InertialRgbd)
+    && !pCurrentMap->GetIniertialBA2()
+  ) {
     // Map is not completly initialized
-    Eigen::Vector3d bg;
-    Eigen::Vector3d ba;
-    bg << 0., 0., 0.;
-    ba << 0., 0., 0.;
-    Optimizer::InertialOptimization(pCurrentMap, bg, ba);
+    const auto [bg, ba] = Optimizer::InertialOptimization(pCurrentMap);
     const IMU::Bias                    b(ba[0], ba[1], ba[2], bg[0], bg[1], bg[2]);
     const std::unique_lock<std::mutex> lock(mpAtlas->GetCurrentMap()->mMutexMapUpdate);
     mpTracker->UpdateFrameIMU(1.0F, b, mpTracker->GetLastKeyFrame());

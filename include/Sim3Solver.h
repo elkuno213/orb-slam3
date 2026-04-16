@@ -30,6 +30,22 @@ class GeometricCamera;
 class KeyFrame;
 class MapPoint;
 
+/// Result of Sim3Solver::find()
+struct Sim3Result {
+  Eigen::Matrix4f   T;               ///< Transformation matrix (Identity if failed)
+  std::vector<bool> inliers;         ///< Inlier flags for each match
+  int               num_inliers = 0; ///< Number of inliers found
+};
+
+/// Result of Sim3Solver::iterate()
+struct IterateResult {
+  Eigen::Matrix4f   T;                   ///< Transformation matrix (Identity if failed/not converged)
+  bool              no_more     = false; ///< True if max iterations reached
+  std::vector<bool> inliers;             ///< Inlier flags for each match
+  int               num_inliers = 0;     ///< Number of inliers found
+  bool              converged   = false; ///< True if solution converged
+};
+
 class Sim3Solver {
 public:
   struct CentroidResult {
@@ -47,19 +63,16 @@ public:
 
   void SetRansacParameters(double probability = 0.99, int minInliers = 6, int maxIterations = 300);
 
-  Eigen::Matrix4f find(std::vector<bool>& vbInliers12, int& nInliers);
+  /// Run RANSAC until convergence or max iterations
+  [[nodiscard]] Sim3Result find();
 
-  Eigen::Matrix4f iterate(
-    int nIterations, bool& bNoMore, std::vector<bool>& vbInliers, int& nInliers
-  );
-  Eigen::Matrix4f iterate(
-    int nIterations, bool& bNoMore, std::vector<bool>& vbInliers, int& nInliers, bool& bConverge
-  );
+  /// Run a fixed number of RANSAC iterations
+  [[nodiscard]] IterateResult iterate(int nIterations);
 
-  Eigen::Matrix4f GetEstimatedTransformation();
-  Eigen::Matrix3f GetEstimatedRotation();
-  Eigen::Vector3f GetEstimatedTranslation();
-  float           GetEstimatedScale() const;
+  [[nodiscard]] Eigen::Matrix4f GetEstimatedTransformation();
+  [[nodiscard]] Eigen::Matrix3f GetEstimatedRotation();
+  [[nodiscard]] Eigen::Vector3f GetEstimatedTranslation();
+  float                         GetEstimatedScale() const;
 
 protected:
   [[nodiscard]] static CentroidResult ComputeCentroid(const Eigen::Matrix3f& P);

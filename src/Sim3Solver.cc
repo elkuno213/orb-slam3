@@ -149,85 +149,18 @@ void Sim3Solver::SetRansacParameters(double probability, int minInliers, int max
   mnIterations = 0;
 }
 
-Eigen::Matrix4f Sim3Solver::iterate(
-  int nIterations, bool& bNoMore, std::vector<bool>& vbInliers, int& nInliers
-) {
-  bNoMore   = false;
-  vbInliers = std::vector<bool>(mN1, false);
-  nInliers  = 0;
+IterateResult Sim3Solver::iterate(int nIterations) {
+  IterateResult result{
+    .T           = Eigen::Matrix4f::Identity(),
+    .no_more     = false,
+    .inliers     = std::vector<bool>(mN1, false),
+    .num_inliers = 0,
+    .converged   = false,
+  };
 
   if (N < mRansacMinInliers) {
-    bNoMore = true;
-    return Eigen::Matrix4f::Identity();
-  }
-
-  std::vector<std::size_t> vAvailableIndices;
-
-  Eigen::Matrix3f P3Dc1i;
-  Eigen::Matrix3f P3Dc2i;
-
-  int nCurrentIterations = 0;
-  while (mnIterations < mRansacMaxIts && nCurrentIterations < nIterations) {
-    nCurrentIterations++;
-    mnIterations++;
-
-    vAvailableIndices = mvAllIndices;
-
-    // Get min set of points
-    for (short i = 0; i < 3; ++i) {
-      const int randi = DUtils::Random::RandomInt(0, vAvailableIndices.size() - 1);
-
-      const int idx = vAvailableIndices[randi];
-
-      P3Dc1i.col(i) = mvX3Dc1[idx];
-      P3Dc2i.col(i) = mvX3Dc2[idx];
-
-      vAvailableIndices[randi] = vAvailableIndices.back();
-      vAvailableIndices.pop_back();
-    }
-
-    ComputeSim3(P3Dc1i, P3Dc2i);
-
-    CheckInliers();
-
-    if (mnInliersi >= mnBestInliers) {
-      mvbBestInliers   = mvbInliersi;
-      mnBestInliers    = mnInliersi;
-      mBestT12         = mT12i;
-      mBestRotation    = mR12i;
-      mBestTranslation = mt12i;
-      mBestScale       = ms12i;
-
-      if (mnInliersi > mRansacMinInliers) {
-        nInliers = mnInliersi;
-        for (int i = 0; i < N; i++) {
-          if (mvbInliersi[i]) {
-            vbInliers[mvnIndices1[i]] = true;
-          }
-        }
-        return mBestT12;
-      }
-    }
-  }
-
-  if (mnIterations >= mRansacMaxIts) {
-    bNoMore = true;
-  }
-
-  return Eigen::Matrix4f::Identity();
-}
-
-Eigen::Matrix4f Sim3Solver::iterate(
-  int nIterations, bool& bNoMore, std::vector<bool>& vbInliers, int& nInliers, bool& bConverge
-) {
-  bNoMore   = false;
-  bConverge = false;
-  vbInliers = std::vector<bool>(mN1, false);
-  nInliers  = 0;
-
-  if (N < mRansacMinInliers) {
-    bNoMore = true;
-    return Eigen::Matrix4f::Identity();
+    result.no_more = true;
+    return result;
   }
 
   std::vector<std::size_t> vAvailableIndices;
@@ -237,7 +170,7 @@ Eigen::Matrix4f Sim3Solver::iterate(
 
   int nCurrentIterations = 0;
 
-  Eigen::Matrix4f bestSim3;
+  Eigen::Matrix4f bestSim3 = Eigen::Matrix4f::Identity();
 
   while (mnIterations < mRansacMaxIts && nCurrentIterations < nIterations) {
     nCurrentIterations++;
@@ -271,14 +204,15 @@ Eigen::Matrix4f Sim3Solver::iterate(
       mBestScale       = ms12i;
 
       if (mnInliersi > mRansacMinInliers) {
-        nInliers = mnInliersi;
+        result.num_inliers = mnInliersi;
         for (int i = 0; i < N; i++) {
           if (mvbInliersi[i]) {
-            vbInliers[mvnIndices1[i]] = true;
+            result.inliers[mvnIndices1[i]] = true;
           }
         }
-        bConverge = true;
-        return mBestT12;
+        result.converged = true;
+        result.T         = mBestT12;
+        return result;
       } else {
         bestSim3 = mBestT12;
       }
@@ -286,15 +220,20 @@ Eigen::Matrix4f Sim3Solver::iterate(
   }
 
   if (mnIterations >= mRansacMaxIts) {
-    bNoMore = true;
+    result.no_more = true;
   }
 
-  return bestSim3;
+  result.T = bestSim3;
+  return result;
 }
 
-Eigen::Matrix4f Sim3Solver::find(std::vector<bool>& vbInliers12, int& nInliers) {
-  bool bFlag = false;
-  return iterate(mRansacMaxIts, bFlag, vbInliers12, nInliers);
+Sim3Result Sim3Solver::find() {
+  auto iter_result = iterate(mRansacMaxIts);
+  return Sim3Result{
+    .T           = iter_result.T,
+    .inliers     = std::move(iter_result.inliers),
+    .num_inliers = iter_result.num_inliers,
+  };
 }
 
 Sim3Solver::CentroidResult Sim3Solver::ComputeCentroid(const Eigen::Matrix3f& P) {

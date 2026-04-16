@@ -94,11 +94,8 @@ void LocalMapping::Run() {
         SearchInNeighbors();
       }
 
-      [[maybe_unused]] bool b_doneLBA      = false;
-      int                   num_FixedKF_BA = 0;
-      int                   num_OptKF_BA   = 0;
-      int                   num_MPs_BA     = 0;
-      int                   num_edges_BA   = 0;
+      [[maybe_unused]] bool               b_doneLBA = false;
+      [[maybe_unused]] Optimizer::BAStats baStats;
 
       if (!CheckNewKeyFrames() && !stopRequested()) {
         if (mpAtlas->KeyFramesInMap() > 2) {
@@ -127,27 +124,19 @@ void LocalMapping::Run() {
 
             const bool bLarge = ((mpTracker->GetMatchesInliers() > 75) && mbMonocular)
                              || ((mpTracker->GetMatchesInliers() > 100) && !mbMonocular);
-            Optimizer::LocalInertialBA(
+            baStats           = Optimizer::LocalInertialBA(
               mpCurrentKeyFrame,
               &mbAbortBA,
               mpCurrentKeyFrame->GetMap(),
-              num_FixedKF_BA,
-              num_OptKF_BA,
-              num_MPs_BA,
-              num_edges_BA,
               bLarge,
               !mpCurrentKeyFrame->GetMap()->GetIniertialBA2()
             );
             b_doneLBA = true;
           } else {
-            Optimizer::LocalBundleAdjustment(
+            baStats = Optimizer::LocalBundleAdjustment(
               mpCurrentKeyFrame,
               &mbAbortBA,
-              mpCurrentKeyFrame->GetMap(),
-              num_FixedKF_BA,
-              num_OptKF_BA,
-              num_MPs_BA,
-              num_edges_BA
+              mpCurrentKeyFrame->GetMap()
             );
             b_doneLBA = true;
           }
@@ -166,9 +155,10 @@ void LocalMapping::Run() {
         KeyFrameCulling();
 
         if ((mTinit < 50.0F) && mbInertial) {
-          if (mpCurrentKeyFrame->GetMap()->isImuInitialized()
-              && mpTracker->mState
-                   == TrackingState::Ok) { // Enter here everytime local-mapping is called
+          if (
+            mpCurrentKeyFrame->GetMap()->isImuInitialized()
+            && mpTracker->mState == TrackingState::Ok
+          ) { // Enter here everytime local-mapping is called
             if (!mpCurrentKeyFrame->GetMap()->GetIniertialBA1()) {
               if (mTinit > 5.0F) {
                 _logger->info("Starting visual-inertial bundle adjustment 1...");
@@ -194,8 +184,10 @@ void LocalMapping::Run() {
             }
 
             // scale refinement
-            if (((mpAtlas->KeyFramesInMap()) <= 200)
-                && ((mTinit > 25.0F && mTinit < 25.5F) || (mTinit > 35.0F && mTinit < 35.5F) || (mTinit > 45.0F && mTinit < 45.5F) || (mTinit > 55.0F && mTinit < 55.5F) || (mTinit > 65.0F && mTinit < 65.5F) || (mTinit > 75.0F && mTinit < 75.5F))) {
+            if (
+              ((mpAtlas->KeyFramesInMap()) <= 200)
+              && ((mTinit > 25.0F && mTinit < 25.5F) || (mTinit > 35.0F && mTinit < 35.5F) || (mTinit > 45.0F && mTinit < 45.5F) || (mTinit > 55.0F && mTinit < 55.5F) || (mTinit > 65.0F && mTinit < 65.5F) || (mTinit > 75.0F && mTinit < 75.5F))
+            ) {
               if (mbMonocular) {
                 ScaleRefinement();
               }
@@ -304,8 +296,10 @@ void LocalMapping::MapPointCulling() {
     } else if (pMP->GetFoundRatio() < 0.25F) {
       pMP->SetBadFlag();
       lit = mlpRecentAddedMapPoints.erase(lit);
-    } else if ((static_cast<int>(nCurrentKFid) - static_cast<int>(pMP->mnFirstKFid)) >= 2
-               && pMP->Observations() <= cnThObs) {
+    } else if (
+      (static_cast<int>(nCurrentKFid) - static_cast<int>(pMP->mnFirstKFid)) >= 2
+      && pMP->Observations() <= cnThObs
+    ) {
       pMP->SetBadFlag();
       lit = mlpRecentAddedMapPoints.erase(lit);
     } else if ((static_cast<int>(nCurrentKFid) - static_cast<int>(pMP->mnFirstKFid)) >= 3) {
@@ -496,8 +490,10 @@ void LocalMapping::CreateNewMapPoints() {
       Eigen::Vector3f x3D;
 
       bool goodProj = false;
-      if (cosParallaxRays < cosParallaxStereo && cosParallaxRays > 0
-          && (bStereo1 || bStereo2 || (cosParallaxRays < 0.9996 && mbInertial) || (cosParallaxRays < 0.9998 && !mbInertial))) {
+      if (
+        cosParallaxRays < cosParallaxStereo && cosParallaxRays > 0
+        && (bStereo1 || bStereo2 || (cosParallaxRays < 0.9996 && mbInertial) || (cosParallaxRays < 0.9998 && !mbInertial))
+      ) {
         goodProj = GeometricTools::Triangulate(xn1, xn2, eigTcw1, eigTcw2, x3D);
         if (!goodProj) {
           continue;
@@ -639,8 +635,10 @@ void LocalMapping::SearchInNeighbors() {
     const std::vector<KeyFrame*> vpSecondNeighKFs
       = vpTargetKFs[i]->GetBestCovisibilityKeyFrames(20);
     for (auto* pKFi2 : vpSecondNeighKFs) {
-      if (pKFi2->isBad() || pKFi2->mnFuseTargetForKF == mpCurrentKeyFrame->mnId
-          || pKFi2->mnId == mpCurrentKeyFrame->mnId) {
+      if (
+        pKFi2->isBad() || pKFi2->mnFuseTargetForKF == mpCurrentKeyFrame->mnId
+        || pKFi2->mnId == mpCurrentKeyFrame->mnId
+      ) {
         continue;
       }
       vpTargetKFs.push_back(pKFi2);
@@ -906,9 +904,10 @@ void LocalMapping::KeyFrameCulling() {
             pKF->mNextKF          = nullptr;
             pKF->mPrevKF          = nullptr;
             pKF->SetBadFlag();
-          } else if (!mpCurrentKeyFrame->GetMap()->GetIniertialBA2()
-                     && ((pKF->GetImuPosition() - pKF->mPrevKF->GetImuPosition()).norm() < 0.02)
-                     && (t < 3)) {
+          } else if (
+            !mpCurrentKeyFrame->GetMap()->GetIniertialBA2()
+            && ((pKF->GetImuPosition() - pKF->mPrevKF->GetImuPosition()).norm() < 0.02) && (t < 3)
+          ) {
             pKF->mNextKF->mpImuPreintegrated->MergePrevious(pKF->mpImuPreintegrated);
             pKF->mNextKF->mPrevKF = pKF->mPrevKF;
             pKF->mPrevKF->mNextKF = pKF->mNextKF;
@@ -1125,19 +1124,22 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
 
   mInitTime = mpTracker->mLastFrame.mTimeStamp - vpKF.front()->mTimeStamp;
 
-  Optimizer::InertialOptimization(
+  const auto inertial_result = Optimizer::InertialOptimization(
     mpAtlas->GetCurrentMap(),
     mRwg,
     mScale,
     mbg,
     mba,
     mbMonocular,
-    infoInertial,
     false,
     false,
     priorG,
     priorA
   );
+  mRwg   = inertial_result.Rwg;
+  mScale = inertial_result.scale;
+  mbg    = inertial_result.bg;
+  mba    = inertial_result.ba;
 
   if (mScale < 1e-1F) {
     _logger->warn("Scale too small, failed to initialize IMU");
@@ -1327,7 +1329,9 @@ void LocalMapping::ScaleRefinement() {
   mRwg   = Eigen::Matrix3d::Identity();
   mScale = 1.0F;
 
-  Optimizer::InertialOptimization(mpAtlas->GetCurrentMap(), mRwg, mScale);
+  const auto gs_result = Optimizer::InertialOptimization(mpAtlas->GetCurrentMap(), mRwg, mScale);
+  mRwg                 = gs_result.Rwg;
+  mScale               = gs_result.scale;
 
   if (mScale < 1e-1F) { // 1e-1
     _logger->warn("Scale too small");

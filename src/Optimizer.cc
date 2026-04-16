@@ -1049,15 +1049,8 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
   return nInitialCorrespondences - nBad;
 }
 
-void Optimizer::LocalBundleAdjustment(
-  KeyFrame* pKF,
-  bool*     pbStopFlag,
-  Map*      pMap,
-  int&      num_fixedKF,
-  int&      num_OptKF,
-  int&      num_MPs,
-  int&      num_edges
-) {
+Optimizer::BAStats Optimizer::LocalBundleAdjustment(KeyFrame* pKF, bool* pbStopFlag, Map* pMap) {
+  BAStats stats;
   // Local KeyFrames: First Breath Search from Current Keyframe
   std::list<KeyFrame*> lLocalKeyFrames;
 
@@ -1074,12 +1067,11 @@ void Optimizer::LocalBundleAdjustment(
   }
 
   // Local MapPoints seen in Local KeyFrames
-  num_fixedKF = 0;
   std::list<MapPoint*>      lLocalMapPoints;
   const std::set<MapPoint*> sNumObsMP;
   for (auto* pKFi : lLocalKeyFrames) {
     if (pKFi->mnId == pMap->GetInitKFid()) {
-      num_fixedKF = 1;
+      stats.num_fixed_kf = 1;
     }
     std::vector<MapPoint*> vpMPs = pKFi->GetMapPointMatches();
     for (auto* pMP : vpMPs) {
@@ -1107,11 +1099,11 @@ void Optimizer::LocalBundleAdjustment(
       }
     }
   }
-  num_fixedKF = lFixedCameras.size() + num_fixedKF;
+  stats.num_fixed_kf = static_cast<int>(lFixedCameras.size()) + stats.num_fixed_kf;
 
-  if (num_fixedKF == 0) {
+  if (stats.num_fixed_kf == 0) {
     // No fixed key frame in optimization, so abort local bundle adjustment.
-    return;
+    return stats;
   }
 
   // Setup optimizer
@@ -1156,7 +1148,7 @@ void Optimizer::LocalBundleAdjustment(
     // DEBUG LBA
     pCurrentMap->msOptKFs.insert(pKFi->mnId);
   }
-  num_OptKF = lLocalKeyFrames.size();
+  stats.num_opt_kf = static_cast<int>(lLocalKeyFrames.size());
 
   // Set Fixed KeyFrame vertices
   for (auto* pKFi : lFixedCameras) {
@@ -1336,11 +1328,11 @@ void Optimizer::LocalBundleAdjustment(
       }
     }
   }
-  num_edges = nEdges;
+  stats.num_edges = nEdges;
 
   if (pbStopFlag) {
     if (*pbStopFlag) {
-      return;
+      return stats;
     }
   }
 
@@ -1420,6 +1412,7 @@ void Optimizer::LocalBundleAdjustment(
   }
 
   pMap->IncreaseChangeIndex();
+  return stats;
 }
 
 void Optimizer::OptimizeEssentialGraph(
@@ -1594,9 +1587,11 @@ void Optimizer::OptimizeEssentialGraph(
     for (auto* pKFn : vpConnectedKFs) {
       if (pKFn && pKFn != pParentKF && !pKF->hasChild(pKFn) /*&& !sLoopEdges.count(pKFn)*/) {
         if (!pKFn->isBad() && pKFn->mnId < pKF->mnId) {
-          if (sInsertedEdges.contains(
-                std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
-              )) {
+          if (
+            sInsertedEdges.contains(
+              std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
+            )
+          ) {
             continue;
           }
 
@@ -1918,8 +1913,10 @@ void Optimizer::OptimizeEssentialGraph(
     // Covisibility graph edges
     const std::vector<KeyFrame*> vpConnectedKFs = pKFi->GetCovisiblesByWeight(minFeat);
     for (auto* pKFn : vpConnectedKFs) {
-      if (pKFn && pKFn != pParentKFi && !pKFi->hasChild(pKFn) && !sLoopEdges.contains(pKFn)
-          && spKFs.find(pKFn) != spKFs.end()) {
+      if (
+        pKFn && pKFn != pParentKFi && !pKFi->hasChild(pKFn) && !sLoopEdges.contains(pKFn)
+        && spKFs.find(pKFn) != spKFs.end()
+      ) {
         if (!pKFn->isBad() && pKFn->mnId < pKFi->mnId) {
           g2o::Sim3 Snw          = vScw[pKFn->mnId];
           bool      bHasRelation = false;
@@ -2259,18 +2256,11 @@ int Optimizer::OptimizeSim3(
   return nIn;
 }
 
-void Optimizer::LocalInertialBA(
-  KeyFrame* pKF,
-  bool*     pbStopFlag,
-  Map*      pMap,
-  int& /*num_fixedKF*/,
-  int& /*num_OptKF*/,
-  int& /*num_MPs*/,
-  int& /*num_edges*/,
-  bool bLarge,
-  bool bRecInit
+Optimizer::BAStats Optimizer::LocalInertialBA(
+  KeyFrame* pKF, bool* pbStopFlag, Map* pMap, bool bLarge, bool bRecInit
 ) {
-  Map* pCurrentMap = pKF->GetMap();
+  BAStats stats;
+  Map*    pCurrentMap = pKF->GetMap();
 
   int maxOpt = 10;
   int opt_it = 10;
@@ -2709,8 +2699,10 @@ void Optimizer::LocalInertialBA(
       continue;
     }
 
-    if ((e->chi2() > chi2Mono2 && !bClose) || (e->chi2() > 1.5F * chi2Mono2 && bClose)
-        || !e->isDepthPositive()) {
+    if (
+      (e->chi2() > chi2Mono2 && !bClose) || (e->chi2() > 1.5F * chi2Mono2 && bClose)
+      || !e->isDepthPositive()
+    ) {
       KeyFrame* pKFi = vpEdgeKFMono[i];
       vToErase.emplace_back(pKFi, pMP);
     }
@@ -2737,7 +2729,7 @@ void Optimizer::LocalInertialBA(
   // TODO: Some convergence problems have been detected here
   if ((2 * err < err_end || isnan(err) || isnan(err_end)) && !bLarge) { // bGN)
     // Local-inertial bundle adjustment failed.
-    return;
+    return stats;
   }
 
   if (!vToErase.empty()) {
@@ -2793,6 +2785,7 @@ void Optimizer::LocalInertialBA(
   }
 
   pMap->IncreaseChangeIndex();
+  return stats;
 }
 
 Eigen::MatrixXd Optimizer::Marginalize(const Eigen::MatrixXd& H, const int& start, const int& end) {
@@ -2877,15 +2870,14 @@ Eigen::MatrixXd Optimizer::Marginalize(const Eigen::MatrixXd& H, const int& star
   return res;
 }
 
-void Optimizer::InertialOptimization(
-  Map*             pMap,
-  Eigen::Matrix3d& Rwg,
-  double&          scale,
-  Eigen::Vector3d& bg,
-  Eigen::Vector3d& ba,
-  bool             bMono,
-  Eigen::MatrixXd& /*covInertial*/,
-  bool bFixedVel,
+Optimizer::InertialOptResult Optimizer::InertialOptimization(
+  Map*                   pMap,
+  const Eigen::Matrix3d& initial_Rwg,
+  double                 initial_Scale,
+  const Eigen::Vector3d& initial_Bg,
+  const Eigen::Vector3d& initial_Ba,
+  bool                   bMono,
+  bool                   bFixedVel,
   bool /*bGauss*/,
   float priorG,
   float priorA
@@ -2965,11 +2957,11 @@ void Optimizer::InertialOptimization(
   optimizer.addEdge(epg);
 
   // Gravity and scale
-  auto* VGDir = new VertexGDir(Rwg);
+  auto* VGDir = new VertexGDir(initial_Rwg);
   VGDir->setId(maxKFid * 2 + 4);
   VGDir->setFixed(false);
   optimizer.addVertex(VGDir);
-  auto* VS = new VertexScale(scale);
+  auto* VS = new VertexScale(initial_Scale);
   VS->setId(maxKFid * 2 + 5);
   VS->setFixed(!bMono); // Fixed for stereo case
   optimizer.addVertex(VS);
@@ -3026,20 +3018,18 @@ void Optimizer::InertialOptimization(
   optimizer.initializeOptimization();
   optimizer.optimize(its);
 
-  scale = VS->estimate();
-
   // Recover optimized data
   // Biases
   VG = static_cast<VertexGyroBias*>(optimizer.vertex(maxKFid * 2 + 2));
   VA = static_cast<VertexAccBias*>(optimizer.vertex(maxKFid * 2 + 3));
   Vector6d vb;
   vb << VG->estimate(), VA->estimate();
-  bg << VG->estimate();
-  ba << VA->estimate();
-  scale = VS->estimate();
+  Eigen::Vector3d final_Bg    = VG->estimate();
+  Eigen::Vector3d final_Ba    = VA->estimate();
+  double          final_Scale = VS->estimate();
 
   const IMU::Bias b(vb[3], vb[4], vb[5], vb[0], vb[1], vb[2]);
-  Rwg = VGDir->estimate().Rwg;
+  Eigen::Matrix3d final_Rwg = VGDir->estimate().Rwg;
 
   // Keyframes velocities and biases
   for (auto* pKFi : vpKFs) {
@@ -3051,7 +3041,7 @@ void Optimizer::InertialOptimization(
     const Eigen::Vector3d Vw = VV->estimate(); // Velocity is scaled after
     pKFi->SetVelocity(Vw.cast<float>());
 
-    if ((pKFi->GetGyroBias() - bg.cast<float>()).norm() > 0.01) {
+    if ((pKFi->GetGyroBias() - final_Bg.cast<float>()).norm() > 0.01) {
       pKFi->SetNewBias(b);
       if (pKFi->mpImuPreintegrated) {
         pKFi->mpImuPreintegrated->Reintegrate();
@@ -3060,11 +3050,17 @@ void Optimizer::InertialOptimization(
       pKFi->SetNewBias(b);
     }
   }
+
+  return InertialOptResult{
+    .Rwg         = final_Rwg,
+    .scale       = final_Scale,
+    .bg          = final_Bg,
+    .ba          = final_Ba,
+    .covInertial = Eigen::MatrixXd{},
+  };
 }
 
-void Optimizer::InertialOptimization(
-  Map* pMap, Eigen::Vector3d& bg, Eigen::Vector3d& ba, float priorG, float priorA
-) {
+Optimizer::BiasOptResult Optimizer::InertialOptimization(Map* pMap, float priorG, float priorA) {
   const int               its     = 200; // Check number of iterations
   const long unsigned int maxKFid = pMap->GetMaxKFid();
   const auto              vpKFs   = pMap->GetAllKeyFrames();
@@ -3188,8 +3184,8 @@ void Optimizer::InertialOptimization(
   VA = static_cast<VertexAccBias*>(optimizer.vertex(maxKFid * 2 + 3));
   Vector6d vb;
   vb << VG->estimate(), VA->estimate();
-  bg << VG->estimate();
-  ba << VA->estimate();
+  Eigen::Vector3d final_Bg = VG->estimate();
+  Eigen::Vector3d final_Ba = VA->estimate();
 
   const IMU::Bias b(vb[3], vb[4], vb[5], vb[0], vb[1], vb[2]);
 
@@ -3203,7 +3199,7 @@ void Optimizer::InertialOptimization(
     const Eigen::Vector3d Vw = VV->estimate();
     pKFi->SetVelocity(Vw.cast<float>());
 
-    if ((pKFi->GetGyroBias() - bg.cast<float>()).norm() > 0.01) {
+    if ((pKFi->GetGyroBias() - final_Bg.cast<float>()).norm() > 0.01) {
       pKFi->SetNewBias(b);
       if (pKFi->mpImuPreintegrated) {
         pKFi->mpImuPreintegrated->Reintegrate();
@@ -3212,9 +3208,16 @@ void Optimizer::InertialOptimization(
       pKFi->SetNewBias(b);
     }
   }
+
+  return BiasOptResult{
+    .bg = final_Bg,
+    .ba = final_Ba,
+  };
 }
 
-void Optimizer::InertialOptimization(Map* pMap, Eigen::Matrix3d& Rwg, double& scale) {
+Optimizer::GravityScaleResult Optimizer::InertialOptimization(
+  Map* pMap, const Eigen::Matrix3d& initial_Rwg, double initial_Scale
+) {
   const int               its     = 10;
   const long unsigned int maxKFid = pMap->GetMaxKFid();
   const auto              vpKFs   = pMap->GetAllKeyFrames();
@@ -3257,11 +3260,11 @@ void Optimizer::InertialOptimization(Map* pMap, Eigen::Matrix3d& Rwg, double& sc
   }
 
   // Gravity and scale
-  auto* VGDir = new VertexGDir(Rwg);
+  auto* VGDir = new VertexGDir(initial_Rwg);
   VGDir->setId(4 * (maxKFid + 1));
   VGDir->setFixed(false);
   optimizer.addVertex(VGDir);
-  auto* VS = new VertexScale(scale);
+  auto* VS = new VertexScale(initial_Scale);
   VS->setId(4 * (maxKFid + 1) + 1);
   VS->setFixed(false);
   optimizer.addVertex(VS);
@@ -3309,8 +3312,13 @@ void Optimizer::InertialOptimization(Map* pMap, Eigen::Matrix3d& Rwg, double& sc
   optimizer.computeActiveErrors();
   optimizer.activeRobustChi2();
   // Recover optimized data
-  scale = VS->estimate();
-  Rwg   = VGDir->estimate().Rwg;
+  const double          final_Scale = VS->estimate();
+  const Eigen::Matrix3d final_Rwg   = VGDir->estimate().Rwg;
+
+  return GravityScaleResult{
+    .Rwg   = final_Rwg,
+    .scale = final_Scale,
+  };
 }
 
 void Optimizer::LocalBundleAdjustment(
@@ -3455,8 +3463,10 @@ void Optimizer::LocalBundleAdjustment(
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPi->GetObservations();
     // SET EDGES
     for (auto& [pKF, indices] : observations) {
-      if (pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForMerge != pMainKF->mnId
-          || !pKF->GetMapPoint(std::get<0>(indices))) {
+      if (
+        pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForMerge != pMainKF->mnId
+        || !pKF->GetMapPoint(std::get<0>(indices))
+      ) {
         continue;
       }
 
@@ -3635,8 +3645,10 @@ void Optimizer::LocalBundleAdjustment(
 
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPi->GetObservations();
     for (auto& [pKF, indices] : observations) {
-      if (pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForKF != pMainKF->mnId
-          || !pKF->GetMapPoint(std::get<0>(indices))) {
+      if (
+        pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForKF != pMainKF->mnId
+        || !pKF->GetMapPoint(std::get<0>(indices))
+      ) {
         continue;
       }
 
@@ -4459,8 +4471,9 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
       const float chi2   = e->chi2();
       const bool  bClose = pFrame->mvpMapPoints[idx]->mTrackDepth < 10.F;
 
-      if ((chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close)
-          || !e->isDepthPositive()) {
+      if (
+        (chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close) || !e->isDepthPositive()
+      ) {
         pFrame->mvbOutlier[idx] = true;
         e->setLevel(1);
         nBadMono++;
@@ -4848,8 +4861,9 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
 
       const float chi2 = e->chi2();
 
-      if ((chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close)
-          || !e->isDepthPositive()) {
+      if (
+        (chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close) || !e->isDepthPositive()
+      ) {
         pFrame->mvbOutlier[idx] = true;
         e->setLevel(1);
         nBadMono++;
@@ -5202,12 +5216,16 @@ void Optimizer::OptimizeEssentialGraph4DoF(
     // 1.3 Covisibility graph edges
     const std::vector<KeyFrame*> vpConnectedKFs = pKF->GetCovisiblesByWeight(minFeat);
     for (auto* pKFn : vpConnectedKFs) {
-      if (pKFn && pKFn != pParentKF && pKFn != prevKF && pKFn != pKF->mNextKF
-          && !pKF->hasChild(pKFn) && !sLoopEdges.contains(pKFn)) {
+      if (
+        pKFn && pKFn != pParentKF && pKFn != prevKF && pKFn != pKF->mNextKF && !pKF->hasChild(pKFn)
+        && !sLoopEdges.contains(pKFn)
+      ) {
         if (!pKFn->isBad() && pKFn->mnId < pKF->mnId) {
-          if (sInsertedEdges.contains(
-                std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
-              )) {
+          if (
+            sInsertedEdges.contains(
+              std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
+            )
+          ) {
             continue;
           }
 
