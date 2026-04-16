@@ -31,6 +31,29 @@ class TwoViewReconstruction {
   using Match = std::pair<int, int>;
 
 public:
+  struct EDecomposition {
+    Eigen::Matrix3f R1;
+    Eigen::Matrix3f R2;
+    Eigen::Vector3f t;
+  };
+
+  struct NormalizationResult {
+    std::vector<cv::Point2f> normalized_points;
+    Eigen::Matrix3f          T;
+  };
+
+  struct HomographyResult {
+    std::vector<bool> inliers;
+    float             score = 0.F;
+    Eigen::Matrix3f   H;
+  };
+
+  struct FundamentalResult {
+    std::vector<bool> inliers;
+    float             score = 0.F;
+    Eigen::Matrix3f   F;
+  };
+
   // Fix the reference frame
   explicit TwoViewReconstruction(const Eigen::Matrix3f& k, float sigma = 1.0, int iterations = 200);
 
@@ -46,8 +69,8 @@ public:
   );
 
 private:
-  void FindHomography(std::vector<bool>& vbMatchesInliers, float& score, Eigen::Matrix3f& H21);
-  void FindFundamental(std::vector<bool>& vbInliers, float& score, Eigen::Matrix3f& F21);
+  [[nodiscard]] HomographyResult  FindHomography();
+  [[nodiscard]] FundamentalResult FindFundamental();
 
   Eigen::Matrix3f ComputeH21(
     const std::vector<cv::Point2f>& vP1, const std::vector<cv::Point2f>& vP2
@@ -89,11 +112,7 @@ private:
     int                       minTriangulated
   );
 
-  void Normalize(
-    const std::vector<cv::KeyPoint>& vKeys,
-    std::vector<cv::Point2f>&        vNormalizedPoints,
-    Eigen::Matrix3f&                 T
-  );
+  [[nodiscard]] static NormalizationResult Normalize(const std::vector<cv::KeyPoint>& vKeys);
 
   int CheckRT(
     const Eigen::Matrix3f&           R,
@@ -109,9 +128,7 @@ private:
     float&                           parallax
   );
 
-  void DecomposeE(
-    const Eigen::Matrix3f& E, Eigen::Matrix3f& R1, Eigen::Matrix3f& R2, Eigen::Vector3f& t
-  );
+  [[nodiscard]] static EDecomposition DecomposeE(const Eigen::Matrix3f& E);
 
   // Keypoints from Reference Frame (Frame 1)
   std::vector<cv::KeyPoint> mvKeys1;

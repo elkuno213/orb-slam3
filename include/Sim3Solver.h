@@ -32,6 +32,11 @@ class MapPoint;
 
 class Sim3Solver {
 public:
+  struct CentroidResult {
+    Eigen::Matrix3f relative_coords; ///< Relative coordinates to centroid
+    Eigen::Vector3f centroid;
+  };
+
   Sim3Solver(
     KeyFrame*                     pKF1,
     KeyFrame*                     pKF2,
@@ -57,7 +62,7 @@ public:
   float           GetEstimatedScale() const;
 
 protected:
-  static void ComputeCentroid(Eigen::Matrix3f& P, Eigen::Matrix3f& Pr, Eigen::Vector3f& C);
+  [[nodiscard]] static CentroidResult ComputeCentroid(const Eigen::Matrix3f& P);
 
   void ComputeSim3(Eigen::Matrix3f& P1, Eigen::Matrix3f& P2);
 

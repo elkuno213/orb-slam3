@@ -297,12 +297,12 @@ Eigen::Matrix4f Sim3Solver::find(std::vector<bool>& vbInliers12, int& nInliers) 
   return iterate(mRansacMaxIts, bFlag, vbInliers12, nInliers);
 }
 
-void Sim3Solver::ComputeCentroid(Eigen::Matrix3f& P, Eigen::Matrix3f& Pr, Eigen::Vector3f& C) {
-  C = P.rowwise().sum();
-  C = C / P.cols();
-  for (int i = 0; i < P.cols(); i++) {
-    Pr.col(i) = P.col(i) - C;
-  }
+Sim3Solver::CentroidResult Sim3Solver::ComputeCentroid(const Eigen::Matrix3f& P) {
+  const Eigen::Vector3f centroid = P.rowwise().mean();
+  return CentroidResult{
+    .relative_coords = P.colwise() - centroid,
+    .centroid        = centroid,
+  };
 }
 
 void Sim3Solver::ComputeSim3(Eigen::Matrix3f& P1, Eigen::Matrix3f& P2) {
@@ -310,13 +310,10 @@ void Sim3Solver::ComputeSim3(Eigen::Matrix3f& P1, Eigen::Matrix3f& P2) {
   // Horn 1987, Closed-form solution of absolute orientataion using unit quaternions
 
   // Step 1: Centroid and relative coordinates
-  Eigen::Matrix3f Pr1; // Relative coordinates to centroid (set 1)
-  Eigen::Matrix3f Pr2; // Relative coordinates to centroid (set 2)
-  Eigen::Vector3f O1;  // Centroid of P1
-  Eigen::Vector3f O2;  // Centroid of P2
-
-  ComputeCentroid(P1, Pr1, O1);
-  ComputeCentroid(P2, Pr2, O2);
+  // Relative coordinates to centroid (set 1), centroid of P1
+  const auto [Pr1, O1] = ComputeCentroid(P1);
+  // Relative coordinates to centroid (set 2), centroid of P2
+  const auto [Pr2, O2] = ComputeCentroid(P2);
 
   // Step 2: Compute M matrix
   Eigen::Matrix3f M = Pr2 * Pr1.transpose();
