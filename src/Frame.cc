@@ -1258,7 +1258,7 @@ void Frame::ComputeStereoFishEyeMatches() {
   getBFmatcher().knnMatch(stereoDescLeft, stereoDescRight, matches, 2);
 
   // Check matches using Lowe's ratio
-  for (auto& match : matches) {
+  for (const auto& match : matches) {
     if (match.size() >= 2 && match[0].distance < match[1].distance * 0.7) {
       // For every good match, check parallax and reprojection error to discard spurious matches
       Eigen::Vector3f p3D;

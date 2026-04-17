@@ -1051,7 +1051,7 @@ void LoopClosing::CorrectLoop() {
     _logger->info(
       "CorrectLoop: correcting map points observed by current key frames and it neighbors..."
     );
-    for (auto& [pKFi, g2oCorrectedSiw] : CorrectedSim3) {
+    for (const auto& [pKFi, g2oCorrectedSiw] : CorrectedSim3) {
       const g2o::Sim3 g2oCorrectedSwi = g2oCorrectedSiw.inverse();
 
       const g2o::Sim3 g2oSiw = NonCorrectedSim3[pKFi];
@@ -1061,8 +1061,7 @@ void LoopClosing::CorrectLoop() {
       g2oCorrectedSiw.scale()); pKFi->SetPose(correctedTiw.cast<float>());*/
 
       std::vector<MapPoint*> vpMPsi = pKFi->GetMapPointMatches();
-      for (std::size_t iMP = 0, endMPi = vpMPsi.size(); iMP < endMPi; iMP++) {
-        MapPoint* pMPi = vpMPsi[iMP];
+      for (auto* pMPi : vpMPsi) {
         if (!pMPi) {
           continue;
         }
@@ -1961,7 +1960,7 @@ void LoopClosing::CheckObservations(
         pKFi1->mnId,
         mMatchedMP.size()
       );
-      for (auto& [pKF, nMatches] : mMatchedMP) {
+      for (const auto& [pKF, nMatches] : mMatchedMP) {
         _logger->debug("Key frame {}: {} matches", pKF->mnId, nMatches);
       }
     }
@@ -2235,9 +2234,7 @@ void LoopClosing::RunGlobalBundleAdjustment(Map* pActiveMap, unsigned long nLoop
       // Correct MapPoints
       const std::vector<MapPoint*> vpMPs = pActiveMap->GetAllMapPoints();
 
-      for (std::size_t i = 0; i < vpMPs.size(); i++) {
-        MapPoint* pMP = vpMPs[i];
-
+      for (auto* pMP : vpMPs) {
         if (pMP->isBad()) {
           continue;
         }

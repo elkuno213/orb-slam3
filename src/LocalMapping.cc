@@ -1072,7 +1072,6 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
     lpKF.push_back(mpCurrentKeyFrame);
   }
 
-  const int       N = vpKF.size();
   const IMU::Bias b(0, 0, 0, 0, 0, 0);
 
   // Compute and KF velocities mRwg estimation
@@ -1149,9 +1148,8 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
 
     // Check if initialization OK
     if (!mpAtlas->isImuInitialized()) {
-      for (int i = 0; i < N; i++) {
-        KeyFrame* pKF2 = vpKF[i];
-        pKF2->bImu     = true;
+      for (auto* pKF2 : vpKF) {
+        pKF2->bImu = true;
       }
     }
   }

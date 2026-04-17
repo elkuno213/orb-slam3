@@ -150,7 +150,7 @@ void Optimizer::BundleAdjustment(
 
     int nEdges = 0;
     // SET EDGES
-    for (auto& [pKF, indices] : observations) {
+    for (const auto& [pKF, indices] : observations) {
       if (pKF->isBad() || pKF->mnId > maxKFid) {
         continue;
       }
@@ -575,7 +575,7 @@ void Optimizer::FullInertialBA(
     bool bAllFixed = true;
 
     // Set edges
-    for (auto& [pKFi, indices] : observations) {
+    for (const auto& [pKFi, indices] : observations) {
       if (pKFi->mnId > maxKFid) {
         continue;
       }
@@ -1091,7 +1091,7 @@ Optimizer::BAStats Optimizer::LocalBundleAdjustment(KeyFrame* pKF, bool* pbStopF
   std::list<KeyFrame*> lFixedCameras;
   for (auto* pMPl : lLocalMapPoints) {
     std::map<KeyFrame*, std::tuple<int, int>> observations = pMPl->GetObservations();
-    for (auto& [pKFi, _] : observations) {
+    for (const auto& [pKFi, _] : observations) {
       if (pKFi->mnBALocalForKF != pKF->mnId && pKFi->mnBAFixedForKF != pKF->mnId) {
         pKFi->mnBAFixedForKF = pKF->mnId;
         if (!pKFi->isBad() && pKFi->GetMap() == pCurrentMap) {
@@ -1215,7 +1215,7 @@ Optimizer::BAStats Optimizer::LocalBundleAdjustment(KeyFrame* pKF, bool* pbStopF
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMP->GetObservations();
 
     // Set edges
-    for (auto& [pKFi, indices] : observations) {
+    for (const auto& [pKFi, indices] : observations) {
       if (!pKFi->isBad() && pKFi->GetMap() == pCurrentMap) {
         const int leftIndex = std::get<0>(indices);
 
@@ -1390,7 +1390,7 @@ Optimizer::BAStats Optimizer::LocalBundleAdjustment(KeyFrame* pKF, bool* pbStopF
   const std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
 
   if (!vToErase.empty()) {
-    for (auto& [pKFi, pMPi] : vToErase) {
+    for (const auto& [pKFi, pMPi] : vToErase) {
       pKFi->EraseMapPointMatch(pMPi);
       pMPi->EraseObservation(pKFi);
     }
@@ -1490,7 +1490,7 @@ void Optimizer::OptimizeEssentialGraph(
   const Eigen::Matrix<double, 7, 7> matLambda = Eigen::Matrix<double, 7, 7>::Identity();
 
   // Set Loop edges
-  for (auto& [pKF, spConnections] : LoopConnections) {
+  for (const auto& [pKF, spConnections] : LoopConnections) {
     const long unsigned int nIDi = pKF->mnId;
     const g2o::Sim3         Siw  = vScw[nIDi];
     const g2o::Sim3         Swi  = Siw.inverse();
@@ -2316,12 +2316,11 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
 
   // Optimizable visual KFs
   const int maxCovKF = 0;
-  for (int i = 0, iend = vpNeighsKFs.size(); i < iend; i++) {
+  for (auto* pKFi : vpNeighsKFs) {
     if (lpOptVisKFs.size() >= maxCovKF) {
       break;
     }
 
-    KeyFrame* pKFi = vpNeighsKFs[i];
     if (pKFi->mnBALocalForKF == pKF->mnId || pKFi->mnBAFixedForKF == pKF->mnId) {
       continue;
     }
@@ -2348,7 +2347,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
 
   for (auto* pMPl : lLocalMapPoints) {
     std::map<KeyFrame*, std::tuple<int, int>> observations = pMPl->GetObservations();
-    for (auto& [pKFi, _] : observations) {
+    for (const auto& [pKFi, _] : observations) {
       if (pKFi->mnBALocalForKF != pKF->mnId && pKFi->mnBAFixedForKF != pKF->mnId) {
         pKFi->mnBAFixedForKF = pKF->mnId;
         if (!pKFi->isBad()) {
@@ -2556,7 +2555,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMP->GetObservations();
 
     // Create visual constraints
-    for (auto& [pKFi, indices] : observations) {
+    for (const auto& [pKFi, indices] : observations) {
       if (pKFi->mnBALocalForKF != pKF->mnId && pKFi->mnBAFixedForKF != pKF->mnId) {
         continue;
       }
@@ -2728,7 +2727,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
   }
 
   if (!vToErase.empty()) {
-    for (auto& [pKFi, pMPi] : vToErase) {
+    for (const auto& [pKFi, pMPi] : vToErase) {
       pKFi->EraseMapPointMatch(pMPi);
       pMPi->EraseObservation(pKFi);
     }
@@ -3457,7 +3456,7 @@ void Optimizer::LocalBundleAdjustment(
 
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPi->GetObservations();
     // SET EDGES
-    for (auto& [pKF, indices] : observations) {
+    for (const auto& [pKF, indices] : observations) {
       if (pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForMerge != pMainKF->mnId
           || !pKF->GetMapPoint(std::get<0>(indices))) {
         continue;
@@ -3626,7 +3625,7 @@ void Optimizer::LocalBundleAdjustment(
   const std::unique_lock<std::mutex> lock(pMainKF->GetMap()->mMutexMapUpdate);
 
   if (!vToErase.empty()) {
-    for (auto& [pKFi, pMPi] : vToErase) {
+    for (const auto& [pKFi, pMPi] : vToErase) {
       pKFi->EraseMapPointMatch(pMPi);
       pMPi->EraseObservation(pKFi);
     }
@@ -3637,7 +3636,7 @@ void Optimizer::LocalBundleAdjustment(
     }
 
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPi->GetObservations();
-    for (auto& [pKF, indices] : observations) {
+    for (const auto& [pKF, indices] : observations) {
       if (pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForKF != pMainKF->mnId
           || !pKF->GetMapPoint(std::get<0>(indices))) {
         continue;
@@ -3827,19 +3826,19 @@ void Optimizer::MergeInertialBA(
 
   std::vector<std::pair<MapPoint*, int>> pairs;
   pairs.reserve(mLocalObs.size());
-  for (auto& [mp, count] : mLocalObs) {
+  for (const auto& [mp, count] : mLocalObs) {
     pairs.emplace_back(mp, count);
   }
   std::ranges::sort(pairs, sortByVal);
 
   // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
   int i = 0;
-  for (auto& pair : pairs) {
-    std::map<KeyFrame*, std::tuple<int, int>> observations = pair.first->GetObservations();
+  for (const auto& [pMP, _] : pairs) {
+    const std::map<KeyFrame*, std::tuple<int, int>> observations = pMP->GetObservations();
     if (i >= maxCovKF) {
       break;
     }
-    for (auto& [pKFi, _] : observations) {
+    for (const auto& [pKFi, _] : observations) {
       // If optimizable or already included...
       if (pKFi->mnBALocalForKF != pCurrKF->mnId && pKFi->mnBAFixedForKF != pCurrKF->mnId) {
         pKFi->mnBALocalForKF = pCurrKF->mnId;
@@ -4042,7 +4041,7 @@ void Optimizer::MergeInertialBA(
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMP->GetObservations();
 
     // Create visual constraints
-    for (auto& [pKFi, indices] : observations) {
+    for (const auto& [pKFi, indices] : observations) {
       if (!pKFi) {
         continue;
       }
@@ -4162,7 +4161,7 @@ void Optimizer::MergeInertialBA(
   // Get Map Mutex and erase outliers
   const std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
   if (!vToErase.empty()) {
-    for (auto& [pKFi, pMPi] : vToErase) {
+    for (const auto& [pKFi, pMPi] : vToErase) {
       pKFi->EraseMapPointMatch(pMPi);
       pMPi->EraseObservation(pKFi);
     }
@@ -5075,7 +5074,7 @@ void Optimizer::OptimizeEssentialGraph4DoF(
   matLambda(0, 0)                       = 1e3;
 
   // Set Loop edges
-  for (auto& [pKF, spConnections] : LoopConnections) {
+  for (const auto& [pKF, spConnections] : LoopConnections) {
     const long unsigned int nIDi = pKF->mnId;
     const g2o::Sim3         Siw  = vScw[nIDi];
 
