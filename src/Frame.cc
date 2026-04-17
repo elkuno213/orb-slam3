@@ -489,10 +489,15 @@ void Frame::AssignFeaturesToGrid() {
   }
 
   for (int i = 0; i < N; i++) {
-    const cv::KeyPoint& kp // NOLINT(readability-avoid-nested-conditional-operator)
-      = (Nleft == -1) ? mvKeysUn[i]
-      : (i < Nleft)   ? mvKeys[i]
-                      : mvKeysRight[i - Nleft];
+    const cv::KeyPoint& kp = [&]() -> const cv::KeyPoint& {
+      if (Nleft == -1) {
+        return mvKeysUn[i];
+      }
+      if (i < Nleft) {
+        return mvKeys[i];
+      }
+      return mvKeysRight[i - Nleft];
+    }();
 
     int nGridPosX = 0;
     int nGridPosY = 0;
@@ -792,10 +797,15 @@ std::vector<std::size_t> Frame::GetFeaturesInArea(
       }
 
       for (const auto j : vCell) {
-        const cv::KeyPoint& kpUn // NOLINT(readability-avoid-nested-conditional-operator)
-          = (Nleft == -1) ? mvKeysUn[j]
-          : (!bRight)     ? mvKeys[j]
-                          : mvKeysRight[j];
+        const cv::KeyPoint& kpUn = [&]() -> const cv::KeyPoint& {
+          if (Nleft == -1) {
+            return mvKeysUn[j];
+          }
+          if (!bRight) {
+            return mvKeys[j];
+          }
+          return mvKeysRight[j];
+        }();
         if (bCheckLevels) {
           if (kpUn.octave < minLevel) {
             continue;

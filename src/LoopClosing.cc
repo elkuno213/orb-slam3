@@ -650,14 +650,17 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
       solver.SetRansacParameters(0.99, nBoWInliers, 300); // at least 15 inliers
 
       IterateResult iter_result;
-      do {
+      while (true) {
         iter_result = solver.iterate(20);
         _logger->debug(
           "Solver achieve {} geometrical inliers among {} BoW matches",
           iter_result.num_inliers,
           nBoWInliers
         );
-      } while (!iter_result.converged && !iter_result.no_more);
+        if (iter_result.converged || iter_result.no_more) {
+          break;
+        }
+      }
 
       if (iter_result.converged) {
         // Match by reprojection

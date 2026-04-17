@@ -85,7 +85,7 @@ public:
 class EdgeSE3ProjectXYZ
   : public g2o::BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ, g2o::VertexSE3Expmap> {
 public:
-  EdgeSE3ProjectXYZ();
+  EdgeSE3ProjectXYZ() = default;
 
   bool read(std::istream& is) override;
 
@@ -112,7 +112,7 @@ public:
 class EdgeSE3ProjectXYZToBody
   : public g2o::BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ, g2o::VertexSE3Expmap> {
 public:
-  EdgeSE3ProjectXYZToBody();
+  EdgeSE3ProjectXYZToBody() = default;
 
   bool read(std::istream& is) override;
 
@@ -166,7 +166,7 @@ public:
 class EdgeSim3ProjectXYZ
   : public g2o::BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ, VertexSim3Expmap> {
 public:
-  EdgeSim3ProjectXYZ();
+  EdgeSim3ProjectXYZ() = default;
   bool read(std::istream& is) override;
   bool write(std::ostream& os) const override;
 
@@ -184,7 +184,7 @@ public:
 class EdgeInverseSim3ProjectXYZ
   : public g2o::BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ, VertexSim3Expmap> {
 public:
-  EdgeInverseSim3ProjectXYZ();
+  EdgeInverseSim3ProjectXYZ() = default;
   bool read(std::istream& is) override;
   bool write(std::ostream& os) const override;
 
