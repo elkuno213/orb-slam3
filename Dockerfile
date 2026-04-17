@@ -128,6 +128,7 @@ WORKDIR /orb-slam3
 FROM deps AS dev
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        clang-format                                             \
         clangd                                                   \
         clang-tidy                                               \
         curl                                                     \
