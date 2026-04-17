@@ -18,7 +18,9 @@
  */
 
 #include "ORBmatcher.h"
+#include <bit>
 #include <cstdint>
+#include <limits>
 #include <utility>
 #include <DBoW2/DBoW2/FeatureVector.h>
 #include "Frame.h"
@@ -647,7 +649,7 @@ int ORBmatcher::SearchForInitialization(
   }
   const float factor = 1.0F / HISTO_LENGTH;
 
-  std::vector<int> vMatchedDistance(F2.mvKeysUn.size(), INT_MAX);
+  std::vector<int> vMatchedDistance(F2.mvKeysUn.size(), std::numeric_limits<int>::max());
   std::vector<int> vnMatches21(F2.mvKeysUn.size(), -1);
 
   for (std::size_t i1 = 0, iend1 = F1.mvKeysUn.size(); i1 < iend1; i1++) {
@@ -666,8 +668,8 @@ int ORBmatcher::SearchForInitialization(
 
     const cv::Mat d1 = F1.mDescriptors.row(i1);
 
-    int bestDist  = INT_MAX;
-    int bestDist2 = INT_MAX;
+    int bestDist  = std::numeric_limits<int>::max();
+    int bestDist2 = std::numeric_limits<int>::max();
     int bestIdx2  = -1;
 
     for (const auto i2 : vIndices2) {
@@ -1365,7 +1367,7 @@ int ORBmatcher::Fuse(
 
     const cv::Mat dMP = pMP->GetDescriptor();
 
-    int bestDist = INT_MAX;
+    int bestDist = std::numeric_limits<int>::max();
     int bestIdx  = -1;
     for (const auto idx : vIndices) {
       const int& kpLevel = pKF->mvKeysUn[idx].octave;
@@ -1501,7 +1503,7 @@ int ORBmatcher::SearchBySim3(
     // Match to the most similar keypoint in the radius
     const cv::Mat dMP = pMP->GetDescriptor();
 
-    int bestDist = INT_MAX;
+    int bestDist = std::numeric_limits<int>::max();
     int bestIdx  = -1;
     for (const auto idx : vIndices) {
       const cv::KeyPoint& kp = pKF2->mvKeysUn[idx];
@@ -1582,7 +1584,7 @@ int ORBmatcher::SearchBySim3(
     // Match to the most similar keypoint in the radius
     const cv::Mat dMP = pMP->GetDescriptor();
 
-    int bestDist = INT_MAX;
+    int bestDist = std::numeric_limits<int>::max();
     int bestIdx  = -1;
     for (const auto idx : vIndices) {
       const cv::KeyPoint& kp = pKF1->mvKeysUn[idx];
@@ -2000,22 +2002,16 @@ void ORBmatcher::ComputeThreeMaxima(
   }
 }
 
-// Bit set count operation from
-// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
 int ORBmatcher::DescriptorDistance(const cv::Mat& a, const cv::Mat& b) {
   const auto* pa = a.ptr<std::uint32_t>();
   const auto* pb = b.ptr<std::uint32_t>();
 
-  unsigned int dist = 0;
-
-  for (int i = 0; i < 8; i++, pa++, pb++) {
-    unsigned int v  = *pa ^ *pb;
-    v               = v - ((v >> 1U) & 0x55555555U);
-    v               = (v & 0x33333333U) + ((v >> 2U) & 0x33333333U);
-    dist           += (((v + (v >> 4U)) & 0xF0F0F0FU) * 0x1010101U) >> 24U;
+  int dist = 0;
+  for (int i = 0; i < 8; i++) {
+    dist += std::popcount(pa[i] ^ pb[i]);
   }
 
-  return static_cast<int>(dist);
+  return dist;
 }
 
 } // namespace ORB_SLAM3

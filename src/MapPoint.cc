@@ -18,6 +18,7 @@
  */
 
 #include "MapPoint.h"
+#include <limits>
 #include <mutex>
 #include "Frame.h"
 #include "KeyFrame.h"
@@ -416,7 +417,7 @@ void MapPoint::ComputeDistinctiveDescriptors() {
   }
 
   // Take the descriptor with least median distance to the rest
-  int BestMedian = INT_MAX;
+  int BestMedian = std::numeric_limits<int>::max();
   int BestIdx    = 0;
   for (std::size_t i = 0; i < N; i++) {
     std::vector<int> vDists(Distances[i], Distances[i] + N);

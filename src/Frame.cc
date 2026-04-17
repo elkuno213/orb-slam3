@@ -20,6 +20,7 @@
 #include "Frame.h"
 #include <algorithm>
 #include <iostream>
+#include <limits>
 #include <thread>
 #include <utility>
 #include <CameraModels/KannalaBrandt8.h>
@@ -990,7 +991,7 @@ void Frame::ComputeStereoMatches() {
                            .rowRange(scaledvL - w, scaledvL + w + 1)
                            .colRange(scaleduL - w, scaleduL + w + 1);
 
-      int                bestDist = INT_MAX;
+      int                bestDist = std::numeric_limits<int>::max();
       int                bestincR = 0;
       const int          L        = 5;
       std::vector<float> vDists;

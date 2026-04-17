@@ -979,7 +979,7 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
       }
 
       if (it == 2) {
-        e->setRobustKernel(0);
+        e->setRobustKernel(nullptr);
       }
     }
 
@@ -1004,7 +1004,7 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
       }
 
       if (it == 2) {
-        e->setRobustKernel(0);
+        e->setRobustKernel(nullptr);
       }
     }
 
@@ -1029,7 +1029,7 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
       }
 
       if (it == 2) {
-        e->setRobustKernel(0);
+        e->setRobustKernel(nullptr);
       }
     }
 
@@ -1512,7 +1512,7 @@ void Optimizer::OptimizeEssentialGraph(
       e->information() = matLambda;
 
       optimizer.addEdge(e);
-      sInsertedEdges.insert(std::make_pair(std::min(nIDi, nIDj), std::max(nIDi, nIDj)));
+      sInsertedEdges.insert({std::min(nIDi, nIDj), std::max(nIDi, nIDj)});
     }
   }
 
@@ -1589,7 +1589,7 @@ void Optimizer::OptimizeEssentialGraph(
       if (pKFn && pKFn != pParentKF && !pKF->hasChild(pKFn) /*&& !sLoopEdges.count(pKFn)*/) {
         if (!pKFn->isBad() && pKFn->mnId < pKF->mnId) {
           if (sInsertedEdges.contains(
-                std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
+                {std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId)}
               )) {
             continue;
           }
@@ -2207,8 +2207,8 @@ int Optimizer::OptimizeSim3(
     }
 
     // Check if remove the robust adjustment improve the result
-    e12->setRobustKernel(0);
-    e21->setRobustKernel(0);
+    e12->setRobustKernel(nullptr);
+    e21->setRobustKernel(nullptr);
   }
 
   int nMoreIterations = 0;
@@ -3558,7 +3558,7 @@ void Optimizer::LocalBundleAdjustment(
       if (e->chi2() > 5.991 || !e->isDepthPositive()) {
         e->setLevel(1);
       }
-      e->setRobustKernel(0);
+      e->setRobustKernel(nullptr);
     }
 
     for (std::size_t i = 0, iend = vpEdgesStereo.size(); i < iend; i++) {
@@ -3573,7 +3573,7 @@ void Optimizer::LocalBundleAdjustment(
         e->setLevel(1);
       }
 
-      e->setRobustKernel(0);
+      e->setRobustKernel(nullptr);
     }
 
     optimizer.initializeOptimization(0);
@@ -4474,7 +4474,7 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
       }
 
       if (it == 2) {
-        e->setRobustKernel(0);
+        e->setRobustKernel(nullptr);
       }
     }
 
@@ -4500,7 +4500,7 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
       }
 
       if (it == 2) {
-        e->setRobustKernel(0);
+        e->setRobustKernel(nullptr);
       }
     }
 
@@ -4863,7 +4863,7 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
       }
 
       if (it == 2) {
-        e->setRobustKernel(0);
+        e->setRobustKernel(nullptr);
       }
     }
 
@@ -4888,7 +4888,7 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
       }
 
       if (it == 2) {
-        e->setRobustKernel(0);
+        e->setRobustKernel(nullptr);
       }
     }
 
@@ -5099,7 +5099,7 @@ void Optimizer::OptimizeEssentialGraph4DoF(
       e->information() = matLambda;
       optimizer.addEdge(e);
 
-      sInsertedEdges.insert(std::make_pair(std::min(nIDi, nIDj), std::max(nIDi, nIDj)));
+      sInsertedEdges.insert({std::min(nIDi, nIDj), std::max(nIDi, nIDj)});
     }
   }
 
@@ -5209,7 +5209,7 @@ void Optimizer::OptimizeEssentialGraph4DoF(
           && !pKF->hasChild(pKFn) && !sLoopEdges.contains(pKFn)) {
         if (!pKFn->isBad() && pKFn->mnId < pKF->mnId) {
           if (sInsertedEdges.contains(
-                std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
+                {std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId)}
               )) {
             continue;
           }
