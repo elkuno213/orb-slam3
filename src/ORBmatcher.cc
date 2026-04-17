@@ -97,7 +97,7 @@ int ORBmatcher::SearchByProjection(
             }
           }
 
-          if (F.Nleft == -1 && F.mvuRight[idx] > 0) {
+          if (!F.isDualCamera() && F.mvuRight[idx] > 0) {
             const float er = std::fabs(pMP->mTrackProjXR - F.mvuRight[idx]);
             if (er > r * F.mvScaleFactors[nPredictedLevel]) {
               continue;
@@ -112,13 +112,13 @@ int ORBmatcher::SearchByProjection(
             bestDist2  = bestDist;
             bestDist   = dist;
             bestLevel2 = bestLevel;
-            bestLevel  = (F.Nleft == -1) ? F.mvKeysUn[idx].octave
+            bestLevel  = (!F.isDualCamera()) ? F.mvKeysUn[idx].octave
                        : (idx < static_cast<std::size_t>(F.Nleft))
                          ? F.mvKeys[idx].octave
                          : F.mvKeysRight[idx - F.Nleft].octave;
             bestIdx    = idx;
           } else if (dist < bestDist2) {
-            bestLevel2 = (F.Nleft == -1) ? F.mvKeysUn[idx].octave
+            bestLevel2 = (!F.isDualCamera()) ? F.mvKeysUn[idx].octave
                        : (idx < static_cast<std::size_t>(F.Nleft))
                          ? F.mvKeys[idx].octave
                          : F.mvKeysRight[idx - F.Nleft].octave;
@@ -136,7 +136,7 @@ int ORBmatcher::SearchByProjection(
             F.mvpMapPoints[bestIdx] = pMP;
 
             // Also match with the stereo observation at right camera
-            if (F.Nleft != -1 && F.mvLeftToRightMatch[bestIdx] != -1) {
+            if (F.isDualCamera() && F.mvLeftToRightMatch[bestIdx] != -1) {
               F.mvpMapPoints[F.mvLeftToRightMatch[bestIdx] + F.Nleft] = pMP;
               nmatches++;
             }
@@ -147,7 +147,7 @@ int ORBmatcher::SearchByProjection(
       }
     }
 
-    if (F.Nleft != -1 && pMP->mbTrackInViewR) {
+    if (F.isDualCamera() && pMP->mbTrackInViewR) {
       const int& nPredictedLevel = pMP->mnTrackScaleLevelR;
       if (nPredictedLevel != -1) {
         const float r = RadiusByViewingCos(pMP->mTrackViewCosR);
@@ -204,7 +204,7 @@ int ORBmatcher::SearchByProjection(
           }
 
           // Also match with the stereo observation at right camera
-          if (F.Nleft != -1 && F.mvRightToLeftMatch[bestIdx] != -1) {
+          if (F.isDualCamera() && F.mvRightToLeftMatch[bestIdx] != -1) {
             F.mvpMapPoints[F.mvRightToLeftMatch[bestIdx]] = pMP;
             nmatches++;
           }
@@ -275,7 +275,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF, Frame& F, std::vector<MapPoint*>& vpM
         int bestDist2R = 256;
 
         for (const auto realIdxF : vIndicesF) {
-          if (F.Nleft == -1) {
+          if (!F.isDualCamera()) {
             if (vpMapPointMatches[realIdxF]) {
               continue;
             }
@@ -328,7 +328,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF, Frame& F, std::vector<MapPoint*>& vpM
                                      : pKF->mvKeys[realIdxKF];
 
             if (mbCheckOrientation) {
-              const cv::KeyPoint& Fkp = (!pKF->mpCamera2 || F.Nleft == -1) ? F.mvKeys[bestIdxF]
+              const cv::KeyPoint& Fkp = (!pKF->mpCamera2 || !F.isDualCamera()) ? F.mvKeys[bestIdxF]
                                       : (bestIdxF >= F.Nleft) ? F.mvKeysRight[bestIdxF - F.Nleft]
                                                               : F.mvKeys[bestIdxF];
 
@@ -773,7 +773,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint
     if (f1it->first == f2it->first) {
       for (std::size_t i1 = 0, iend1 = f1it->second.size(); i1 < iend1; i1++) {
         const std::size_t idx1 = f1it->second[i1];
-        if (pKF1->NLeft != -1 && idx1 >= pKF1->mvKeysUn.size()) {
+        if (pKF1->isDualCamera() && idx1 >= pKF1->mvKeysUn.size()) {
           continue;
         }
 
@@ -792,7 +792,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint
         int bestDist2 = 256;
 
         for (const auto idx2 : f2it->second) {
-          if (pKF2->NLeft != -1 && idx2 >= pKF2->mvKeysUn.size()) {
+          if (pKF2->isDualCamera() && idx2 >= pKF2->mvKeysUn.size()) {
             continue;
           }
 
@@ -957,12 +957,12 @@ int ORBmatcher::SearchForTriangulation(
           }
         }
 
-        const cv::KeyPoint& kp1 = (pKF1->NLeft == -1) ? pKF1->mvKeysUn[idx1]
+        const cv::KeyPoint& kp1 = (!pKF1->isDualCamera()) ? pKF1->mvKeysUn[idx1]
                                 : (idx1 < static_cast<std::size_t>(pKF1->NLeft))
                                   ? pKF1->mvKeys[idx1]
                                   : pKF1->mvKeysRight[idx1 - pKF1->NLeft];
 
-        const bool bRight1 = !(pKF1->NLeft == -1 || idx1 < static_cast<std::size_t>(pKF1->NLeft));
+        const bool bRight1 = pKF1->isDualCamera() && idx1 >= static_cast<std::size_t>(pKF1->NLeft);
 
         const cv::Mat& d1 = pKF1->mDescriptors.row(idx1);
 
@@ -993,11 +993,12 @@ int ORBmatcher::SearchForTriangulation(
             continue;
           }
 
-          const cv::KeyPoint& kp2 = (pKF2->NLeft == -1) ? pKF2->mvKeysUn[idx2]
+          const cv::KeyPoint& kp2 = (!pKF2->isDualCamera()) ? pKF2->mvKeysUn[idx2]
                                   : (idx2 < static_cast<std::size_t>(pKF2->NLeft))
                                     ? pKF2->mvKeys[idx2]
                                     : pKF2->mvKeysRight[idx2 - pKF2->NLeft];
-          const bool bRight2 = !(pKF2->NLeft == -1 || idx2 < static_cast<std::size_t>(pKF2->NLeft));
+          const bool          bRight2
+            = pKF2->isDualCamera() && idx2 >= static_cast<std::size_t>(pKF2->NLeft);
 
           if (!bStereo1 && !bStereo2 && !pKF1->mpCamera2) {
             const float distex = ep(0) - kp2.pt.x;
@@ -1055,7 +1056,7 @@ int ORBmatcher::SearchForTriangulation(
         }
 
         if (bestIdx2 >= 0) {
-          const cv::KeyPoint& kp2 = (pKF2->NLeft == -1) ? pKF2->mvKeysUn[bestIdx2]
+          const cv::KeyPoint& kp2 = (!pKF2->isDualCamera()) ? pKF2->mvKeysUn[bestIdx2]
                                   : (bestIdx2 < pKF2->NLeft)
                                     ? pKF2->mvKeys[bestIdx2]
                                     : pKF2->mvKeysRight[bestIdx2 - pKF2->NLeft];
@@ -1203,9 +1204,9 @@ int ORBmatcher::Fuse(
     int bestDist = 256;
     int bestIdx  = -1;
     for (auto idx : vIndices) {
-      const cv::KeyPoint& kp = (pKF->NLeft == -1) ? pKF->mvKeysUn[idx]
-                             : (!bRight)          ? pKF->mvKeys[idx]
-                                                  : pKF->mvKeysRight[idx];
+      const cv::KeyPoint& kp = (!pKF->isDualCamera()) ? pKF->mvKeysUn[idx]
+                             : (!bRight)              ? pKF->mvKeys[idx]
+                                                      : pKF->mvKeysRight[idx];
 
       const int& kpLevel = kp.octave;
 
@@ -1656,7 +1657,7 @@ int ORBmatcher::SearchByProjection(
           continue;
         }
 
-        const int nLastOctave = (LastFrame.Nleft == -1 || i < LastFrame.Nleft)
+        const int nLastOctave = (!LastFrame.isDualCamera() || i < LastFrame.Nleft)
                                 ? LastFrame.mvKeys[i].octave
                                 : LastFrame.mvKeysRight[i - LastFrame.Nleft].octave;
 
@@ -1690,7 +1691,7 @@ int ORBmatcher::SearchByProjection(
             }
           }
 
-          if (CurrentFrame.Nleft == -1 && CurrentFrame.mvuRight[i2] > 0) {
+          if (!CurrentFrame.isDualCamera() && CurrentFrame.mvuRight[i2] > 0) {
             const float ur = uv(0) - CurrentFrame.mbf * invzc;
             const float er = std::fabs(ur - CurrentFrame.mvuRight[i2]);
             if (er > radius) {
@@ -1713,12 +1714,13 @@ int ORBmatcher::SearchByProjection(
           nmatches++;
 
           if (mbCheckOrientation) {
-            const cv::KeyPoint kpLF = (LastFrame.Nleft == -1) ? LastFrame.mvKeysUn[i]
+            const cv::KeyPoint kpLF = (!LastFrame.isDualCamera()) ? LastFrame.mvKeysUn[i]
                                     : (i < LastFrame.Nleft)
                                       ? LastFrame.mvKeys[i]
                                       : LastFrame.mvKeysRight[i - LastFrame.Nleft];
 
-            const cv::KeyPoint kpCF = (CurrentFrame.Nleft == -1) ? CurrentFrame.mvKeysUn[bestIdx2]
+            const cv::KeyPoint kpCF = (!CurrentFrame.isDualCamera())
+                                      ? CurrentFrame.mvKeysUn[bestIdx2]
                                     : (bestIdx2 < CurrentFrame.Nleft)
                                       ? CurrentFrame.mvKeys[bestIdx2]
                                       : CurrentFrame.mvKeysRight[bestIdx2 - CurrentFrame.Nleft];
@@ -1734,11 +1736,11 @@ int ORBmatcher::SearchByProjection(
             rotHist[bin].push_back(bestIdx2);
           }
         }
-        if (CurrentFrame.Nleft != -1) {
+        if (CurrentFrame.isDualCamera()) {
           const Eigen::Vector3f x3Dr = CurrentFrame.GetRelativePoseTrl() * x3Dc;
           Eigen::Vector2f       uv   = CurrentFrame.mpCamera->project(x3Dr);
 
-          const int nLastOctave = (LastFrame.Nleft == -1 || i < LastFrame.Nleft)
+          const int nLastOctave = (!LastFrame.isDualCamera() || i < LastFrame.Nleft)
                                   ? LastFrame.mvKeys[i].octave
                                   : LastFrame.mvKeysRight[i - LastFrame.Nleft].octave;
 
@@ -1783,7 +1785,7 @@ int ORBmatcher::SearchByProjection(
             CurrentFrame.mvpMapPoints[bestIdx2 + CurrentFrame.Nleft] = pMP;
             nmatches++;
             if (mbCheckOrientation) {
-              const cv::KeyPoint kpLF = (LastFrame.Nleft == -1) ? LastFrame.mvKeysUn[i]
+              const cv::KeyPoint kpLF = (!LastFrame.isDualCamera()) ? LastFrame.mvKeysUn[i]
                                       : (i < LastFrame.Nleft)
                                         ? LastFrame.mvKeys[i]
                                         : LastFrame.mvKeysRight[i - LastFrame.Nleft];

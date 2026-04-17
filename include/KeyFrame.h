@@ -517,6 +517,10 @@ public:
 
   const int NLeft, NRight;
 
+  [[nodiscard]] bool isDualCamera() const noexcept {
+    return NLeft != -1;
+  }
+
   std::vector<std::vector<std::vector<std::size_t>>> mGridRight;
 
   Sophus::SE3f GetRightPose();

@@ -482,7 +482,7 @@ void Frame::AssignFeaturesToGrid() {
   for (unsigned int i = 0; i < kFrameGridCols; i++) {
     for (unsigned int j = 0; j < kFrameGridRows; j++) {
       mGrid[i][j].reserve(nReserve);
-      if (Nleft != -1) {
+      if (isDualCamera()) {
         mGridRight[i][j].reserve(nReserve);
       }
     }
@@ -490,7 +490,7 @@ void Frame::AssignFeaturesToGrid() {
 
   for (int i = 0; i < N; i++) {
     const cv::KeyPoint& kp = [&]() -> const cv::KeyPoint& {
-      if (Nleft == -1) {
+      if (!isDualCamera()) {
         return mvKeysUn[i];
       }
       if (i < Nleft) {
@@ -502,7 +502,7 @@ void Frame::AssignFeaturesToGrid() {
     int nGridPosX = 0;
     int nGridPosY = 0;
     if (PosInGrid(kp, nGridPosX, nGridPosY)) {
-      if (Nleft == -1 || i < Nleft) {
+      if (!isDualCamera() || i < Nleft) {
         mGrid[nGridPosX][nGridPosY].push_back(i);
       } else {
         mGridRight[nGridPosX][nGridPosY].push_back(i - Nleft);
@@ -601,7 +601,7 @@ Eigen::Vector3f Frame::GetRelativePoseTlr_translation() {
 }
 
 bool Frame::isInFrustum(MapPoint* pMP, float viewingCosLimit) {
-  if (Nleft == -1) {
+  if (!isDualCamera()) {
     pMP->mbTrackInView = false;
     pMP->mTrackProjX   = -1;
     pMP->mTrackProjY   = -1;
@@ -798,7 +798,7 @@ std::vector<std::size_t> Frame::GetFeaturesInArea(
 
       for (const auto j : vCell) {
         const cv::KeyPoint& kpUn = [&]() -> const cv::KeyPoint& {
-          if (Nleft == -1) {
+          if (!isDualCamera()) {
             return mvKeysUn[j];
           }
           if (!bRight) {

@@ -398,21 +398,22 @@ void LocalMapping::CreateNewMapPoints() {
       const int& idx1 = vMatchedIndices[ikp].first;
       const int& idx2 = vMatchedIndices[ikp].second;
 
-      const cv::KeyPoint& kp1 = (mpCurrentKeyFrame->NLeft == -1) ? mpCurrentKeyFrame->mvKeysUn[idx1]
-                              : (idx1 < mpCurrentKeyFrame->NLeft)
-                                ? mpCurrentKeyFrame->mvKeys[idx1]
-                                : mpCurrentKeyFrame->mvKeysRight[idx1 - mpCurrentKeyFrame->NLeft];
+      const cv::KeyPoint& kp1      = (!mpCurrentKeyFrame->isDualCamera())
+                                     ? mpCurrentKeyFrame->mvKeysUn[idx1]
+                                   : (idx1 < mpCurrentKeyFrame->NLeft)
+                                     ? mpCurrentKeyFrame->mvKeys[idx1]
+                                     : mpCurrentKeyFrame->mvKeysRight[idx1 - mpCurrentKeyFrame->NLeft];
       const float         kp1_ur   = mpCurrentKeyFrame->mvuRight[idx1];
       const bool          bStereo1 = (mpCurrentKeyFrame->mpCamera2 == nullptr && kp1_ur >= 0);
-      const bool bRight1 = !(mpCurrentKeyFrame->NLeft == -1 || idx1 < mpCurrentKeyFrame->NLeft);
+      const bool bRight1 = mpCurrentKeyFrame->isDualCamera() && idx1 >= mpCurrentKeyFrame->NLeft;
 
-      const cv::KeyPoint& kp2 = (pKF2->NLeft == -1)  ? pKF2->mvKeysUn[idx2]
-                              : (idx2 < pKF2->NLeft) ? pKF2->mvKeys[idx2]
-                                                     : pKF2->mvKeysRight[idx2 - pKF2->NLeft];
+      const cv::KeyPoint& kp2 = (!pKF2->isDualCamera()) ? pKF2->mvKeysUn[idx2]
+                              : (idx2 < pKF2->NLeft)    ? pKF2->mvKeys[idx2]
+                                                        : pKF2->mvKeysRight[idx2 - pKF2->NLeft];
 
       const float kp2_ur   = pKF2->mvuRight[idx2];
       const bool  bStereo2 = (pKF2->mpCamera2 == nullptr && kp2_ur >= 0);
-      const bool  bRight2  = !(pKF2->NLeft == -1 || idx2 < pKF2->NLeft);
+      const bool  bRight2  = pKF2->isDualCamera() && idx2 >= pKF2->NLeft;
 
       if (mpCurrentKeyFrame->mpCamera2 && pKF2->mpCamera2) {
         if (bRight1 && bRight2) {
@@ -660,7 +661,7 @@ void LocalMapping::SearchInNeighbors() {
   std::vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
   for (auto* pKFi : vpTargetKFs) {
     matcher.Fuse(pKFi, vpMapPointMatches);
-    if (pKFi->NLeft != -1) {
+    if (pKFi->isDualCamera()) {
       matcher.Fuse(pKFi, vpMapPointMatches, static_cast<float>(true));
     }
   }
@@ -689,7 +690,7 @@ void LocalMapping::SearchInNeighbors() {
   }
 
   matcher.Fuse(mpCurrentKeyFrame, vpFuseCandidates);
-  if (mpCurrentKeyFrame->NLeft != -1) {
+  if (mpCurrentKeyFrame->isDualCamera()) {
     matcher.Fuse(mpCurrentKeyFrame, vpFuseCandidates, static_cast<float>(true));
   }
 
@@ -835,7 +836,7 @@ void LocalMapping::KeyFrameCulling() {
 
           nMPs++;
           if (pMP->Observations() > thObs) {
-            const int& scaleLevel = (pKF->NLeft == -1) ? pKF->mvKeysUn[i].octave
+            const int& scaleLevel = (!pKF->isDualCamera()) ? pKF->mvKeysUn[i].octave
                                   : (i < static_cast<std::size_t>(pKF->NLeft))
                                     ? pKF->mvKeys[i].octave
                                     : pKF->mvKeysRight[i].octave;
@@ -848,7 +849,7 @@ void LocalMapping::KeyFrameCulling() {
               const int leftIndex   = get<0>(indexes);
               const int rightIndex  = get<1>(indexes);
               int       scaleLeveli = -1;
-              if (pKFi->NLeft == -1) {
+              if (!pKFi->isDualCamera()) {
                 scaleLeveli = pKFi->mvKeysUn[leftIndex].octave;
               } else {
                 if (leftIndex != -1) {

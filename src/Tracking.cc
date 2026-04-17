@@ -2235,7 +2235,7 @@ void Tracking::UpdateLastFrame() {
   // Create "visual odometry" MapPoints
   // We sort points according to their measured depth by the stereo/RGB-D sensor
   std::vector<std::pair<float, int>> vDepthIdx;
-  const int Nfeat = mLastFrame.Nleft == -1 ? mLastFrame.N : mLastFrame.Nleft;
+  const int Nfeat = !mLastFrame.isDualCamera() ? mLastFrame.N : mLastFrame.Nleft;
   vDepthIdx.reserve(Nfeat);
   for (int i = 0; i < Nfeat; i++) {
     const float z = mLastFrame.mvDepth[i];
@@ -2267,7 +2267,7 @@ void Tracking::UpdateLastFrame() {
     if (bCreateNew) {
       Eigen::Vector3f x3D;
 
-      if (mLastFrame.Nleft == -1) {
+      if (!mLastFrame.isDualCamera()) {
         const auto x3D_opt = mLastFrame.UnprojectStereo(i);
         if (!x3D_opt) {
           continue;
@@ -2501,7 +2501,7 @@ bool Tracking::NeedNewKeyFrame() {
   int nTrackedClose    = 0;
 
   if (mSensor != Sensor::Mono && mSensor != Sensor::InertialMono) {
-    const int N = (mCurrentFrame.Nleft == -1) ? mCurrentFrame.N : mCurrentFrame.Nleft;
+    const int N = (!mCurrentFrame.isDualCamera()) ? mCurrentFrame.N : mCurrentFrame.Nleft;
     for (int i = 0; i < N; i++) {
       if (mCurrentFrame.mvDepth[i] > 0 && mCurrentFrame.mvDepth[i] < mThDepth) {
         if (mCurrentFrame.mvpMapPoints[i] != nullptr && !mCurrentFrame.mvbOutlier[i]) {
@@ -2643,7 +2643,7 @@ void Tracking::CreateNewKeyFrame() {
     }
 
     std::vector<std::pair<float, int>> vDepthIdx;
-    const int N = (mCurrentFrame.Nleft != -1) ? mCurrentFrame.Nleft : mCurrentFrame.N;
+    const int N = mCurrentFrame.isDualCamera() ? mCurrentFrame.Nleft : mCurrentFrame.N;
     vDepthIdx.reserve(mCurrentFrame.N);
     for (int i = 0; i < N; i++) {
       const float z = mCurrentFrame.mvDepth[i];
@@ -2670,7 +2670,7 @@ void Tracking::CreateNewKeyFrame() {
         if (bCreateNew) {
           Eigen::Vector3f x3D;
 
-          if (mCurrentFrame.Nleft == -1) {
+          if (!mCurrentFrame.isDualCamera()) {
             const auto x3D_opt = mCurrentFrame.UnprojectStereo(i);
             if (!x3D_opt) {
               continue;
@@ -2685,7 +2685,7 @@ void Tracking::CreateNewKeyFrame() {
 
           // Check if it is a stereo observation in order to not
           // duplicate mappoints
-          if (mCurrentFrame.Nleft != -1 && mCurrentFrame.mvLeftToRightMatch[i] >= 0) {
+          if (mCurrentFrame.isDualCamera() && mCurrentFrame.mvLeftToRightMatch[i] >= 0) {
             mCurrentFrame.mvpMapPoints[mCurrentFrame.Nleft + mCurrentFrame.mvLeftToRightMatch[i]]
               = pNewMP;
             pNewMP->AddObservation(pKF, mCurrentFrame.Nleft + mCurrentFrame.mvLeftToRightMatch[i]);

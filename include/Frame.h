@@ -360,6 +360,10 @@ public:
   // Number of Non Lapping Keypoints
   int monoLeft, monoRight;
 
+  [[nodiscard]] bool isDualCamera() const noexcept {
+    return Nleft != -1;
+  }
+
   // For stereo matching
   std::vector<int> mvLeftToRightMatch, mvRightToLeftMatch;
 
