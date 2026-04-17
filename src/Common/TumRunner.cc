@@ -77,8 +77,8 @@ void associateRGBDepth(
   auto by_timestamp = [](const TumEntry& a, const TumEntry& b) {
     return a.first < b.first;
   };
-  std::sort(rgb_entries.begin(), rgb_entries.end(), by_timestamp);
-  std::sort(depth_entries.begin(), depth_entries.end(), by_timestamp);
+  std::ranges::sort(rgb_entries, by_timestamp);
+  std::ranges::sort(depth_entries, by_timestamp);
 
   timestamps.reserve(rgb_entries.size());
   rgb_filenames.reserve(rgb_entries.size());
@@ -88,14 +88,8 @@ void associateRGBDepth(
 
   for (const auto& [rgb_ts, rgb_file] : rgb_entries) {
     // Binary search for nearest depth timestamp.
-    auto it = std::lower_bound(
-      depth_entries.begin(),
-      depth_entries.end(),
-      rgb_ts,
-      [](const TumEntry& e, double ts) {
-        return e.first < ts;
-      }
-    );
+    auto it
+      = std::ranges::lower_bound(depth_entries, rgb_ts, std::ranges::less{}, &TumEntry::first);
 
     // Check the element at and before the insertion point for the closest match.
     std::size_t best_idx  = depth_entries.size();

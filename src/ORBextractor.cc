@@ -53,6 +53,7 @@
  */
 
 #include "ORBextractor.h"
+#include <algorithm>
 #include <iostream>
 #include <opencv2/features2d.hpp>
 #include <opencv2/imgproc.hpp>
@@ -109,33 +110,33 @@ static void computeOrbDescriptor(
      + cvRound(pattern[idx].x * a - pattern[idx].y * b)]
 
   for (int i = 0; i < 32; ++i, pattern += 16) {
-    unsigned int t0  = 0;
-    unsigned int t1  = 0;
-    unsigned int val = 0;
-    t0           = GET_VALUE(0);
-    t1           = GET_VALUE(1);
-    val          = static_cast<unsigned int>(t0 < t1);
-    t0           = GET_VALUE(2);
-    t1           = GET_VALUE(3);
-    val         |= static_cast<unsigned int>(t0 < t1) << 1U;
-    t0           = GET_VALUE(4);
-    t1           = GET_VALUE(5);
-    val         |= static_cast<unsigned int>(t0 < t1) << 2U;
-    t0           = GET_VALUE(6);
-    t1           = GET_VALUE(7);
-    val         |= static_cast<unsigned int>(t0 < t1) << 3U;
-    t0           = GET_VALUE(8);
-    t1           = GET_VALUE(9);
-    val         |= static_cast<unsigned int>(t0 < t1) << 4U;
-    t0           = GET_VALUE(10);
-    t1           = GET_VALUE(11);
-    val         |= static_cast<unsigned int>(t0 < t1) << 5U;
-    t0           = GET_VALUE(12);
-    t1           = GET_VALUE(13);
-    val         |= static_cast<unsigned int>(t0 < t1) << 6U;
-    t0           = GET_VALUE(14);
-    t1           = GET_VALUE(15);
-    val         |= static_cast<unsigned int>(t0 < t1) << 7U;
+    unsigned int t0   = 0;
+    unsigned int t1   = 0;
+    unsigned int val  = 0;
+    t0                = GET_VALUE(0);
+    t1                = GET_VALUE(1);
+    val               = static_cast<unsigned int>(t0 < t1);
+    t0                = GET_VALUE(2);
+    t1                = GET_VALUE(3);
+    val              |= static_cast<unsigned int>(t0 < t1) << 1U;
+    t0                = GET_VALUE(4);
+    t1                = GET_VALUE(5);
+    val              |= static_cast<unsigned int>(t0 < t1) << 2U;
+    t0                = GET_VALUE(6);
+    t1                = GET_VALUE(7);
+    val              |= static_cast<unsigned int>(t0 < t1) << 3U;
+    t0                = GET_VALUE(8);
+    t1                = GET_VALUE(9);
+    val              |= static_cast<unsigned int>(t0 < t1) << 4U;
+    t0                = GET_VALUE(10);
+    t1                = GET_VALUE(11);
+    val              |= static_cast<unsigned int>(t0 < t1) << 5U;
+    t0                = GET_VALUE(12);
+    t1                = GET_VALUE(13);
+    val              |= static_cast<unsigned int>(t0 < t1) << 6U;
+    t0                = GET_VALUE(14);
+    t1                = GET_VALUE(15);
+    val              |= static_cast<unsigned int>(t0 < t1) << 7U;
 
     desc[i] = static_cast<uchar>(val);
   }
@@ -433,7 +434,8 @@ ORBextractor::ORBextractor(
   mnFeaturesPerLevel.resize(nlevels);
   const float factor = 1.0F / scaleFactor;
   float       nDesiredFeaturesPerScale
-    = nfeatures * (1 - factor) / (1 - static_cast<float>(std::pow(static_cast<double>(factor), static_cast<double>(nlevels))));
+    = nfeatures * (1 - factor)
+    / (1 - static_cast<float>(std::pow(static_cast<double>(factor), static_cast<double>(nlevels))));
 
   int sumFeatures = 0;
   for (int level = 0; level < nlevels - 1; level++) {
@@ -677,7 +679,7 @@ std::vector<cv::KeyPoint> ORBextractor::DistributeOctTree(
           = vSizeAndPointerToNode;
         vSizeAndPointerToNode.clear();
 
-        std::sort(vPrevSizeAndPointerToNode.begin(), vPrevSizeAndPointerToNode.end(), compareNodes);
+        std::ranges::sort(vPrevSizeAndPointerToNode, compareNodes);
         for (int j = vPrevSizeAndPointerToNode.size() - 1; j >= 0; j--) {
           ExtractorNode n1;
           ExtractorNode n2;
@@ -1132,7 +1134,10 @@ int ORBextractor::operator()(
 void ORBextractor::ComputePyramid(const cv::Mat& image) {
   for (int level = 0; level < nlevels; ++level) {
     const float    scale = mvInvScaleFactor[level];
-    const cv::Size sz(cvRound(static_cast<float>(image.cols) * scale), cvRound(static_cast<float>(image.rows) * scale));
+    const cv::Size sz(
+      cvRound(static_cast<float>(image.cols) * scale),
+      cvRound(static_cast<float>(image.rows) * scale)
+    );
     const cv::Size wholeSize(sz.width + EDGE_THRESHOLD * 2, sz.height + EDGE_THRESHOLD * 2);
     cv::Mat        temp(wholeSize, image.type());
     const cv::Mat  masktemp;

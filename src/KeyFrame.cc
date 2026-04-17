@@ -18,6 +18,7 @@
  */
 
 #include "KeyFrame.h"
+#include <algorithm>
 #include <iostream>
 #include <list>
 #include "Converter.h"
@@ -313,7 +314,7 @@ void KeyFrame::UpdateBestCovisibles() {
     vPairs.emplace_back(weight, kf);
   }
 
-  std::sort(vPairs.begin(), vPairs.end());
+  std::ranges::sort(vPairs);
   std::list<KeyFrame*> lKFs;
   std::list<int>       lWs;
   for (const auto& [weight, kf] : vPairs) {
@@ -526,7 +527,7 @@ void KeyFrame::UpdateConnections(bool upParent) {
     pKFmax->AddConnection(this, nmax);
   }
 
-  std::sort(vPairs.begin(), vPairs.end());
+  std::ranges::sort(vPairs);
   std::list<KeyFrame*> lKFs;
   std::list<int>       lWs;
   for (const auto& [weight, kf] : vPairs) {
@@ -848,7 +849,7 @@ float KeyFrame::ComputeSceneMedianDepth(const int q) {
     }
   }
 
-  std::sort(vDepths.begin(), vDepths.end());
+  std::ranges::sort(vDepths);
 
   return vDepths[(vDepths.size() - 1) / q];
 }

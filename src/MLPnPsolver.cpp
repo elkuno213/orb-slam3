@@ -48,6 +48,7 @@
  ******************************************************************************/
 
 #include "MLPnPsolver.h"
+#include <algorithm>
 #include "Converter.h"
 #include "Frame.h"
 #include "GeometricCamera.h"
@@ -598,7 +599,7 @@ void MLPnPsolver::computePose(
       }
       normVal[i] = norms;
     }
-    const auto findMinRepro = std::min_element(std::begin(normVal), std::end(normVal));
+    const auto findMinRepro = std::ranges::min_element(normVal);
     const int  idx          = std::distance(std::begin(normVal), findMinRepro);
     Rout                    = Ts[idx].block<3, 3>(0, 0);
     tout                    = Ts[idx].block<3, 1>(0, 3);

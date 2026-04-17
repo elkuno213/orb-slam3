@@ -18,6 +18,7 @@
  */
 
 #include "Frame.h"
+#include <algorithm>
 #include <iostream>
 #include <thread>
 #include <utility>
@@ -423,8 +424,7 @@ Frame::Frame(
 
   mvpMapPoints = std::vector<MapPoint*>(N, nullptr);
 
-  mmProjectPoints
-    .clear(); // = std::map<long unsigned int, cv::Point2f>(N, static_cast<cv::Point2f>(nullptr));
+  mmProjectPoints.clear();
   mmMatchedInImage.clear();
 
   mvbOutlier = std::vector<bool>(N, false);
@@ -1049,7 +1049,7 @@ void Frame::ComputeStereoMatches() {
     }
   }
 
-  std::sort(vDistIdx.begin(), vDistIdx.end());
+  std::ranges::sort(vDistIdx);
   const float median = vDistIdx[vDistIdx.size() / 2].first; // NOLINT(bugprone-integer-division)
   const float thDist = 1.5F * 1.4F * median;
 

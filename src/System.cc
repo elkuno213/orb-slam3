@@ -630,7 +630,7 @@ void System::SaveTrajectoryTUM(const std::string& filename) {
   _logger->info("Saving camera trajectory to {}...", filename);
 
   std::vector<KeyFrame*> vpKFs = mpAtlas->GetAllKeyFrames();
-  std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+  std::ranges::sort(vpKFs, KeyFrame::lId);
 
   // Transform all keyframes so that the first keyframe is at the origin.
   // After a loop closure the first keyframe might not be at the origin.
@@ -686,7 +686,7 @@ void System::SaveKeyFrameTrajectoryTUM(const std::string& filename) {
   _logger->info("Saving keyframe trajectory to {} ...", filename);
 
   std::vector<KeyFrame*> vpKFs = mpAtlas->GetAllKeyFrames();
-  std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+  std::ranges::sort(vpKFs, KeyFrame::lId);
 
   // Transform all keyframes so that the first keyframe is at the origin.
   // After a loop closure the first keyframe might not be at the origin.
@@ -736,7 +736,7 @@ void System::SaveTrajectoryEuRoC(const std::string& filename) {
   }
 
   std::vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-  std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+  std::ranges::sort(vpKFs, KeyFrame::lId);
 
   // Transform all keyframes so that the first keyframe is at the origin.
   // After a loop closure the first keyframe might not be at the origin.
@@ -827,7 +827,7 @@ void System::SaveTrajectoryEuRoC(const std::string& filename, Map* pMap) {
   _logger->info("Saving trajectory of map {} to {}...", pMap->GetId(), filename);
 
   std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
-  std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+  std::ranges::sort(vpKFs, KeyFrame::lId);
 
   // Transform all keyframes so that the first keyframe is at the origin.
   // After a loop closure the first keyframe might not be at the origin.
@@ -930,7 +930,7 @@ void System::SaveTrajectoryEuRoC(const std::string& filename, Map* pMap) {
     }
 
     std::vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-    std::sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+    std::ranges::sort(vpKFs, KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
@@ -1050,7 +1050,7 @@ mSensor==IMU_RGBD)
     }
 
     std::vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-    std::sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+    std::ranges::sort(vpKFs, KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
@@ -1110,7 +1110,7 @@ void System::SaveKeyFrameTrajectoryEuRoC(const std::string& filename) {
   }
 
   std::vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-  std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+  std::ranges::sort(vpKFs, KeyFrame::lId);
 
   // Transform all keyframes so that the first keyframe is at the origin.
   // After a loop closure the first keyframe might not be at the origin.
@@ -1149,7 +1149,7 @@ void System::SaveKeyFrameTrajectoryEuRoC(const std::string& filename, Map* pMap)
   _logger->info("Saving keyframe trajectory of map {} to {}...", pMap->GetId(), filename);
 
   std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
-  std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+  std::ranges::sort(vpKFs, KeyFrame::lId);
 
   // Transform all keyframes so that the first keyframe is at the origin.
   // After a loop closure the first keyframe might not be at the origin.
@@ -1193,7 +1193,7 @@ void System::SaveKeyFrameTrajectoryEuRoC(const std::string& filename, Map* pMap)
     }
 
     std::vector<KeyFrame*> vpKFs = mpAtlas->GetAllKeyFrames();
-    std::sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+    std::ranges::sort(vpKFs, KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
@@ -1249,7 +1249,7 @@ void System::SaveTrajectoryKITTI(const std::string& filename) {
   _logger->info("Saving camera trajectory to {}...", filename);
 
   std::vector<KeyFrame*> vpKFs = mpAtlas->GetAllKeyFrames();
-  std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+  std::ranges::sort(vpKFs, KeyFrame::lId);
 
   // Transform all keyframes so that the first keyframe is at the origin.
   // After a loop closure the first keyframe might not be at the origin.

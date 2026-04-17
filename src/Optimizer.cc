@@ -18,6 +18,7 @@
  */
 
 #include "Optimizer.h"
+#include <algorithm>
 #include <cmath>
 #include <list>
 #include <mutex>
@@ -3829,7 +3830,7 @@ void Optimizer::MergeInertialBA(
   for (auto& [mp, count] : mLocalObs) {
     pairs.emplace_back(mp, count);
   }
-  std::sort(pairs.begin(), pairs.end(), sortByVal);
+  std::ranges::sort(pairs, sortByVal);
 
   // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
   int i = 0;

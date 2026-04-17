@@ -18,6 +18,7 @@
  */
 
 #include "Atlas.h"
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #include "KeyFrameDatabase.h"
@@ -196,7 +197,7 @@ std::vector<Map*> Atlas::GetAllMaps() {
     }
   };
   std::vector<Map*> vMaps(mspMaps.begin(), mspMaps.end());
-  std::sort(vMaps.begin(), vMaps.end(), compFunctor());
+  std::ranges::sort(vMaps, compFunctor());
   return vMaps;
 }
 
@@ -283,8 +284,8 @@ void Atlas::PreSave() {
       return elem1->GetId() < elem2->GetId();
     }
   };
-  std::copy(mspMaps.begin(), mspMaps.end(), std::back_inserter(mvpBackupMaps));
-  std::sort(mvpBackupMaps.begin(), mvpBackupMaps.end(), compFunctor());
+  std::ranges::copy(mspMaps, std::back_inserter(mvpBackupMaps));
+  std::ranges::sort(mvpBackupMaps, compFunctor());
 
   std::set<GeometricCamera*> spCams(mvpCameras.begin(), mvpCameras.end());
   for (Map* pMi : mvpBackupMaps) {

@@ -18,6 +18,7 @@
  */
 
 #include "LoopClosing.h"
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #include "Atlas.h"
@@ -1358,11 +1359,7 @@ void LoopClosing::MergeLocal() {
 
   std::vector<MapPoint*> vpCheckFuseMapPoint;
   vpCheckFuseMapPoint.reserve(spMapPointMerge.size());
-  std::copy(
-    spMapPointMerge.begin(),
-    spMapPointMerge.end(),
-    std::back_inserter(vpCheckFuseMapPoint)
-  );
+  std::ranges::copy(spMapPointMerge, std::back_inserter(vpCheckFuseMapPoint));
 
   const Sophus::SE3d Twc = mpCurrentKF->GetPoseInverse().cast<double>();
   const g2o::Sim3    g2oNonCorrectedSwc(Twc.unit_quaternion(), Twc.translation(), 1.0);
@@ -1542,16 +1539,8 @@ void LoopClosing::MergeLocal() {
   bool bStop = false;
   vpLocalCurrentWindowKFs.clear();
   vpMergeConnectedKFs.clear();
-  std::copy(
-    spLocalWindowKFs.begin(),
-    spLocalWindowKFs.end(),
-    std::back_inserter(vpLocalCurrentWindowKFs)
-  );
-  std::copy(
-    spMergeConnectedKFs.begin(),
-    spMergeConnectedKFs.end(),
-    std::back_inserter(vpMergeConnectedKFs)
-  );
+  std::ranges::copy(spLocalWindowKFs, std::back_inserter(vpLocalCurrentWindowKFs));
+  std::ranges::copy(spMergeConnectedKFs, std::back_inserter(vpMergeConnectedKFs));
   if (mpTracker->mSensor == Sensor::InertialMono || mpTracker->mSensor == Sensor::InertialStereo
       || mpTracker->mSensor == Sensor::InertialRgbd) {
     Optimizer::MergeInertialBA(mpCurrentKF, mpMergeMatchedKF, &bStop, pCurrentMap, vCorrectedSim3);
@@ -1896,11 +1885,7 @@ void LoopClosing::MergeLocal2() {
   }
 
   vpCheckFuseMapPoint.reserve(spMapPointMerge.size());
-  std::copy(
-    spMapPointMerge.begin(),
-    spMapPointMerge.end(),
-    std::back_inserter(vpCheckFuseMapPoint)
-  );
+  std::ranges::copy(spMapPointMerge, std::back_inserter(vpCheckFuseMapPoint));
 
   SearchAndFuse(vpCurrentConnectedKFs, vpCheckFuseMapPoint);
 

@@ -789,10 +789,8 @@ bool TwoViewReconstruction::ReconstructH(
     }
   }
 
-  if (
-    secondBestGood < 0.75 * bestGood && bestParallax >= minParallax && bestGood > minTriangulated
-    && bestGood > 0.9 * N
-  ) {
+  if (secondBestGood < 0.75 * bestGood && bestParallax >= minParallax && bestGood > minTriangulated
+      && bestGood > 0.9 * N) {
     T21            = Sophus::SE3f(vR[bestSolutionIdx], vt[bestSolutionIdx]);
     vbTriangulated = bestTriangulated;
 
@@ -970,7 +968,7 @@ int TwoViewReconstruction::CheckRT(
   }
 
   if (nGood > 0) {
-    std::sort(vCosParallax.begin(), vCosParallax.end());
+    std::ranges::sort(vCosParallax);
 
     const std::size_t idx = std::min(50, static_cast<int>(vCosParallax.size() - 1));
     parallax              = std::acos(vCosParallax[idx]) * 180 / CV_PI;

@@ -18,7 +18,9 @@
  */
 
 #include "Tracking.h"
+#include <algorithm>
 #include <chrono>
+#include <ranges>
 #include <thread>
 #include <utility>
 #include <opencv2/imgproc.hpp>
@@ -80,8 +82,7 @@ Tracking::Tracking(
       );
     }
 
-    if (sensor == Sensor::InertialMono
-        || sensor == Sensor::InertialStereo
+    if (sensor == Sensor::InertialMono || sensor == Sensor::InertialStereo
         || sensor == Sensor::InertialRgbd) {
       if (!ParseIMUParamFile(fSettings)) {
         throw std::runtime_error(
@@ -1428,8 +1429,7 @@ void Tracking::Track() {
             CreateMapInAtlas();
           }
         } else {
-          _logger->warn(
-            "Timestamp jump detected before IMU initialization. Resetting active map..."
+          _logger->warn("Timestamp jump detected before IMU initialization. Resetting active map..."
           );
           mpSystem->ResetActiveMap();
         }
@@ -1809,8 +1809,8 @@ void Tracking::StereoInitialization() {
       }
 
       if (!mFastInit
-          && (mCurrentFrame.mpImuPreintegratedFrame->avgA
-              - mLastFrame.mpImuPreintegratedFrame->avgA)
+          && (mCurrentFrame.mpImuPreintegratedFrame->avgA - mLastFrame.mpImuPreintegratedFrame->avgA
+             )
                  .norm()
                < 0.5) {
         _logger->warn("No enough acceleration");
@@ -1918,7 +1918,7 @@ void Tracking::MonocularInitialization() {
         mvbPrevMatched[i] = mCurrentFrame.mvKeysUn[i].pt;
       }
 
-      std::fill(mvIniMatches.begin(), mvIniMatches.end(), -1);
+      std::ranges::fill(mvIniMatches, -1);
 
       if (mSensor == Sensor::InertialMono) {
         delete mpImuPreintegratedFromLastKF;
@@ -2246,7 +2246,7 @@ void Tracking::UpdateLastFrame() {
     return;
   }
 
-  std::sort(vDepthIdx.begin(), vDepthIdx.end());
+  std::ranges::sort(vDepthIdx);
 
   // We insert all close points (depth<mThDepth)
   // If less than 100 close points, we insert the 100 closest ones.
@@ -2306,7 +2306,7 @@ bool Tracking::TrackWithMotionModel() {
     mCurrentFrame.SetPose(mVelocity * mLastFrame.GetPose());
   }
 
-  std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), nullptr);
+  std::ranges::fill(mCurrentFrame.mvpMapPoints, nullptr);
 
   // Project points seen in previous frame
   int th = 0;
@@ -2327,7 +2327,7 @@ bool Tracking::TrackWithMotionModel() {
   // If few matches, uses a wider window search
   if (nmatches < 20) {
     _logger->warn("Not enough matches, wider window search");
-    std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), nullptr);
+    std::ranges::fill(mCurrentFrame.mvpMapPoints, nullptr);
 
     nmatches = matcher.SearchByProjection(
       mCurrentFrame,
@@ -2400,13 +2400,11 @@ bool Tracking::TrackLocalMap() {
       // if(!mbMapUpdated && mState == TrackingState::Ok) //  && (mnMatchesInliers>30))
       if (!mbMapUpdated) { // && (mnMatchesInliers>30))
         _logger->debug("Optimizing pose with IMU from last frame when tracking local map...");
-        Optimizer::PoseInertialOptimizationLastFrame(
-          &mCurrentFrame
+        Optimizer::PoseInertialOptimizationLastFrame(&mCurrentFrame
         ); // , !mpLastKeyFrame->GetMap()->GetIniertialBA1());
       } else {
         _logger->debug("Optimizing pose with IMU from last key frame when tracking local map...");
-        Optimizer::PoseInertialOptimizationLastKeyFrame(
-          &mCurrentFrame
+        Optimizer::PoseInertialOptimizationLastKeyFrame(&mCurrentFrame
         ); // , !mpLastKeyFrame->GetMap()->GetIniertialBA1());
       }
     }
@@ -2653,7 +2651,7 @@ void Tracking::CreateNewKeyFrame() {
     }
 
     if (!vDepthIdx.empty()) {
-      std::sort(vDepthIdx.begin(), vDepthIdx.end());
+      std::ranges::sort(vDepthIdx);
 
       int nPoints = 0;
       for (const auto& [vdepth, i] : vDepthIdx) {
@@ -2802,9 +2800,7 @@ void Tracking::UpdateLocalMap() {
 void Tracking::UpdateLocalPoints() {
   mvpLocalMapPoints.clear();
 
-  for (auto itKF = mvpLocalKeyFrames.rbegin(), itEndKF = mvpLocalKeyFrames.rend(); itKF != itEndKF;
-       ++itKF) {
-    KeyFrame*                    pKF   = *itKF;
+  for (auto* pKF : mvpLocalKeyFrames | std::views::reverse) {
     const std::vector<MapPoint*> vpMPs = pKF->GetMapPointMatches();
 
     for (auto* pMP : vpMPs) {

@@ -18,6 +18,7 @@
  */
 
 #include "Map.h"
+#include <algorithm>
 #include "KeyFrame.h"
 #include "KeyFrameDatabase.h"
 #include "LoggingUtils.h"
@@ -133,7 +134,7 @@ void Map::EraseKeyFrame(KeyFrame* pKF) {
     if (pKF->mnId == mpKFlowerID->mnId) {
       std::vector<KeyFrame*> vpKFs
         = std::vector<KeyFrame*>(mspKeyFrames.begin(), mspKeyFrames.end());
-      std::sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+      std::ranges::sort(vpKFs, KeyFrame::lId);
       mpKFlowerID = vpKFs[0];
     }
   } else {
@@ -408,16 +409,8 @@ void Map::PostLoad(
     mvpBackupMapPoints.size()
   );
 
-  std::copy(
-    mvpBackupMapPoints.begin(),
-    mvpBackupMapPoints.end(),
-    std::inserter(mspMapPoints, mspMapPoints.begin())
-  );
-  std::copy(
-    mvpBackupKeyFrames.begin(),
-    mvpBackupKeyFrames.end(),
-    std::inserter(mspKeyFrames, mspKeyFrames.begin())
-  );
+  mspMapPoints.insert(mvpBackupMapPoints.begin(), mvpBackupMapPoints.end());
+  mspKeyFrames.insert(mvpBackupKeyFrames.begin(), mvpBackupKeyFrames.end());
 
   std::map<long unsigned int, MapPoint*> mpMapPointId;
   for (MapPoint* pMPi : mspMapPoints) {

@@ -18,6 +18,7 @@
  */
 
 #include "LocalMapping.h"
+#include <algorithm>
 #include <chrono>
 #include <list>
 #include <map>
@@ -317,9 +318,9 @@ void LocalMapping::CreateNewMapPoints() {
   if (mbInertial) {
     KeyFrame* pKF   = mpCurrentKeyFrame;
     int       count = 0;
-    while ((vpNeighKFs.size() <= static_cast<std::size_t>(nn)) && (pKF->mPrevKF)
-           && (count++ < nn)) {
-      auto it = std::find(vpNeighKFs.begin(), vpNeighKFs.end(), pKF->mPrevKF);
+    while ((vpNeighKFs.size() <= static_cast<std::size_t>(nn)) && (pKF->mPrevKF) && (count++ < nn)
+    ) {
+      auto it = std::ranges::find(vpNeighKFs, pKF->mPrevKF);
       if (it == vpNeighKFs.end()) {
         vpNeighKFs.push_back(pKF->mPrevKF);
       }
