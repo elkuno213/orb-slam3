@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cmath>
 #include <future>
+#include <numbers>
 #include <numeric>
 #include <DBoW2/DUtils/Random.h>
 #include "GeometricTools.h"
@@ -971,7 +972,7 @@ int TwoViewReconstruction::CheckRT(
     std::ranges::sort(vCosParallax);
 
     const std::size_t idx = std::min(50, static_cast<int>(vCosParallax.size() - 1));
-    parallax              = std::acos(vCosParallax[idx]) * 180 / CV_PI;
+    parallax              = std::acos(vCosParallax[idx]) * 180 / std::numbers::pi_v<double>;
   } else {
     parallax = 0;
   }

@@ -37,6 +37,8 @@
 #include "System.h"
 #include "Tracking.h"
 
+using namespace std::chrono_literals;
+
 namespace ORB_SLAM3 {
 
 LocalMapping::LocalMapping(
@@ -199,7 +201,7 @@ void LocalMapping::Run() {
     } else if (Stop() && !mbBadImu) {
       // Safe area to stop
       while (isStopped() && !CheckFinish()) {
-        std::this_thread::sleep_for(std::chrono::microseconds(3000));
+        std::this_thread::sleep_for(3000us);
       }
       if (CheckFinish()) {
         break;
@@ -215,7 +217,7 @@ void LocalMapping::Run() {
       break;
     }
 
-    std::this_thread::sleep_for(std::chrono::microseconds(3000));
+    std::this_thread::sleep_for(3000us);
   }
 
   SetFinish();
@@ -930,7 +932,7 @@ void LocalMapping::RequestReset() {
         break;
       }
     }
-    std::this_thread::sleep_for(std::chrono::microseconds(3000));
+    std::this_thread::sleep_for(3000us);
   }
   _logger->info("Map reset completed successfully");
 }
@@ -951,7 +953,7 @@ void LocalMapping::RequestResetActiveMap(Map* pMap) {
         break;
       }
     }
-    std::this_thread::sleep_for(std::chrono::microseconds(3000));
+    std::this_thread::sleep_for(3000us);
   }
   _logger->info("Active map reset completed successfully");
 }

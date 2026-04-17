@@ -32,6 +32,8 @@
 #include "System.h"
 #include "Tracking.h"
 
+using namespace std::chrono_literals;
+
 namespace ORB_SLAM3 {
 
 Viewer::Viewer(
@@ -355,7 +357,7 @@ void Viewer::Run() {
 
     if (Stop()) {
       while (isStopped()) {
-        std::this_thread::sleep_for(std::chrono::microseconds(3000));
+        std::this_thread::sleep_for(3000us);
       }
     }
 

@@ -18,7 +18,9 @@
  */
 
 #include "KannalaBrandt8.h"
+#include <algorithm>
 #include <cassert>
+#include <numbers>
 #include <opencv2/calib3d.hpp>
 #include "TwoViewReconstruction.h"
 
@@ -150,7 +152,10 @@ cv::Point3f KannalaBrandt8::unproject(const cv::Point2f& p2D) {
   );
   float scale   = 1.F;
   float theta_d = std::sqrt(pw.x * pw.x + pw.y * pw.y);
-  theta_d       = fminf(fmaxf(-CV_PI / 2.F, theta_d), CV_PI / 2.F);
+  theta_d       = std::min(
+    std::max(-std::numbers::pi_v<float> / 2.F, theta_d),
+    std::numbers::pi_v<float> / 2.F
+  );
 
   if (theta_d > 1e-8) {
     // Compensate distortion iteratively

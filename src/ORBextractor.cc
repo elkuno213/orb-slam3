@@ -54,7 +54,9 @@
 
 #include "ORBextractor.h"
 #include <algorithm>
+#include <cmath>
 #include <iostream>
+#include <numbers>
 #include <opencv2/features2d.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -93,7 +95,7 @@ static float IC_Angle(const cv::Mat& image, cv::Point2f pt, const std::vector<in
   return cv::fastAtan2(static_cast<float>(m_01), static_cast<float>(m_10));
 }
 
-const float factorPI = static_cast<float>(CV_PI / 180.F);
+const float factorPI = std::numbers::pi_v<float> / 180.F;
 static void computeOrbDescriptor(
   const cv::KeyPoint& kpt, const cv::Mat& img, const cv::Point* pattern, uchar* desc
 ) {
@@ -455,8 +457,8 @@ ORBextractor::ORBextractor(
 
   int          v    = 0;
   int          v0   = 0;
-  const int    vmax = cvFloor(HALF_PATCH_SIZE * std::sqrt(2.F) / 2.0F + 1.0F);
-  const int    vmin = cvCeil(HALF_PATCH_SIZE * std::sqrt(2.F) / 2.0F);
+  const int    vmax = cvFloor(HALF_PATCH_SIZE * std::numbers::sqrt2_v<float> / 2.0F + 1.0F);
+  const int    vmin = cvCeil(HALF_PATCH_SIZE * std::numbers::sqrt2_v<float> / 2.0F);
   const double hp2  = HALF_PATCH_SIZE * HALF_PATCH_SIZE;
   for (v = 0; v <= vmax; ++v) {
     umax[v] = cvRound(std::sqrt(hp2 - v * v));
