@@ -53,6 +53,7 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 #include <opencv2/core.hpp>
+#include "Types.h"
 
 namespace ORB_SLAM3 {
 
@@ -72,7 +73,7 @@ public:
     int    maxIterations = 300,
     int    minSet        = 6,
     float  epsilon       = 0.4,
-    float  th2           = 5.991
+    float  th2           = kChi2Mono
   );
 
   // Find metod is necessary?

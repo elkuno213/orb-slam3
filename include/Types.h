@@ -44,4 +44,8 @@ enum class TrackingState : int8_t {
   OkKlt          = 5
 };
 
+// Chi-squared thresholds at p=0.05 significance level
+inline constexpr float kChi2Mono   = 5.991F; // chi-squared, 2 DOF, p=0.05
+inline constexpr float kChi2Stereo = 7.815F; // chi-squared, 3 DOF, p=0.05
+
 } // namespace ORB_SLAM3

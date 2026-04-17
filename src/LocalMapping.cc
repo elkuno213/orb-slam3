@@ -36,6 +36,7 @@
 #include "Optimizer.h"
 #include "System.h"
 #include "Tracking.h"
+#include "Types.h"
 
 using namespace std::chrono_literals;
 
@@ -527,7 +528,7 @@ void LocalMapping::CreateNewMapPoints() {
         const float       errX1 = uv1.x - kp1.pt.x;
         const float       errY1 = uv1.y - kp1.pt.y;
 
-        if ((errX1 * errX1 + errY1 * errY1) > 5.991 * sigmaSquare1) {
+        if ((errX1 * errX1 + errY1 * errY1) > kChi2Mono * sigmaSquare1) {
           continue;
         }
 
@@ -552,7 +553,7 @@ void LocalMapping::CreateNewMapPoints() {
         const cv::Point2f uv2   = pCamera2->project(cv::Point3f(x2, y2, z2));
         const float       errX2 = uv2.x - kp2.pt.x;
         const float       errY2 = uv2.y - kp2.pt.y;
-        if ((errX2 * errX2 + errY2 * errY2) > 5.991 * sigmaSquare2) {
+        if ((errX2 * errX2 + errY2 * errY2) > kChi2Mono * sigmaSquare2) {
           continue;
         }
       } else {
