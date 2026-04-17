@@ -75,7 +75,7 @@ public:
   void CreateNewMap();
   void ChangeMap(Map* pMap);
 
-  unsigned long int GetLastInitKFid();
+  [[nodiscard]] unsigned long int GetLastInitKFid();
 
   void SetViewer(Viewer* pViewer);
 
@@ -85,55 +85,55 @@ public:
   // void EraseMapPoint(MapPoint* pMP);
   // void EraseKeyFrame(KeyFrame* pKF);
 
-  GeometricCamera*              AddCamera(GeometricCamera* pCam);
-  std::vector<GeometricCamera*> GetAllCameras();
+  GeometricCamera*                            AddCamera(GeometricCamera* pCam);
+  [[nodiscard]] std::vector<GeometricCamera*> GetAllCameras();
 
   /* All methods without Map pointer work on current map */
-  void SetReferenceMapPoints(const std::vector<MapPoint*>& vpMPs);
-  void InformNewBigChange();
-  int  GetLastBigChangeIdx();
+  void              SetReferenceMapPoints(const std::vector<MapPoint*>& vpMPs);
+  void              InformNewBigChange();
+  [[nodiscard]] int GetLastBigChangeIdx();
 
-  long unsigned int MapPointsInMap();
-  long unsigned     KeyFramesInMap();
+  [[nodiscard]] long unsigned int MapPointsInMap();
+  [[nodiscard]] long unsigned     KeyFramesInMap();
 
   // Method for get data in current map
-  std::vector<KeyFrame*> GetAllKeyFrames();
-  std::vector<MapPoint*> GetAllMapPoints();
-  std::vector<MapPoint*> GetReferenceMapPoints();
+  [[nodiscard]] std::vector<KeyFrame*> GetAllKeyFrames();
+  [[nodiscard]] std::vector<MapPoint*> GetAllMapPoints();
+  [[nodiscard]] std::vector<MapPoint*> GetReferenceMapPoints();
 
-  std::vector<Map*> GetAllMaps();
+  [[nodiscard]] std::vector<Map*> GetAllMaps();
 
-  int CountMaps();
+  [[nodiscard]] int CountMaps();
 
   void clearMap();
 
   void clearAtlas();
 
-  Map* GetCurrentMap();
+  [[nodiscard]] Map* GetCurrentMap();
 
   void SetMapBad(Map* pMap);
   void RemoveBadMaps();
 
-  bool isInertial();
-  void SetInertialSensor();
-  void SetImuInitialized();
-  bool isImuInitialized();
+  [[nodiscard]] bool isInertial();
+  void               SetInertialSensor();
+  void               SetImuInitialized();
+  [[nodiscard]] bool isImuInitialized();
 
   // Function for garantee the correction of serialization of this object
   void PreSave();
   void PostLoad();
 
-  std::map<long unsigned int, KeyFrame*> GetAtlasKeyframes();
+  [[nodiscard]] std::map<long unsigned int, KeyFrame*> GetAtlasKeyframes();
 
-  void              SetKeyFrameDababase(KeyFrameDatabase* pKFDB);
-  KeyFrameDatabase* GetKeyFrameDatabase();
+  void                            SetKeyFrameDababase(KeyFrameDatabase* pKFDB);
+  [[nodiscard]] KeyFrameDatabase* GetKeyFrameDatabase();
 
-  void           SetORBVocabulary(ORBVocabulary* pORBVoc);
-  ORBVocabulary* GetORBVocabulary();
+  void                         SetORBVocabulary(ORBVocabulary* pORBVoc);
+  [[nodiscard]] ORBVocabulary* GetORBVocabulary();
 
-  long unsigned int GetNumLivedKF();
+  [[nodiscard]] long unsigned int GetNumLivedKF();
 
-  long unsigned int GetNumLivedMP();
+  [[nodiscard]] long unsigned int GetNumLivedMP();
 
 protected:
   std::set<Map*> mspMaps;

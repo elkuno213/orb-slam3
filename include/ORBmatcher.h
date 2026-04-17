@@ -140,10 +140,16 @@ public:
   static const int TH_HIGH;
   static const int HISTO_LENGTH;
 
+  struct ThreeMaxima {
+    int ind1 = -1;
+    int ind2 = -1;
+    int ind3 = -1;
+  };
+
 protected:
   static float RadiusByViewingCos(const float& viewCos);
 
-  static void ComputeThreeMaxima(std::vector<int>* histo, int L, int& ind1, int& ind2, int& ind3);
+  [[nodiscard]] static ThreeMaxima ComputeThreeMaxima(const std::vector<int>* histo, int L);
 
   float mfNNratio;
   bool  mbCheckOrientation;

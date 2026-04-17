@@ -89,7 +89,7 @@ public:
   long unsigned int MapPointsInMap();
   long unsigned     KeyFramesInMap();
 
-  long unsigned int GetId() const;
+  [[nodiscard]] long unsigned int GetId() const;
 
   long unsigned int GetInitKFid();
   void              SetInitKFid(long unsigned int initKFif);
@@ -100,11 +100,11 @@ public:
   void SetCurrentMap();
   void SetStoredMap();
 
-  bool HasThumbnail();
-  bool IsInUse() const;
+  bool               HasThumbnail();
+  [[nodiscard]] bool IsInUse() const;
 
-  void SetBad();
-  bool IsBad() const;
+  void               SetBad();
+  [[nodiscard]] bool IsBad() const;
 
   void clear();
 

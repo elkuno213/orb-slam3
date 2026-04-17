@@ -43,7 +43,7 @@ public:
     _error = obs - pCamera->project(v1->estimate().map(Xw));
   }
 
-  bool isDepthPositive() const {
+  [[nodiscard]] bool isDepthPositive() const {
     const auto* v1 = static_cast<const g2o::VertexSE3Expmap*>(_vertices[0]);
     return (v1->estimate().map(Xw))(2) > 0.0;
   }
@@ -69,7 +69,7 @@ public:
     _error = obs - pCamera->project((mTrl * v1->estimate()).map(Xw));
   }
 
-  bool isDepthPositive() const {
+  [[nodiscard]] bool isDepthPositive() const {
     const auto* v1 = static_cast<const g2o::VertexSE3Expmap*>(_vertices[0]);
     return ((mTrl * v1->estimate()).map(Xw))(2) > 0.0;
   }
@@ -98,7 +98,7 @@ public:
     _error = obs - pCamera->project(v1->estimate().map(v2->estimate()));
   }
 
-  bool isDepthPositive() const {
+  [[nodiscard]] bool isDepthPositive() const {
     const auto* v1 = static_cast<const g2o::VertexSE3Expmap*>(_vertices[1]);
     const auto* v2 = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
     return ((v1->estimate().map(v2->estimate()))(2) > 0.0);
@@ -125,7 +125,7 @@ public:
     _error = obs - pCamera->project((mTrl * v1->estimate()).map(v2->estimate()));
   }
 
-  bool isDepthPositive() const {
+  [[nodiscard]] bool isDepthPositive() const {
     const auto* v1 = static_cast<const g2o::VertexSE3Expmap*>(_vertices[1]);
     const auto* v2 = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
     return ((mTrl * v1->estimate()).map(v2->estimate()))(2) > 0.0;

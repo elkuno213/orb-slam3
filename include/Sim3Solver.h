@@ -39,10 +39,10 @@ struct Sim3Result {
 
 /// Result of Sim3Solver::iterate()
 struct IterateResult {
-  Eigen::Matrix4f   T;                   ///< Transformation matrix (Identity if failed/not converged)
-  bool              no_more     = false; ///< True if max iterations reached
-  std::vector<bool> inliers;             ///< Inlier flags for each match
-  int               num_inliers = 0;     ///< Number of inliers found
+  Eigen::Matrix4f   T;               ///< Transformation matrix (Identity if failed/not converged)
+  bool              no_more = false; ///< True if max iterations reached
+  std::vector<bool> inliers;         ///< Inlier flags for each match
+  int               num_inliers = 0; ///< Number of inliers found
   bool              converged   = false; ///< True if solution converged
 };
 
@@ -72,7 +72,7 @@ public:
   [[nodiscard]] Eigen::Matrix4f GetEstimatedTransformation();
   [[nodiscard]] Eigen::Matrix3f GetEstimatedRotation();
   [[nodiscard]] Eigen::Vector3f GetEstimatedTranslation();
-  float                         GetEstimatedScale() const;
+  [[nodiscard]] float           GetEstimatedScale() const;
 
 protected:
   [[nodiscard]] static CentroidResult ComputeCentroid(const Eigen::Matrix3f& P);

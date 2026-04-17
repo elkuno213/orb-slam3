@@ -384,11 +384,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF, Frame& F, std::vector<MapPoint*>& vpM
   }
 
   if (mbCheckOrientation) {
-    int ind1 = -1;
-    int ind2 = -1;
-    int ind3 = -1;
-
-    ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
+    const auto [ind1, ind2, ind3] = ComputeThreeMaxima(rotHist, HISTO_LENGTH);
 
     for (int i = 0; i < HISTO_LENGTH; i++) {
       if (i == ind1 || i == ind2 || i == ind3) {
@@ -718,11 +714,7 @@ int ORBmatcher::SearchForInitialization(
   }
 
   if (mbCheckOrientation) {
-    int ind1 = -1;
-    int ind2 = -1;
-    int ind3 = -1;
-
-    ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
+    const auto [ind1, ind2, ind3] = ComputeThreeMaxima(rotHist, HISTO_LENGTH);
 
     for (int i = 0; i < HISTO_LENGTH; i++) {
       if (i == ind1 || i == ind2 || i == ind3) {
@@ -857,11 +849,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint
   }
 
   if (mbCheckOrientation) {
-    int ind1 = -1;
-    int ind2 = -1;
-    int ind3 = -1;
-
-    ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
+    const auto [ind1, ind2, ind3] = ComputeThreeMaxima(rotHist, HISTO_LENGTH);
 
     for (int i = 0; i < HISTO_LENGTH; i++) {
       if (i == ind1 || i == ind2 || i == ind3) {
@@ -1097,11 +1085,7 @@ int ORBmatcher::SearchForTriangulation(
   }
 
   if (mbCheckOrientation) {
-    int ind1 = -1;
-    int ind2 = -1;
-    int ind3 = -1;
-
-    ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
+    const auto [ind1, ind2, ind3] = ComputeThreeMaxima(rotHist, HISTO_LENGTH);
 
     for (int i = 0; i < HISTO_LENGTH; i++) {
       if (i == ind1 || i == ind2 || i == ind3) {
@@ -1823,11 +1807,7 @@ int ORBmatcher::SearchByProjection(
 
   // Apply rotation consistency
   if (mbCheckOrientation) {
-    int ind1 = -1;
-    int ind2 = -1;
-    int ind3 = -1;
-
-    ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
+    const auto [ind1, ind2, ind3] = ComputeThreeMaxima(rotHist, HISTO_LENGTH);
 
     for (int i = 0; i < HISTO_LENGTH; i++) {
       if (i != ind1 && i != ind2 && i != ind3) {
@@ -1948,11 +1928,7 @@ int ORBmatcher::SearchByProjection(
   }
 
   if (mbCheckOrientation) {
-    int ind1 = -1;
-    int ind2 = -1;
-    int ind3 = -1;
-
-    ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
+    const auto [ind1, ind2, ind3] = ComputeThreeMaxima(rotHist, HISTO_LENGTH);
 
     for (int i = 0; i < HISTO_LENGTH; i++) {
       if (i != ind1 && i != ind2 && i != ind3) {
@@ -1967,12 +1943,13 @@ int ORBmatcher::SearchByProjection(
   return nmatches;
 }
 
-void ORBmatcher::ComputeThreeMaxima(
-  std::vector<int>* histo, const int L, int& ind1, int& ind2, int& ind3
-) {
+ORBmatcher::ThreeMaxima ORBmatcher::ComputeThreeMaxima(const std::vector<int>* histo, const int L) {
   int max1 = 0;
   int max2 = 0;
   int max3 = 0;
+  int ind1 = -1;
+  int ind2 = -1;
+  int ind3 = -1;
 
   for (int i = 0; i < L; i++) {
     const int s = histo[i].size();
@@ -2000,6 +1977,8 @@ void ORBmatcher::ComputeThreeMaxima(
   } else if (max3 < 0.1F * static_cast<float>(max1)) {
     ind3 = -1;
   }
+
+  return ThreeMaxima{.ind1 = ind1, .ind2 = ind2, .ind3 = ind3};
 }
 
 int ORBmatcher::DescriptorDistance(const cv::Mat& a, const cv::Mat& b) {
