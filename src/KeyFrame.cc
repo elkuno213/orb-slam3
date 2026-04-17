@@ -894,7 +894,7 @@ void KeyFrame::PreSave(
   mvBackupMapPointsId.reserve(N);
   for (int i = 0; i < N; ++i) {
     if (mvpMapPoints[i] != nullptr
-        && spMP.find(mvpMapPoints[i]) != spMP.end()) { // Checks if the element is not null
+        && spMP.contains(mvpMapPoints[i])) { // Checks if the element is not null
       mvBackupMapPointsId.push_back(mvpMapPoints[i]->mnId);
     } else { // If the element is null his value is -1 because all the id are positives
       mvBackupMapPointsId.push_back(-1);
@@ -903,14 +903,14 @@ void KeyFrame::PreSave(
   // Save the id of each connected KF with it weight
   mBackupConnectedKeyFrameIdWeights.clear();
   for (const auto& [kf, weight] : mConnectedKeyFrameWeights) {
-    if (spKF.find(kf) != spKF.end()) {
+    if (spKF.contains(kf)) {
       mBackupConnectedKeyFrameIdWeights[kf->mnId] = weight;
     }
   }
 
   // Save the parent id
   mBackupParentId = -1;
-  if (mpParent != nullptr && spKF.find(mpParent) != spKF.end()) {
+  if (mpParent != nullptr && spKF.contains(mpParent)) {
     mBackupParentId = mpParent->mnId;
   }
 
@@ -918,7 +918,7 @@ void KeyFrame::PreSave(
   mvBackupChildrensId.clear();
   mvBackupChildrensId.reserve(mspChildrens.size());
   for (KeyFrame* pKFi : mspChildrens) {
-    if (spKF.find(pKFi) != spKF.end()) {
+    if (spKF.contains(pKFi)) {
       mvBackupChildrensId.push_back(pKFi->mnId);
     }
   }
@@ -927,7 +927,7 @@ void KeyFrame::PreSave(
   mvBackupLoopEdgesId.clear();
   mvBackupLoopEdgesId.reserve(mspLoopEdges.size());
   for (KeyFrame* pKFi : mspLoopEdges) {
-    if (spKF.find(pKFi) != spKF.end()) {
+    if (spKF.contains(pKFi)) {
       mvBackupLoopEdgesId.push_back(pKFi->mnId);
     }
   }
@@ -936,30 +936,30 @@ void KeyFrame::PreSave(
   mvBackupMergeEdgesId.clear();
   mvBackupMergeEdgesId.reserve(mspMergeEdges.size());
   for (KeyFrame* pKFi : mspMergeEdges) {
-    if (spKF.find(pKFi) != spKF.end()) {
+    if (spKF.contains(pKFi)) {
       mvBackupMergeEdgesId.push_back(pKFi->mnId);
     }
   }
 
   // Camera data
   mnBackupIdCamera = -1;
-  if (mpCamera != nullptr && spCam.find(mpCamera) != spCam.end()) {
+  if (mpCamera != nullptr && spCam.contains(mpCamera)) {
     mnBackupIdCamera = mpCamera->GetId();
   }
 
   mnBackupIdCamera2 = -1;
-  if (mpCamera2 != nullptr && spCam.find(mpCamera2) != spCam.end()) {
+  if (mpCamera2 != nullptr && spCam.contains(mpCamera2)) {
     mnBackupIdCamera2 = mpCamera2->GetId();
   }
 
   // Inertial data
   mBackupPrevKFId = -1;
-  if (mPrevKF != nullptr && spKF.find(mPrevKF) != spKF.end()) {
+  if (mPrevKF != nullptr && spKF.contains(mPrevKF)) {
     mBackupPrevKFId = mPrevKF->mnId;
   }
 
   mBackupNextKFId = -1;
-  if (mNextKF != nullptr && spKF.find(mNextKF) != spKF.end()) {
+  if (mNextKF != nullptr && spKF.contains(mNextKF)) {
     mBackupNextKFId = mNextKF->mnId;
   }
 

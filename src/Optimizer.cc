@@ -1587,11 +1587,9 @@ void Optimizer::OptimizeEssentialGraph(
     for (auto* pKFn : vpConnectedKFs) {
       if (pKFn && pKFn != pParentKF && !pKF->hasChild(pKFn) /*&& !sLoopEdges.count(pKFn)*/) {
         if (!pKFn->isBad() && pKFn->mnId < pKF->mnId) {
-          if (
-            sInsertedEdges.contains(
-              std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
-            )
-          ) {
+          if (sInsertedEdges.contains(
+                std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
+              )) {
             continue;
           }
 
@@ -1851,7 +1849,7 @@ void Optimizer::OptimizeEssentialGraph(
     KeyFrame* pParentKFi = pKFi->GetParent();
 
     // Spanning tree edge
-    if (pParentKFi && spKFs.find(pParentKFi) != spKFs.end()) {
+    if (pParentKFi && spKFs.contains(pParentKFi)) {
       const int nIDj = pParentKFi->mnId;
 
       g2o::Sim3 Sjw;
@@ -1882,7 +1880,7 @@ void Optimizer::OptimizeEssentialGraph(
     // Loop edges
     const std::set<KeyFrame*> sLoopEdges = pKFi->GetLoopEdges();
     for (auto* pLKF : sLoopEdges) {
-      if (spKFs.find(pLKF) != spKFs.end() && pLKF->mnId < pKFi->mnId) {
+      if (spKFs.contains(pLKF) && pLKF->mnId < pKFi->mnId) {
         g2o::Sim3 Slw;
         bool      bHasRelation = false;
 
@@ -1913,10 +1911,8 @@ void Optimizer::OptimizeEssentialGraph(
     // Covisibility graph edges
     const std::vector<KeyFrame*> vpConnectedKFs = pKFi->GetCovisiblesByWeight(minFeat);
     for (auto* pKFn : vpConnectedKFs) {
-      if (
-        pKFn && pKFn != pParentKFi && !pKFi->hasChild(pKFn) && !sLoopEdges.contains(pKFn)
-        && spKFs.find(pKFn) != spKFs.end()
-      ) {
+      if (pKFn && pKFn != pParentKFi && !pKFi->hasChild(pKFn) && !sLoopEdges.contains(pKFn)
+          && spKFs.contains(pKFn)) {
         if (!pKFn->isBad() && pKFn->mnId < pKFi->mnId) {
           g2o::Sim3 Snw          = vScw[pKFn->mnId];
           bool      bHasRelation = false;
@@ -2699,10 +2695,8 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
       continue;
     }
 
-    if (
-      (e->chi2() > chi2Mono2 && !bClose) || (e->chi2() > 1.5F * chi2Mono2 && bClose)
-      || !e->isDepthPositive()
-    ) {
+    if ((e->chi2() > chi2Mono2 && !bClose) || (e->chi2() > 1.5F * chi2Mono2 && bClose)
+        || !e->isDepthPositive()) {
       KeyFrame* pKFi = vpEdgeKFMono[i];
       vToErase.emplace_back(pKFi, pMP);
     }
@@ -3463,10 +3457,8 @@ void Optimizer::LocalBundleAdjustment(
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPi->GetObservations();
     // SET EDGES
     for (auto& [pKF, indices] : observations) {
-      if (
-        pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForMerge != pMainKF->mnId
-        || !pKF->GetMapPoint(std::get<0>(indices))
-      ) {
+      if (pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForMerge != pMainKF->mnId
+          || !pKF->GetMapPoint(std::get<0>(indices))) {
         continue;
       }
 
@@ -3645,10 +3637,8 @@ void Optimizer::LocalBundleAdjustment(
 
     const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPi->GetObservations();
     for (auto& [pKF, indices] : observations) {
-      if (
-        pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForKF != pMainKF->mnId
-        || !pKF->GetMapPoint(std::get<0>(indices))
-      ) {
+      if (pKF->isBad() || pKF->mnId > maxKFid || pKF->mnBALocalForKF != pMainKF->mnId
+          || !pKF->GetMapPoint(std::get<0>(indices))) {
         continue;
       }
 
@@ -4471,9 +4461,8 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
       const float chi2   = e->chi2();
       const bool  bClose = pFrame->mvpMapPoints[idx]->mTrackDepth < 10.F;
 
-      if (
-        (chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close) || !e->isDepthPositive()
-      ) {
+      if ((chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close)
+          || !e->isDepthPositive()) {
         pFrame->mvbOutlier[idx] = true;
         e->setLevel(1);
         nBadMono++;
@@ -4861,9 +4850,8 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
 
       const float chi2 = e->chi2();
 
-      if (
-        (chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close) || !e->isDepthPositive()
-      ) {
+      if ((chi2 > chi2Mono[it] && !bClose) || (bClose && chi2 > chi2close)
+          || !e->isDepthPositive()) {
         pFrame->mvbOutlier[idx] = true;
         e->setLevel(1);
         nBadMono++;
@@ -5216,16 +5204,12 @@ void Optimizer::OptimizeEssentialGraph4DoF(
     // 1.3 Covisibility graph edges
     const std::vector<KeyFrame*> vpConnectedKFs = pKF->GetCovisiblesByWeight(minFeat);
     for (auto* pKFn : vpConnectedKFs) {
-      if (
-        pKFn && pKFn != pParentKF && pKFn != prevKF && pKFn != pKF->mNextKF && !pKF->hasChild(pKFn)
-        && !sLoopEdges.contains(pKFn)
-      ) {
+      if (pKFn && pKFn != pParentKF && pKFn != prevKF && pKFn != pKF->mNextKF
+          && !pKF->hasChild(pKFn) && !sLoopEdges.contains(pKFn)) {
         if (!pKFn->isBad() && pKFn->mnId < pKF->mnId) {
-          if (
-            sInsertedEdges.contains(
-              std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
-            )
-          ) {
+          if (sInsertedEdges.contains(
+                std::make_pair(std::min(pKF->mnId, pKFn->mnId), std::max(pKF->mnId, pKFn->mnId))
+              )) {
             continue;
           }
 
