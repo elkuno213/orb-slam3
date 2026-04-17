@@ -81,16 +81,11 @@ protected:
 
   void CheckInliers();
 
-  void Project(
-    const std::vector<Eigen::Vector3f>& vP3Dw,
-    std::vector<Eigen::Vector2f>&       vP2D,
-    Eigen::Matrix4f                     Tcw,
-    GeometricCamera*                    pCamera
+  [[nodiscard]] static std::vector<Eigen::Vector2f> Project(
+    const std::vector<Eigen::Vector3f>& vP3Dw, const Eigen::Matrix4f& Tcw, GeometricCamera* pCamera
   );
-  void FromCameraToImage(
-    const std::vector<Eigen::Vector3f>& vP3Dc,
-    std::vector<Eigen::Vector2f>&       vP2D,
-    GeometricCamera*                    pCamera
+  [[nodiscard]] static std::vector<Eigen::Vector2f> FromCameraToImage(
+    const std::vector<Eigen::Vector3f>& vP3Dc, GeometricCamera* pCamera
   );
 
   // KeyFrames and matches

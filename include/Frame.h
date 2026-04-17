@@ -138,7 +138,7 @@ public:
   Eigen::Vector3f inRefCoordinates(const Eigen::Vector3f& pCw);
 
   // Compute the cell of a keypoint (return false if outside the grid)
-  bool PosInGrid(const cv::KeyPoint& kp, int& posX, int& posY);
+  static bool PosInGrid(const cv::KeyPoint& kp, int& posX, int& posY);
 
   [[nodiscard]] std::vector<std::size_t> GetFeaturesInArea(
     const float& x,

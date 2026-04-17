@@ -72,10 +72,10 @@ private:
   [[nodiscard]] HomographyResult  FindHomography();
   [[nodiscard]] FundamentalResult FindFundamental();
 
-  Eigen::Matrix3f ComputeH21(
+  static Eigen::Matrix3f ComputeH21(
     const std::vector<cv::Point2f>& vP1, const std::vector<cv::Point2f>& vP2
   );
-  Eigen::Matrix3f ComputeF21(
+  static Eigen::Matrix3f ComputeF21(
     const std::vector<cv::Point2f>& vP1, const std::vector<cv::Point2f>& vP2
   );
 
@@ -114,7 +114,7 @@ private:
 
   [[nodiscard]] static NormalizationResult Normalize(const std::vector<cv::KeyPoint>& vKeys);
 
-  int CheckRT(
+  [[nodiscard]] static int CheckRT(
     const Eigen::Matrix3f&           R,
     const Eigen::Vector3f&           t,
     const std::vector<cv::KeyPoint>& vKeys1,

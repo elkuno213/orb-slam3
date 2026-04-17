@@ -110,7 +110,7 @@ protected:
     std::vector<MapPoint*>& vpMPs,
     std::vector<MapPoint*>& vpMatchedMPs
   );
-  bool DetectCommonRegionsFromLastKF(
+  static bool DetectCommonRegionsFromLastKF(
     KeyFrame*               pCurrentKF,
     KeyFrame*               pMatchedKF,
     g2o::Sim3&              gScw,
@@ -118,7 +118,7 @@ protected:
     std::vector<MapPoint*>& vpMPs,
     std::vector<MapPoint*>& vpMatchedMPs
   );
-  int FindMatchesByProjection(
+  static int FindMatchesByProjection(
     KeyFrame*               pCurrentKF,
     KeyFrame*               pMatchedKFw,
     g2o::Sim3&              g2oScw,

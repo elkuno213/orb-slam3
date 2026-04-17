@@ -143,7 +143,7 @@ private:
    * system), the camera rays and (optionally) the covariance matrix of those camera rays.
    * Result is stored in solution
    */
-  void computePose(
+  static void computePose(
     const bearingVectors_t& f,
     const points_t&         p,
     const cov3_mats_t&      covMats,
@@ -151,7 +151,7 @@ private:
     transformation_t&       result
   );
 
-  void mlpnp_gn(
+  static void mlpnp_gn(
     Eigen::VectorXd&                    x,
     const points_t&                     pts,
     const std::vector<Eigen::MatrixXd>& nullspaces,
@@ -159,7 +159,7 @@ private:
     bool                                use_cov
   );
 
-  void mlpnp_residuals_and_jacs(
+  static void mlpnp_residuals_and_jacs(
     const Eigen::VectorXd&              x,
     const points_t&                     pts,
     const std::vector<Eigen::MatrixXd>& nullspaces,
@@ -168,7 +168,7 @@ private:
     bool                                getJacs
   );
 
-  void mlpnpJacs(
+  static void mlpnpJacs(
     const point_t&         pt,
     const Eigen::Vector3d& nullspace_r,
     const Eigen::Vector3d& nullspace_s,
@@ -185,7 +185,7 @@ private:
    * \param[in] omega The Rodrigues-parameters of a rotation.
    * \return The 3x3 rotation matrix.
    */
-  Eigen::Matrix3d rodrigues2rot(const Eigen::Vector3d& omega);
+  static Eigen::Matrix3d rodrigues2rot(const Eigen::Vector3d& omega);
 
   /**
    * \brief Compute the Rodrigues-parameters of a rotation matrix.
@@ -193,7 +193,7 @@ private:
    * \param[in] R The 3x3 rotation matrix.
    * \return The Rodrigues-parameters.
    */
-  Eigen::Vector3d rot2rodrigues(const Eigen::Matrix3d& R);
+  static Eigen::Vector3d rot2rodrigues(const Eigen::Matrix3d& R);
 
   //----------------------------------------------------
   // Fields of the solver

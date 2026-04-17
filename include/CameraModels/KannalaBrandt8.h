@@ -122,7 +122,7 @@ private:
 
   TwoViewReconstruction* tvr;
 
-  void Triangulate(
+  static void Triangulate(
     const cv::Point2f&                p1,
     const cv::Point2f&                p2,
     const Eigen::Matrix<float, 3, 4>& Tcw1,

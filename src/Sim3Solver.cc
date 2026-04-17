@@ -117,8 +117,8 @@ Sim3Solver::Sim3Solver(
     }
   }
 
-  FromCameraToImage(mvX3Dc1, mvP1im1, pCamera1);
-  FromCameraToImage(mvX3Dc2, mvP2im2, pCamera2);
+  mvP1im1 = FromCameraToImage(mvX3Dc1, pCamera1);
+  mvP2im2 = FromCameraToImage(mvX3Dc2, pCamera2);
 
   SetRansacParameters();
 }
@@ -340,10 +340,8 @@ void Sim3Solver::ComputeSim3(Eigen::Matrix3f& P1, Eigen::Matrix3f& P2) {
 }
 
 void Sim3Solver::CheckInliers() {
-  std::vector<Eigen::Vector2f> vP1im2;
-  std::vector<Eigen::Vector2f> vP2im1;
-  Project(mvX3Dc2, vP2im1, mT12i, pCamera1);
-  Project(mvX3Dc1, vP1im2, mT21i, pCamera2);
+  const auto vP2im1 = Project(mvX3Dc2, mT12i, pCamera1);
+  const auto vP1im2 = Project(mvX3Dc1, mT21i, pCamera2);
 
   mnInliersi = 0;
 
@@ -379,16 +377,13 @@ float Sim3Solver::GetEstimatedScale() const {
   return mBestScale;
 }
 
-void Sim3Solver::Project(
-  const std::vector<Eigen::Vector3f>& vP3Dw,
-  std::vector<Eigen::Vector2f>&       vP2D,
-  Eigen::Matrix4f                     Tcw,
-  GeometricCamera*                    pCamera
+std::vector<Eigen::Vector2f> Sim3Solver::Project(
+  const std::vector<Eigen::Vector3f>& vP3Dw, const Eigen::Matrix4f& Tcw, GeometricCamera* pCamera
 ) {
   const Eigen::Matrix3f Rcw = Tcw.block<3, 3>(0, 0);
   const Eigen::Vector3f tcw = Tcw.block<3, 1>(0, 3);
 
-  vP2D.clear();
+  std::vector<Eigen::Vector2f> vP2D;
   vP2D.reserve(vP3Dw.size());
 
   for (const auto& p3dw : vP3Dw) {
@@ -396,20 +391,20 @@ void Sim3Solver::Project(
     const Eigen::Vector2f pt2D = pCamera->project(P3Dc);
     vP2D.push_back(pt2D);
   }
+  return vP2D;
 }
 
-void Sim3Solver::FromCameraToImage(
-  const std::vector<Eigen::Vector3f>& vP3Dc,
-  std::vector<Eigen::Vector2f>&       vP2D,
-  GeometricCamera*                    pCamera
+std::vector<Eigen::Vector2f> Sim3Solver::FromCameraToImage(
+  const std::vector<Eigen::Vector3f>& vP3Dc, GeometricCamera* pCamera
 ) {
-  vP2D.clear();
+  std::vector<Eigen::Vector2f> vP2D;
   vP2D.reserve(vP3Dc.size());
 
   for (const auto& p3dc : vP3Dc) {
     const Eigen::Vector2f pt2D = pCamera->project(p3dc);
     vP2D.push_back(pt2D);
   }
+  return vP2D;
 }
 
 } // namespace ORB_SLAM3
