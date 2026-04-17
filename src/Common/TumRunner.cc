@@ -97,7 +97,7 @@ void associateRGBDepth(
 
     auto check = [&](std::size_t idx) {
       if (idx < depth_entries.size() && !depth_used[idx]) {
-        double diff = std::abs(rgb_ts - depth_entries[idx].first);
+        const double diff = std::abs(rgb_ts - depth_entries[idx].first);
         if (diff < best_diff) {
           best_diff = diff;
           best_idx  = idx;

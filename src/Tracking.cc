@@ -1941,8 +1941,8 @@ void Tracking::MonocularInitialization() {
     }
 
     // Find correspondences
-    ORBmatcher matcher(0.9, true);
-    int        nmatches
+    const ORBmatcher matcher(0.9, true);
+    int              nmatches
       = matcher
           .SearchForInitialization(mInitialFrame, mCurrentFrame, mvbPrevMatched, mvIniMatches, 100);
 
@@ -2053,7 +2053,7 @@ void Tracking::CreateInitialMapMonocular() {
   pKFcur->SetPose(Tc2w);
 
   // Scale points
-  std::vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
+  const std::vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
   for (auto* pMP : vpAllMapPoints) {
     if (pMP != nullptr) {
       pMP->SetWorldPos(pMP->GetWorldPos() * invMedianDepth);
@@ -2172,7 +2172,7 @@ bool Tracking::TrackReferenceKeyFrame() {
 
   // We perform first an ORB matching with the reference keyframe
   // If enough matches are found we setup a PnP solver
-  ORBmatcher             matcher(0.7, true);
+  const ORBmatcher       matcher(0.7, true);
   std::vector<MapPoint*> vpMapPointMatches;
 
   int nmatches = matcher.SearchByBoW(mpReferenceKF, mCurrentFrame, vpMapPointMatches);
@@ -2293,7 +2293,7 @@ void Tracking::UpdateLastFrame() {
 }
 
 bool Tracking::TrackWithMotionModel() {
-  ORBmatcher matcher(0.9, true);
+  const ORBmatcher matcher(0.9, true);
 
   // Update last frame pose according to its reference keyframe
   // Create "visual odometry" points if in Localization Mode
@@ -2754,8 +2754,8 @@ void Tracking::SearchLocalPoints() {
   }
 
   if (nToMatch > 0) {
-    ORBmatcher matcher(0.8);
-    int        th = 1;
+    const ORBmatcher matcher(0.8);
+    int              th = 1;
     if (mSensor == Sensor::Rgbd || mSensor == Sensor::InertialRgbd) {
       th = 3;
     }
@@ -2965,7 +2965,7 @@ bool Tracking::Relocalization() {
 
   // We perform first an ORB matching with each candidate
   // If enough matches are found we setup a PnP solver
-  ORBmatcher matcher(0.75, true);
+  const ORBmatcher matcher(0.75, true);
 
   std::vector<MLPnPsolver*> vpMLPnPsolvers;
   vpMLPnPsolvers.resize(nKFs);
@@ -2999,8 +2999,8 @@ bool Tracking::Relocalization() {
 
   // Alternatively perform some iterations of P4P RANSAC
   // Until we found a camera pose supported by enough inliers
-  bool       bMatch = false;
-  ORBmatcher matcher2(0.9, true);
+  bool             bMatch = false;
+  const ORBmatcher matcher2(0.9, true);
 
   while (nCandidates > 0 && !bMatch) {
     for (int i = 0; i < nKFs; i++) {

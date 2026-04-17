@@ -160,8 +160,8 @@ void MapDrawer::DrawKeyFrames(
 
   Map* pActiveMap = mpAtlas->GetCurrentMap();
   // DEBUG LBA
-  std::set<long unsigned int> sOptKFs   = pActiveMap->msOptKFs;
-  std::set<long unsigned int> sFixedKFs = pActiveMap->msFixedKFs;
+  const std::set<long unsigned int> sOptKFs   = pActiveMap->msOptKFs;
+  const std::set<long unsigned int> sFixedKFs = pActiveMap->msFixedKFs;
 
   if (!pActiveMap) {
     return;
@@ -297,7 +297,7 @@ void MapDrawer::DrawKeyFrames(
         continue;
       }
 
-      std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
+      const std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
 
       for (auto* pKF : vpKFs) {
         Eigen::Matrix4f                     Twc         = pKF->GetPoseInverse().matrix();

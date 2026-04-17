@@ -64,7 +64,7 @@ Eigen::Matrix3d InverseRightJacobianSO3(double x, double y, double z);
 
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> NormalizeRotation(const Eigen::Matrix<T, 3, 3>& R) {
-  Eigen::JacobiSVD<Eigen::Matrix<T, 3, 3>> svd(R, Eigen::ComputeFullU | Eigen::ComputeFullV);
+  const Eigen::JacobiSVD<Eigen::Matrix<T, 3, 3>> svd(R, Eigen::ComputeFullU | Eigen::ComputeFullV);
   return svd.matrixU() * svd.matrixV().transpose();
 }
 
@@ -86,9 +86,8 @@ public:
   void                          Update(const double* pu);  // update in the imu reference
   void                          UpdateW(const double* pu); // update in the world reference
   [[nodiscard]] Eigen::Vector2d Project(const Eigen::Vector3d& Xw, int cam_idx = 0) const; // Mono
-  [[nodiscard]] Eigen::Vector3d ProjectStereo(
-    const Eigen::Vector3d& Xw, int cam_idx = 0
-  ) const; // Stereo
+  [[nodiscard]] Eigen::Vector3d ProjectStereo(const Eigen::Vector3d& Xw, int cam_idx = 0)
+    const; // Stereo
   [[nodiscard]] bool isDepthPositive(const Eigen::Vector3d& Xw, int cam_idx = 0) const;
 
   // For IMU
@@ -719,8 +718,8 @@ public:
   )
     : Rwb(Rwb_), twb(twb_), vwb(vwb_), bg(bg_), ba(ba_), H(H_) {
     H = (H + H) / 2;
-    Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 15, 15>> es(H);
-    Eigen::Matrix<double, 15, 1>                                 eigs = es.eigenvalues();
+    const Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 15, 15>> es(H);
+    Eigen::Matrix<double, 15, 1>                                       eigs = es.eigenvalues();
     for (int i = 0; i < 15; i++) {
       if (eigs[i] < 1e-12) {
         eigs[i] = 0;

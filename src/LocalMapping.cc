@@ -332,7 +332,7 @@ void LocalMapping::CreateNewMapPoints() {
 
   const float th = 0.6F;
 
-  ORBmatcher matcher(th, false);
+  const ORBmatcher matcher(th, false);
 
   Sophus::SE3<float>         sophTcw1 = mpCurrentKeyFrame->GetPose();
   Eigen::Matrix<float, 3, 4> eigTcw1  = sophTcw1.matrix3x4();
@@ -656,7 +656,7 @@ void LocalMapping::SearchInNeighbors() {
   }
 
   // Search matches by projection from current KF in target KFs
-  ORBmatcher             matcher;
+  const ORBmatcher       matcher;
   std::vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
   for (auto* pKFi : vpTargetKFs) {
     matcher.Fuse(pKFi, vpMapPointMatches);
@@ -674,7 +674,7 @@ void LocalMapping::SearchInNeighbors() {
   vpFuseCandidates.reserve(vpTargetKFs.size() * vpMapPointMatches.size());
 
   for (auto* pKFi : vpTargetKFs) {
-    std::vector<MapPoint*> vpMapPointsKFi = pKFi->GetMapPointMatches();
+    const std::vector<MapPoint*> vpMapPointsKFi = pKFi->GetMapPointMatches();
 
     for (auto* pMP : vpMapPointsKFi) {
       if (!pMP) {
@@ -785,7 +785,7 @@ void LocalMapping::KeyFrameCulling() {
   // We only consider close stereo points
   const int Nd = 21;
   mpCurrentKeyFrame->UpdateBestCovisibles();
-  std::vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
+  const std::vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
 
   float redundant_th = 0.0F;
   if (!mbInertial) {

@@ -542,12 +542,12 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
   const int nProjMatches    = 50;
   const int nProjOptMatches = 80;
 
-  std::set<KeyFrame*> spConnectedKeyFrames = mpCurrentKF->GetConnectedKeyFrames();
+  const std::set<KeyFrame*> spConnectedKeyFrames = mpCurrentKF->GetConnectedKeyFrames();
 
   const int nNumCovisibles = 10;
 
-  ORBmatcher matcherBoW(0.9, true);
-  ORBmatcher matcher(0.75, true);
+  const ORBmatcher matcherBoW(0.9, true);
+  const ORBmatcher matcher(0.75, true);
 
   // Varibles to select the best numbe
   KeyFrame*              pBestMatchedKF       = nullptr;
@@ -903,8 +903,8 @@ int LoopClosing::FindMatchesByProjection(
   std::vector<KeyFrame*> vpCovKFm       = pMatchedKFw->GetBestCovisibilityKeyFrames(nNumCovisibles);
   const int              nInitialCov    = vpCovKFm.size();
   vpCovKFm.push_back(pMatchedKFw);
-  std::set<KeyFrame*> spCheckKFs(vpCovKFm.begin(), vpCovKFm.end());
-  std::set<KeyFrame*> spCurrentCovisbles = pCurrentKF->GetConnectedKeyFrames();
+  std::set<KeyFrame*>       spCheckKFs(vpCovKFm.begin(), vpCovKFm.end());
+  const std::set<KeyFrame*> spCurrentCovisbles = pCurrentKF->GetConnectedKeyFrames();
   if (nInitialCov < nNumCovisibles) {
     for (int i = 0; i < nInitialCov; ++i) {
       std::vector<KeyFrame*> vpKFs     = vpCovKFm[i]->GetBestCovisibilityKeyFrames(nNumCovisibles);
@@ -936,8 +936,8 @@ int LoopClosing::FindMatchesByProjection(
     }
   }
 
-  Sophus::Sim3f mScw = Converter::toSophus(g2oScw);
-  ORBmatcher    matcher(0.9, true);
+  Sophus::Sim3f    mScw = Converter::toSophus(g2oScw);
+  const ORBmatcher matcher(0.9, true);
 
   vpMatchedMapPoints.resize(pCurrentKF->GetMapPointMatches().size(), nullptr);
   const int num_matches
@@ -1060,7 +1060,7 @@ void LoopClosing::CorrectLoop() {
       /*Sophus::SE3d correctedTiw(g2oCorrectedSiw.rotation(),g2oCorrectedSiw.translation() /
       g2oCorrectedSiw.scale()); pKFi->SetPose(correctedTiw.cast<float>());*/
 
-      std::vector<MapPoint*> vpMPsi = pKFi->GetMapPointMatches();
+      const std::vector<MapPoint*> vpMPsi = pKFi->GetMapPointMatches();
       for (auto* pMPi : vpMPsi) {
         if (!pMPi) {
           continue;
@@ -1128,7 +1128,7 @@ void LoopClosing::CorrectLoop() {
 
   _logger->info("CorrectLoop: updating connections in covisibility graph...");
   for (auto* pKFi : mvpCurrentConnectedKFs) {
-    std::vector<KeyFrame*> vpPreviousNeighbors = pKFi->GetVectorCovisibleKeyFrames();
+    const std::vector<KeyFrame*> vpPreviousNeighbors = pKFi->GetVectorCovisibleKeyFrames();
 
     // Update connections. Detect new links.
     pKFi->UpdateConnections();
@@ -1937,7 +1937,7 @@ void LoopClosing::CheckObservations(
         continue;
       }
 
-      std::map<KeyFrame*, std::tuple<int, int>> mMPijObs = pMPij->GetObservations();
+      const std::map<KeyFrame*, std::tuple<int, int>> mMPijObs = pMPij->GetObservations();
       for (KeyFrame* pKFi2 : spKFsMap2) {
         if (mMPijObs.contains(pKFi2)) {
           if (mMatchedMP.contains(pKFi2)) {
@@ -1970,7 +1970,7 @@ void LoopClosing::CheckObservations(
 void LoopClosing::SearchAndFuse(
   const KeyFrameAndPose& CorrectedPosesMap, std::vector<MapPoint*>& vpMapPoints
 ) {
-  ORBmatcher matcher(0.8);
+  const ORBmatcher matcher(0.8);
 
   for (const auto& [pKFi, g2oScw] : CorrectedPosesMap) {
     Map* pMap = pKFi->GetMap();
@@ -1995,7 +1995,7 @@ void LoopClosing::SearchAndFuse(
 void LoopClosing::SearchAndFuse(
   const std::vector<KeyFrame*>& vConectedKFs, std::vector<MapPoint*>& vpMapPoints
 ) {
-  ORBmatcher matcher(0.8);
+  const ORBmatcher matcher(0.8);
 
   for (auto* pKF : vConectedKFs) {
     Map*          pMap = pKF->GetMap();

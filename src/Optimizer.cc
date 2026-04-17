@@ -512,7 +512,7 @@ void Optimizer::FullInertialBA(
           auto* egr = new EdgeGyroRW();
           egr->setVertex(0, VG1);
           egr->setVertex(1, VG2);
-          Eigen::Matrix3d InfoG
+          const Eigen::Matrix3d InfoG
             = pKFi->mpImuPreintegrated->C.block<3, 3>(9, 9).cast<double>().inverse();
           egr->setInformation(InfoG);
           egr->computeError();
@@ -521,7 +521,7 @@ void Optimizer::FullInertialBA(
           auto* ear = new EdgeAccRW();
           ear->setVertex(0, VA1);
           ear->setVertex(1, VA2);
-          Eigen::Matrix3d InfoA
+          const Eigen::Matrix3d InfoA
             = pKFi->mpImuPreintegrated->C.block<3, 3>(12, 12).cast<double>().inverse();
           ear->setInformation(InfoA);
           ear->computeError();
@@ -1074,7 +1074,7 @@ Optimizer::BAStats Optimizer::LocalBundleAdjustment(KeyFrame* pKF, bool* pbStopF
     if (pKFi->mnId == pMap->GetInitKFid()) {
       stats.num_fixed_kf = 1;
     }
-    std::vector<MapPoint*> vpMPs = pKFi->GetMapPointMatches();
+    const std::vector<MapPoint*> vpMPs = pKFi->GetMapPointMatches();
     for (auto* pMP : vpMPs) {
       if (pMP) {
         if (!pMP->isBad() && pMP->GetMap() == pCurrentMap) {
@@ -1090,7 +1090,7 @@ Optimizer::BAStats Optimizer::LocalBundleAdjustment(KeyFrame* pKF, bool* pbStopF
   // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
   std::list<KeyFrame*> lFixedCameras;
   for (auto* pMPl : lLocalMapPoints) {
-    std::map<KeyFrame*, std::tuple<int, int>> observations = pMPl->GetObservations();
+    const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPl->GetObservations();
     for (const auto& [pKFi, _] : observations) {
       if (pKFi->mnBALocalForKF != pKF->mnId && pKFi->mnBAFixedForKF != pKF->mnId) {
         pKFi->mnBAFixedForKF = pKF->mnId;
@@ -1829,7 +1829,7 @@ void Optimizer::OptimizeEssentialGraph(
   vpKFs.insert(vpKFs.end(), vpFixedKFs.begin(), vpFixedKFs.end());
   vpKFs.insert(vpKFs.end(), vpFixedCorrectedKFs.begin(), vpFixedCorrectedKFs.end());
   vpKFs.insert(vpKFs.end(), vpNonFixedKFs.begin(), vpNonFixedKFs.end());
-  std::set<KeyFrame*> spKFs(vpKFs.begin(), vpKFs.end());
+  const std::set<KeyFrame*> spKFs(vpKFs.begin(), vpKFs.end());
 
   const Eigen::Matrix<double, 7, 7> matLambda = Eigen::Matrix<double, 7, 7>::Identity();
 
@@ -2289,7 +2289,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
   // Optimizable points seen by temporal optimizable keyframes
   std::list<MapPoint*> lLocalMapPoints;
   for (int i = 0; i < N; i++) {
-    std::vector<MapPoint*> vpMPs = vpOptimizableKFs[i]->GetMapPointMatches();
+    const std::vector<MapPoint*> vpMPs = vpOptimizableKFs[i]->GetMapPointMatches();
     for (auto* pMP : vpMPs) {
       if (pMP) {
         if (!pMP->isBad()) {
@@ -2328,7 +2328,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
     if (!pKFi->isBad() && pKFi->GetMap() == pCurrentMap) {
       lpOptVisKFs.push_back(pKFi);
 
-      std::vector<MapPoint*> vpMPs = pKFi->GetMapPointMatches();
+      const std::vector<MapPoint*> vpMPs = pKFi->GetMapPointMatches();
       for (auto* pMP : vpMPs) {
         if (pMP) {
           if (!pMP->isBad()) {
@@ -2346,7 +2346,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
   const int maxFixKF = 200;
 
   for (auto* pMPl : lLocalMapPoints) {
-    std::map<KeyFrame*, std::tuple<int, int>> observations = pMPl->GetObservations();
+    const std::map<KeyFrame*, std::tuple<int, int>> observations = pMPl->GetObservations();
     for (const auto& [pKFi, _] : observations) {
       if (pKFi->mnBALocalForKF != pKF->mnId && pKFi->mnBAFixedForKF != pKF->mnId) {
         pKFi->mnBAFixedForKF = pKF->mnId;
@@ -2361,7 +2361,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
     }
   }
 
-  [[maybe_unused]] bool bNonFixed = lFixedKeyFrames.empty();
+  [[maybe_unused]] const bool bNonFixed = lFixedKeyFrames.empty();
 
   // Setup optimizer
   g2o::SparseOptimizer                 optimizer;
@@ -2488,7 +2488,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
       vegr[i] = new EdgeGyroRW();
       vegr[i]->setVertex(0, VG1);
       vegr[i]->setVertex(1, VG2);
-      Eigen::Matrix3d InfoG
+      const Eigen::Matrix3d InfoG
         = pKFi->mpImuPreintegrated->C.block<3, 3>(9, 9).cast<double>().inverse();
       vegr[i]->setInformation(InfoG);
       optimizer.addEdge(vegr[i]);
@@ -2496,7 +2496,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
       vear[i] = new EdgeAccRW();
       vear[i]->setVertex(0, VA1);
       vear[i]->setVertex(1, VA2);
-      Eigen::Matrix3d InfoA
+      const Eigen::Matrix3d InfoA
         = pKFi->mpImuPreintegrated->C.block<3, 3>(12, 12).cast<double>().inverse();
       vear[i]->setInformation(InfoA);
 
@@ -2830,7 +2830,7 @@ Eigen::MatrixXd Optimizer::Marginalize(const Eigen::MatrixXd& H, const int& star
       singularValues_inv(i) = 0;
     }
   }
-  Eigen::MatrixXd invHb
+  const Eigen::MatrixXd invHb
     = svd.matrixV() * singularValues_inv.asDiagonal() * svd.matrixU().transpose();
   Hn.block(0, 0, a + c, a + c)
     = Hn.block(0, 0, a + c, a + c)
@@ -3018,12 +3018,12 @@ Optimizer::InertialOptResult Optimizer::InertialOptimization(
   VA = static_cast<VertexAccBias*>(optimizer.vertex(maxKFid * 2 + 3));
   Vector6d vb;
   vb << VG->estimate(), VA->estimate();
-  Eigen::Vector3d final_Bg    = VG->estimate();
-  Eigen::Vector3d final_Ba    = VA->estimate();
-  double          final_Scale = VS->estimate();
+  const Eigen::Vector3d final_Bg    = VG->estimate();
+  const Eigen::Vector3d final_Ba    = VA->estimate();
+  const double          final_Scale = VS->estimate();
 
-  const IMU::Bias b(vb[3], vb[4], vb[5], vb[0], vb[1], vb[2]);
-  Eigen::Matrix3d final_Rwg = VGDir->estimate().Rwg;
+  const IMU::Bias       b(vb[3], vb[4], vb[5], vb[0], vb[1], vb[2]);
+  const Eigen::Matrix3d final_Rwg = VGDir->estimate().Rwg;
 
   // Keyframes velocities and biases
   for (auto* pKFi : vpKFs) {
@@ -3178,8 +3178,8 @@ Optimizer::BiasOptResult Optimizer::InertialOptimization(Map* pMap, float priorG
   VA = static_cast<VertexAccBias*>(optimizer.vertex(maxKFid * 2 + 3));
   Vector6d vb;
   vb << VG->estimate(), VA->estimate();
-  Eigen::Vector3d final_Bg = VG->estimate();
-  Eigen::Vector3d final_Ba = VA->estimate();
+  const Eigen::Vector3d final_Bg = VG->estimate();
+  const Eigen::Vector3d final_Ba = VA->estimate();
 
   const IMU::Bias b(vb[3], vb[4], vb[5], vb[0], vb[1], vb[2]);
 
@@ -3806,7 +3806,7 @@ void Optimizer::MergeInertialBA(
   std::list<MapPoint*>     lLocalMapPoints;
   std::map<MapPoint*, int> mLocalObs;
   for (int i = 0; i < N; i++) {
-    std::vector<MapPoint*> vpMPs = vpOptimizableKFs[i]->GetMapPointMatches();
+    const std::vector<MapPoint*> vpMPs = vpOptimizableKFs[i]->GetMapPointMatches();
     for (auto* pMP : vpMPs) {
       // Using mnBALocalForKF we avoid redundance here, one MP can not be added several times to
       // lLocalMapPoints
@@ -3978,7 +3978,7 @@ void Optimizer::MergeInertialBA(
       vegr[i] = new EdgeGyroRW();
       vegr[i]->setVertex(0, VG1);
       vegr[i]->setVertex(1, VG2);
-      Eigen::Matrix3d InfoG
+      const Eigen::Matrix3d InfoG
         = pKFi->mpImuPreintegrated->C.block<3, 3>(9, 9).cast<double>().inverse();
       vegr[i]->setInformation(InfoG);
       optimizer.addEdge(vegr[i]);
@@ -3986,7 +3986,7 @@ void Optimizer::MergeInertialBA(
       vear[i] = new EdgeAccRW();
       vear[i]->setVertex(0, VA1);
       vear[i]->setVertex(1, VA2);
-      Eigen::Matrix3d InfoA
+      const Eigen::Matrix3d InfoA
         = pKFi->mpImuPreintegrated->C.block<3, 3>(12, 12).cast<double>().inverse();
       vear[i]->setInformation(InfoA);
       optimizer.addEdge(vear[i]);
@@ -4418,7 +4418,7 @@ int Optimizer::PoseInertialOptimizationLastKeyFrame(Frame* pFrame, bool bRecInit
   auto* ear = new EdgeAccRW();
   ear->setVertex(0, VAk);
   ear->setVertex(1, VA);
-  Eigen::Matrix3d InfoA
+  const Eigen::Matrix3d InfoA
     = pFrame->mpImuPreintegrated->C.block<3, 3>(12, 12).cast<double>().inverse();
   ear->setInformation(InfoA);
   optimizer.addEdge(ear);
@@ -4794,7 +4794,7 @@ int Optimizer::PoseInertialOptimizationLastFrame(Frame* pFrame, bool bRecInit) {
   auto* ear = new EdgeAccRW();
   ear->setVertex(0, VAk);
   ear->setVertex(1, VA);
-  Eigen::Matrix3d InfoA
+  const Eigen::Matrix3d InfoA
     = pFrame->mpImuPreintegrated->C.block<3, 3>(12, 12).cast<double>().inverse();
   ear->setInformation(InfoA);
   optimizer.addEdge(ear);
