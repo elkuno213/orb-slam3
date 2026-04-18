@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <fstream>
 #include <Eigen/Core>
 #include <g2o/g2o/core/base_unary_edge.h>
 #include <g2o/g2o/types/sim3.h>

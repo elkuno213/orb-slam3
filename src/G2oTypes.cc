@@ -18,6 +18,7 @@
  */
 
 #include "G2oTypes.h"
+#include <cmath>
 #include "Converter.h"
 #include "Frame.h"
 #include "GeometricCamera.h"

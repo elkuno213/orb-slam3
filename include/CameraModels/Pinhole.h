@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <fstream>
 #include <vector>
 #include <Eigen/Core>
 #include <boost/serialization/access.hpp>

@@ -18,6 +18,7 @@
  */
 
 #include "Sim3Solver.h"
+#include <algorithm>
 #include <cmath>
 #include <opencv2/core.hpp>
 #include "Converter.h"
