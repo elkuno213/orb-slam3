@@ -72,14 +72,14 @@ public:
   ImuCamPose() = default;
   explicit ImuCamPose(KeyFrame* pKF);
   explicit ImuCamPose(Frame* pF);
-  ImuCamPose(Eigen::Matrix3d& _Rwc, Eigen::Vector3d& _twc, KeyFrame* pKF);
+  ImuCamPose(Eigen::Matrix3d& Rwc, Eigen::Vector3d& twc, KeyFrame* pKF);
 
   void SetParam(
-    const std::vector<Eigen::Matrix3d>& _Rcw,
-    const std::vector<Eigen::Vector3d>& _tcw,
-    const std::vector<Eigen::Matrix3d>& _Rbc,
-    const std::vector<Eigen::Vector3d>& _tbc,
-    double                              _bf
+    const std::vector<Eigen::Matrix3d>& Rcw_in,
+    const std::vector<Eigen::Vector3d>& tcw_in,
+    const std::vector<Eigen::Matrix3d>& Rbc_in,
+    const std::vector<Eigen::Vector3d>& tbc_in,
+    double                              bf_in
   );
 
   void                          Update(const double* pu);  // update in the imu reference
@@ -156,8 +156,8 @@ public:
   explicit VertexPose4DoF(Frame* pF) {
     setEstimate(ImuCamPose(pF));
   }
-  VertexPose4DoF(Eigen::Matrix3d& _Rwc, Eigen::Vector3d& _twc, KeyFrame* pKF) {
-    setEstimate(ImuCamPose(_Rwc, _twc, pKF));
+  VertexPose4DoF(Eigen::Matrix3d& Rwc, Eigen::Vector3d& twc, KeyFrame* pKF) {
+    setEstimate(ImuCamPose(Rwc, twc, pKF));
   }
 
   bool read(std::istream& is) override {

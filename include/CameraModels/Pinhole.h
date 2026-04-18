@@ -91,7 +91,7 @@ public:
   ) override;
 
   friend std::ostream& operator<<(std::ostream& os, const Pinhole& ph);
-  friend std::istream& operator>>(std::istream& os, Pinhole& ph);
+  friend std::istream& operator>>(std::istream& is, Pinhole& ph);
 
   bool IsEqual(GeometricCamera* pCam);
 

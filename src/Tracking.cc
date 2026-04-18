@@ -2028,7 +2028,7 @@ void Tracking::CreateInitialMapMonocular() {
 
   // Bundle Adjustment
   _logger->info("New map created with {} map points", mpAtlas->MapPointsInMap());
-  Optimizer::GlobalBundleAdjustemnt(mpAtlas->GetCurrentMap(), 20);
+  Optimizer::GlobalBundleAdjustment(mpAtlas->GetCurrentMap(), 20);
 
   const float medianDepth    = pKFini->ComputeSceneMedianDepth(2);
   float       invMedianDepth = 0.0F;

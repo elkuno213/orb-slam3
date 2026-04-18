@@ -121,7 +121,7 @@ ImuCamPose::ImuCamPose(Frame* pF) : its(0) {
   DR.setIdentity();
 }
 
-ImuCamPose::ImuCamPose(Eigen::Matrix3d& _Rwc, Eigen::Vector3d& _twc, KeyFrame* pKF) : its(0) {
+ImuCamPose::ImuCamPose(Eigen::Matrix3d& Rwc, Eigen::Vector3d& twc, KeyFrame* pKF) : its(0) {
   // This is only for posegrpah, we do not care about multicamera
   tcw.resize(1);
   Rcw.resize(1);
@@ -135,10 +135,10 @@ ImuCamPose::ImuCamPose(Eigen::Matrix3d& _Rwc, Eigen::Vector3d& _twc, KeyFrame* p
   Rcb[0]     = pKF->mImuCalib.mTcb.rotationMatrix().cast<double>();
   Rbc[0]     = Rcb[0].transpose();
   tbc[0]     = pKF->mImuCalib.mTbc.translation().cast<double>();
-  twb        = _Rwc * tcb[0] + _twc;
-  Rwb        = _Rwc * Rcb[0];
-  Rcw[0]     = _Rwc.transpose();
-  tcw[0]     = -Rcw[0] * _twc;
+  twb        = Rwc * tcb[0] + twc;
+  Rwb        = Rwc * Rcb[0];
+  Rcw[0]     = Rwc.transpose();
+  tcw[0]     = -Rcw[0] * twc;
   pCamera[0] = pKF->mpCamera;
   bf         = pKF->mbf;
 
@@ -148,16 +148,16 @@ ImuCamPose::ImuCamPose(Eigen::Matrix3d& _Rwc, Eigen::Vector3d& _twc, KeyFrame* p
 }
 
 void ImuCamPose::SetParam(
-  const std::vector<Eigen::Matrix3d>& _Rcw,
-  const std::vector<Eigen::Vector3d>& _tcw,
-  const std::vector<Eigen::Matrix3d>& _Rbc,
-  const std::vector<Eigen::Vector3d>& _tbc,
-  double                              _bf
+  const std::vector<Eigen::Matrix3d>& Rcw_in,
+  const std::vector<Eigen::Vector3d>& tcw_in,
+  const std::vector<Eigen::Matrix3d>& Rbc_in,
+  const std::vector<Eigen::Vector3d>& tbc_in,
+  double                              bf_in
 ) {
-  Rbc                = _Rbc;
-  tbc                = _tbc;
-  Rcw                = _Rcw;
-  tcw                = _tcw;
+  Rbc                = Rbc_in;
+  tbc                = tbc_in;
+  Rcw                = Rcw_in;
+  tcw                = tcw_in;
   const int num_cams = Rbc.size();
   Rcb.resize(num_cams);
   tcb.resize(num_cams);
@@ -169,7 +169,7 @@ void ImuCamPose::SetParam(
   Rwb = Rcw[0].transpose() * Rcb[0];
   twb = Rcw[0].transpose() * (tcb[0] - tcw[0]);
 
-  bf = _bf;
+  bf = bf_in;
 }
 
 Eigen::Vector2d ImuCamPose::Project(const Eigen::Vector3d& Xw, int cam_idx) const {
