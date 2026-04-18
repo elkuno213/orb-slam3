@@ -335,10 +335,10 @@ void LocalMapping::CreateNewMapPoints() {
 
   const ORBmatcher matcher(th, false);
 
-  Sophus::SE3<float>         sophTcw1 = mpCurrentKeyFrame->GetPose();
+  Sophus::SE3f               sophTcw1 = mpCurrentKeyFrame->GetPose();
   Eigen::Matrix<float, 3, 4> eigTcw1  = sophTcw1.matrix3x4();
-  Eigen::Matrix<float, 3, 3> Rcw1     = eigTcw1.block<3, 3>(0, 0);
-  Eigen::Matrix<float, 3, 3> Rwc1     = Rcw1.transpose();
+  Eigen::Matrix3f            Rcw1     = eigTcw1.block<3, 3>(0, 0);
+  Eigen::Matrix3f            Rwc1     = Rcw1.transpose();
   Eigen::Vector3f            tcw1     = sophTcw1.translation();
   Eigen::Vector3f            Ow1      = mpCurrentKeyFrame->GetCameraCenter();
 
@@ -383,10 +383,10 @@ void LocalMapping::CreateNewMapPoints() {
 
     matcher.SearchForTriangulation(mpCurrentKeyFrame, pKF2, vMatchedIndices, false, bCoarse);
 
-    Sophus::SE3<float>         sophTcw2 = pKF2->GetPose();
+    Sophus::SE3f               sophTcw2 = pKF2->GetPose();
     Eigen::Matrix<float, 3, 4> eigTcw2  = sophTcw2.matrix3x4();
-    Eigen::Matrix<float, 3, 3> Rcw2     = eigTcw2.block<3, 3>(0, 0);
-    Eigen::Matrix<float, 3, 3> Rwc2     = Rcw2.transpose();
+    Eigen::Matrix3f            Rcw2     = eigTcw2.block<3, 3>(0, 0);
+    Eigen::Matrix3f            Rwc2     = Rcw2.transpose();
     Eigen::Vector3f            tcw2     = sophTcw2.translation();
 
     const float& fx2 = pKF2->fx;

@@ -188,8 +188,6 @@ public:
   [[nodiscard]] static GravityScaleResult InertialOptimization(
     Map* pMap, const Eigen::Matrix3d& initial_Rwg, double initial_Scale
   );
-
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 };
 
 } // namespace ORB_SLAM3
