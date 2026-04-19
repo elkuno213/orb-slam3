@@ -1837,7 +1837,7 @@ void Tracking::StereoInitialization() {
     auto* pKFini = new KeyFrame(mCurrentFrame, mpAtlas->GetCurrentMap(), mpKeyFrameDB);
 
     // Insert KeyFrame in the map
-    mpAtlas->AddKeyFrame(pKFini);
+    Atlas::AddKeyFrame(pKFini);
 
     // Create MapPoints and asscoiate to KeyFrame
     if (!mpCamera2) {
@@ -1853,7 +1853,7 @@ void Tracking::StereoInitialization() {
           pKFini->AddMapPoint(pNewMP, i);
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          mpAtlas->AddMapPoint(pNewMP);
+          Atlas::AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i] = pNewMP;
         }
@@ -1874,7 +1874,7 @@ void Tracking::StereoInitialization() {
 
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          mpAtlas->AddMapPoint(pNewMP);
+          Atlas::AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i]                                = pNewMP;
           mCurrentFrame.mvpMapPoints[rightIndex + mCurrentFrame.Nleft] = pNewMP;
@@ -1989,8 +1989,8 @@ void Tracking::CreateInitialMapMonocular() {
   pKFcur->ComputeBoW();
 
   // Insert KFs in the map
-  mpAtlas->AddKeyFrame(pKFini);
-  mpAtlas->AddKeyFrame(pKFcur);
+  Atlas::AddKeyFrame(pKFini);
+  Atlas::AddKeyFrame(pKFcur);
 
   for (std::size_t i = 0; i < mvIniMatches.size(); i++) {
     if (mvIniMatches[i] < 0) {
@@ -2016,7 +2016,7 @@ void Tracking::CreateInitialMapMonocular() {
     mCurrentFrame.mvbOutlier[mvIniMatches[i]]   = false;
 
     // Add to Map
-    mpAtlas->AddMapPoint(pMP);
+    Atlas::AddMapPoint(pMP);
   }
 
   // Update Connections
@@ -2692,7 +2692,7 @@ void Tracking::CreateNewKeyFrame() {
           pKF->AddMapPoint(pNewMP, i);
           pNewMP->ComputeDistinctiveDescriptors();
           pNewMP->UpdateNormalAndDepth();
-          mpAtlas->AddMapPoint(pNewMP);
+          Atlas::AddMapPoint(pNewMP);
 
           mCurrentFrame.mvpMapPoints[i] = pNewMP;
           nPoints++;

@@ -267,7 +267,7 @@ void LocalMapping::ProcessNewKeyFrame() {
   mpCurrentKeyFrame->UpdateConnections();
 
   // Insert Keyframe in Map
-  mpAtlas->AddKeyFrame(mpCurrentKeyFrame);
+  Atlas::AddKeyFrame(mpCurrentKeyFrame);
 }
 
 void LocalMapping::EmptyQueue() {
@@ -603,7 +603,7 @@ void LocalMapping::CreateNewMapPoints() {
 
       pMP->UpdateNormalAndDepth();
 
-      mpAtlas->AddMapPoint(pMP);
+      Atlas::AddMapPoint(pMP);
       mlpRecentAddedMapPoints.push_back(pMP);
     }
   }
@@ -658,12 +658,11 @@ void LocalMapping::SearchInNeighbors() {
   }
 
   // Search matches by projection from current KF in target KFs
-  const ORBmatcher       matcher;
   std::vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
   for (auto* pKFi : vpTargetKFs) {
-    matcher.Fuse(pKFi, vpMapPointMatches);
+    ORBmatcher::Fuse(pKFi, vpMapPointMatches);
     if (pKFi->isDualCamera()) {
-      matcher.Fuse(pKFi, vpMapPointMatches, static_cast<float>(true));
+      ORBmatcher::Fuse(pKFi, vpMapPointMatches, static_cast<float>(true));
     }
   }
 
@@ -690,9 +689,9 @@ void LocalMapping::SearchInNeighbors() {
     }
   }
 
-  matcher.Fuse(mpCurrentKeyFrame, vpFuseCandidates);
+  ORBmatcher::Fuse(mpCurrentKeyFrame, vpFuseCandidates);
   if (mpCurrentKeyFrame->isDualCamera()) {
-    matcher.Fuse(mpCurrentKeyFrame, vpFuseCandidates, static_cast<float>(true));
+    ORBmatcher::Fuse(mpCurrentKeyFrame, vpFuseCandidates, static_cast<float>(true));
   }
 
   // Update points

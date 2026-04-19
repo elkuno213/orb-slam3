@@ -547,7 +547,6 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
   const int nNumCovisibles = 10;
 
   const ORBmatcher matcherBoW(0.9, true);
-  const ORBmatcher matcher(0.75, true);
 
   // Varibles to select the best numbe
   KeyFrame*              pBestMatchedKF       = nullptr;
@@ -707,7 +706,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
         vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), nullptr);
         std::vector<KeyFrame*> vpMatchedKF;
         vpMatchedKF.resize(mpCurrentKF->GetMapPointMatches().size(), nullptr);
-        const int numProjMatches = matcher.SearchByProjection(
+        const int numProjMatches = ORBmatcher::SearchByProjection(
           mpCurrentKF,
           mScw,
           vpMapPoints,
@@ -760,7 +759,7 @@ bool LoopClosing::DetectCommonRegionsFromBoW(
             std::vector<MapPoint*> vpMatchedMP;
             vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), nullptr);
             const int numProjOptMatches
-              = matcher.SearchByProjection(mpCurrentKF, mScw, vpMapPoints, vpMatchedMP, 5, 1.0);
+              = ORBmatcher::SearchByProjection(mpCurrentKF, mScw, vpMapPoints, vpMatchedMP, 5, 1.0);
 
             if (numProjOptMatches >= nProjOptMatches) {
               int max_x = -1;
@@ -936,12 +935,11 @@ int LoopClosing::FindMatchesByProjection(
     }
   }
 
-  Sophus::Sim3f    mScw = Converter::toSophus(g2oScw);
-  const ORBmatcher matcher(0.9, true);
+  Sophus::Sim3f mScw = Converter::toSophus(g2oScw);
 
   vpMatchedMapPoints.resize(pCurrentKF->GetMapPointMatches().size(), nullptr);
   const int num_matches
-    = matcher.SearchByProjection(pCurrentKF, mScw, vpMapPoints, vpMatchedMapPoints, 3, 1.5);
+    = ORBmatcher::SearchByProjection(pCurrentKF, mScw, vpMapPoints, vpMatchedMapPoints, 3, 1.5);
 
   return num_matches;
 }
@@ -1970,15 +1968,13 @@ void LoopClosing::CheckObservations(
 void LoopClosing::SearchAndFuse(
   const KeyFrameAndPose& CorrectedPosesMap, std::vector<MapPoint*>& vpMapPoints
 ) {
-  const ORBmatcher matcher(0.8);
-
   for (const auto& [pKFi, g2oScw] : CorrectedPosesMap) {
     Map* pMap = pKFi->GetMap();
 
     Sophus::Sim3f Scw = Converter::toSophus(g2oScw);
 
     std::vector<MapPoint*> vpReplacePoints(vpMapPoints.size(), nullptr);
-    matcher.Fuse(pKFi, Scw, vpMapPoints, 4, vpReplacePoints);
+    ORBmatcher::Fuse(pKFi, Scw, vpMapPoints, 4, vpReplacePoints);
 
     // Get Map Mutex
     const std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
@@ -1995,8 +1991,6 @@ void LoopClosing::SearchAndFuse(
 void LoopClosing::SearchAndFuse(
   const std::vector<KeyFrame*>& vConectedKFs, std::vector<MapPoint*>& vpMapPoints
 ) {
-  const ORBmatcher matcher(0.8);
-
   for (auto* pKF : vConectedKFs) {
     Map*          pMap = pKF->GetMap();
     Sophus::SE3f  Tcw  = pKF->GetPose();
@@ -2006,7 +2000,7 @@ void LoopClosing::SearchAndFuse(
     //              Scw.translation()    = Tcw.translation()
     //              Scw.scale()          = 1
     std::vector<MapPoint*> vpReplacePoints(vpMapPoints.size(), nullptr);
-    matcher.Fuse(pKF, Scw, vpMapPoints, 4, vpReplacePoints);
+    ORBmatcher::Fuse(pKF, Scw, vpMapPoints, 4, vpReplacePoints);
 
     // Get Map Mutex
     const std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);

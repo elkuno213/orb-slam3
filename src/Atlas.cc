@@ -98,11 +98,13 @@ void Atlas::SetViewer(Viewer* pViewer) {
   mHasViewer = true;
 }
 
+// TODO(elkuno213): These static methods only delegate to Map — consider moving callers to use Map directly.
 void Atlas::AddKeyFrame(KeyFrame* pKF) {
   Map* pMapKF = pKF->GetMap();
   pMapKF->AddKeyFrame(pKF);
 }
 
+// TODO(elkuno213): These static methods only delegate to Map — consider moving callers to use Map directly.
 void Atlas::AddMapPoint(MapPoint* pMP) {
   Map* pMapMP = pMP->GetMap();
   pMapMP->AddMapPoint(pMP);
