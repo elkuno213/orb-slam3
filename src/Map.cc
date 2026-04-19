@@ -74,9 +74,7 @@ Map::~Map() {
   // TODO: erase all keyframes from memory
   mspKeyFrames.clear();
 
-  if (mThumbnail) {
-    delete mThumbnail;
-  }
+  delete mThumbnail;
   mThumbnail = nullptr;
 
   mvpReferenceMapPoints.clear();

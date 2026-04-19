@@ -246,8 +246,8 @@ void MLPnPsolver::SetRansacParameters(
   }
   mRansacMinInliers = nMinInliers;
 
-  if (mRansacEpsilon < (float)mRansacMinInliers / N) {
-    mRansacEpsilon = (float)mRansacMinInliers / N;
+  if (mRansacEpsilon < static_cast<float>(mRansacMinInliers) / N) {
+    mRansacEpsilon = static_cast<float>(mRansacMinInliers) / N;
   }
 
   // Set RANSAC iterations according to probability, epsilon, and max iterations

@@ -98,7 +98,7 @@ public:
 private:
   // Parameters vector corresponds to
   //       [fx, fy, cx, cy]
-  TwoViewReconstruction* tvr;
+  TwoViewReconstruction* tvr = nullptr;
 };
 } // namespace ORB_SLAM3
 

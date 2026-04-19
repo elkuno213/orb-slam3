@@ -324,10 +324,8 @@ Frame::Frame(
   if (mbInitialComputations) {
     ComputeImageBounds(imGray);
 
-    mfGridElementWidthInv
-      = static_cast<float>(kFrameGridCols) / static_cast<float>(mnMaxX - mnMinX);
-    mfGridElementHeightInv
-      = static_cast<float>(kFrameGridRows) / static_cast<float>(mnMaxY - mnMinY);
+    mfGridElementWidthInv  = static_cast<float>(kFrameGridCols) / (mnMaxX - mnMinX);
+    mfGridElementHeightInv = static_cast<float>(kFrameGridRows) / (mnMaxY - mnMinY);
 
     fx    = K.at<float>(0, 0);
     fy    = K.at<float>(1, 1);
@@ -434,10 +432,8 @@ Frame::Frame(
   if (mbInitialComputations) {
     ComputeImageBounds(imGray);
 
-    mfGridElementWidthInv
-      = static_cast<float>(kFrameGridCols) / static_cast<float>(mnMaxX - mnMinX);
-    mfGridElementHeightInv
-      = static_cast<float>(kFrameGridRows) / static_cast<float>(mnMaxY - mnMinY);
+    mfGridElementWidthInv  = static_cast<float>(kFrameGridCols) / (mnMaxX - mnMinX);
+    mfGridElementHeightInv = static_cast<float>(kFrameGridRows) / (mnMaxY - mnMinY);
 
     fx    = static_cast<Pinhole*>(mpCamera)->toK().at<float>(0, 0);
     fy    = static_cast<Pinhole*>(mpCamera)->toK().at<float>(1, 1);
