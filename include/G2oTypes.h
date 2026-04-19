@@ -80,7 +80,7 @@ public:
     const std::vector<Eigen::Vector3d>& _tcw,
     const std::vector<Eigen::Matrix3d>& _Rbc,
     const std::vector<Eigen::Vector3d>& _tbc,
-    const double&                       _bf
+    double                              _bf
   );
 
   void                          Update(const double* pu);  // update in the imu reference
@@ -258,7 +258,7 @@ class GDirection {
 public:
   GDirection() : its(0) {
   }
-  explicit GDirection(const Eigen::Matrix3d& pRwg) : Rwg(pRwg), its(0) {
+  explicit GDirection(Eigen::Matrix3d pRwg) : Rwg(std::move(pRwg)), its(0) {
   }
 
   void Update(const double* pu) {
@@ -709,14 +709,19 @@ public:
 class ConstraintPoseImu {
 public:
   ConstraintPoseImu(
-    const Eigen::Matrix3d& Rwb_,
-    const Eigen::Vector3d& twb_,
-    const Eigen::Vector3d& vwb_,
-    const Eigen::Vector3d& bg_,
-    const Eigen::Vector3d& ba_,
-    const Matrix15d&       H_
+    Eigen::Matrix3d Rwb_,
+    Eigen::Vector3d twb_,
+    Eigen::Vector3d vwb_,
+    Eigen::Vector3d bg_,
+    Eigen::Vector3d ba_,
+    Matrix15d       H_
   )
-    : Rwb(Rwb_), twb(twb_), vwb(vwb_), bg(bg_), ba(ba_), H(H_) {
+    : Rwb(std::move(Rwb_))
+    , twb(std::move(twb_))
+    , vwb(std::move(vwb_))
+    , bg(std::move(bg_))
+    , ba(std::move(ba_))
+    , H(std::move(H_)) {
     H = (H + H) / 2;
     const Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 15, 15>> es(H);
     Eigen::Matrix<double, 15, 1>                                       eigs = es.eigenvalues();

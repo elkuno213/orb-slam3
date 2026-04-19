@@ -26,18 +26,18 @@ namespace ORB_SLAM3::IMU {
 const float eps = 1e-4;
 
 Point::Point(
-  const float&  acc_x,
-  const float&  acc_y,
-  const float&  acc_z,
-  const float&  ang_vel_x,
-  const float&  ang_vel_y,
-  const float&  ang_vel_z,
-  const double& timestamp
+  float  acc_x,
+  float  acc_y,
+  float  acc_z,
+  float  ang_vel_x,
+  float  ang_vel_y,
+  float  ang_vel_z,
+  double timestamp
 )
   : a(acc_x, acc_y, acc_z), w(ang_vel_x, ang_vel_y, ang_vel_z), t(timestamp) {
 }
 
-Point::Point(const cv::Point3f Acc, const cv::Point3f Gyro, const double& timestamp)
+Point::Point(const cv::Point3f Acc, const cv::Point3f Gyro, double timestamp)
   : a(Acc.x, Acc.y, Acc.z), w(Gyro.x, Gyro.y, Gyro.z), t(timestamp) {
 }
 
@@ -46,7 +46,7 @@ Eigen::Matrix3f NormalizeRotation(const Eigen::Matrix3f& R) {
   return svd.matrixU() * svd.matrixV().transpose();
 }
 
-Eigen::Matrix3f RightJacobianSO3(const float& x, const float& y, const float& z) {
+Eigen::Matrix3f RightJacobianSO3(float x, float y, float z) {
   Eigen::Matrix3f I;
   I.setIdentity();
   const float     d2 = x * x + y * y + z * z;
@@ -65,7 +65,7 @@ Eigen::Matrix3f RightJacobianSO3(const Eigen::Vector3f& v) {
   return RightJacobianSO3(v(0), v(1), v(2));
 }
 
-Eigen::Matrix3f InverseRightJacobianSO3(const float& x, const float& y, const float& z) {
+Eigen::Matrix3f InverseRightJacobianSO3(float x, float y, float z) {
   Eigen::Matrix3f I;
   I.setIdentity();
   const float     d2 = x * x + y * y + z * z;
@@ -88,7 +88,7 @@ Eigen::Matrix3f InverseRightJacobianSO3(const Eigen::Vector3f& v) {
 IntegratedRotation::IntegratedRotation() = default;
 
 IntegratedRotation::IntegratedRotation(
-  const Eigen::Vector3f& angVel, const Bias& imuBias, const float& time
+  const Eigen::Vector3f& angVel, const Bias& imuBias, float time
 ) {
   const float x = (angVel(0) - imuBias.bwx) * time;
   const float y = (angVel(1) - imuBias.bwy) * time;
@@ -195,7 +195,7 @@ void Preintegrated::Reintegrate() {
 }
 
 void Preintegrated::IntegrateNewMeasurement(
-  const Eigen::Vector3f& acceleration, const Eigen::Vector3f& angVel, const float& dt
+  const Eigen::Vector3f& acceleration, const Eigen::Vector3f& angVel, float dt
 ) {
   mvMeasurements.emplace_back(acceleration, angVel, dt);
 
@@ -380,12 +380,12 @@ Bias::Bias() : bax(0), bay(0), baz(0), bwx(0), bwy(0), bwz(0) {
 }
 
 Bias::Bias(
-  const float& b_acc_x,
-  const float& b_acc_y,
-  const float& b_acc_z,
-  const float& b_ang_vel_x,
-  const float& b_ang_vel_y,
-  const float& b_ang_vel_z
+  float b_acc_x,
+  float b_acc_y,
+  float b_acc_z,
+  float b_ang_vel_x,
+  float b_ang_vel_y,
+  float b_ang_vel_z
 )
   : bax(b_acc_x), bay(b_acc_y), baz(b_acc_z), bwx(b_ang_vel_x), bwy(b_ang_vel_y), bwz(b_ang_vel_z) {
 }
@@ -428,9 +428,7 @@ std::ostream& operator<<(std::ostream& out, const Bias& b) {
   return out;
 }
 
-void Calib::Set(
-  const Sophus::SE3f& sophTbc, const float& ng, const float& na, const float& ngw, const float& naw
-) {
+void Calib::Set(const Sophus::SE3f& sophTbc, float ng, float na, float ngw, float naw) {
   mbIsSet          = true;
   const float ng2  = ng * ng;
   const float na2  = na * na;
@@ -444,9 +442,7 @@ void Calib::Set(
   CovWalk.diagonal() << ngw2, ngw2, ngw2, naw2, naw2, naw2;
 }
 
-Calib::Calib(
-  const Sophus::SE3f& Tbc, const float& ng, const float& na, const float& ngw, const float& naw
-) {
+Calib::Calib(const Sophus::SE3f& Tbc, float ng, float na, float ngw, float naw) {
   Set(Tbc, ng, na, ngw, naw);
 }
 

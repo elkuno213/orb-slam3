@@ -1424,7 +1424,7 @@ void Optimizer::OptimizeEssentialGraph(
   const LoopClosing::KeyFrameAndPose&             NonCorrectedSim3,
   const LoopClosing::KeyFrameAndPose&             CorrectedSim3,
   const std::map<KeyFrame*, std::set<KeyFrame*>>& LoopConnections,
-  const bool&                                     bFixScale
+  bool                                            bFixScale
 ) {
   // Setup optimizer
   g2o::SparseOptimizer optimizer;
@@ -2783,7 +2783,7 @@ Optimizer::BAStats Optimizer::LocalInertialBA(
   return stats;
 }
 
-Eigen::MatrixXd Optimizer::Marginalize(const Eigen::MatrixXd& H, const int& start, const int& end) {
+Eigen::MatrixXd Optimizer::Marginalize(const Eigen::MatrixXd& H, int start, int end) {
   // Goal
   // a  | ab | ac       a*  | 0 | ac*
   // ba | b  | bc  -->  0   | 0 | 0

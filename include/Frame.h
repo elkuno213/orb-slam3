@@ -53,14 +53,14 @@ public:
   Frame(
     const cv::Mat&    imLeft,
     const cv::Mat&    imRight,
-    const double&     timeStamp,
+    double            timeStamp,
     ORBextractor*     extractorLeft,
     ORBextractor*     extractorRight,
     ORBVocabulary*    voc,
     cv::Mat&          K,
     cv::Mat&          distCoef,
-    const float&      bf,
-    const float&      thDepth,
+    float             bf,
+    float             thDepth,
     GeometricCamera*  pCamera,
     Frame*            pPrevF   = nullptr,
     const IMU::Calib& ImuCalib = IMU::Calib()
@@ -70,13 +70,13 @@ public:
   Frame(
     const cv::Mat&    imGray,
     const cv::Mat&    imDepth,
-    const double&     timeStamp,
+    double            timeStamp,
     ORBextractor*     extractor,
     ORBVocabulary*    voc,
     cv::Mat&          K,
     cv::Mat&          distCoef,
-    const float&      bf,
-    const float&      thDepth,
+    float             bf,
+    float             thDepth,
     GeometricCamera*  pCamera,
     Frame*            pPrevF   = nullptr,
     const IMU::Calib& ImuCalib = IMU::Calib()
@@ -85,13 +85,13 @@ public:
   // Constructor for Monocular cameras.
   Frame(
     const cv::Mat&    imGray,
-    const double&     timeStamp,
+    double            timeStamp,
     ORBextractor*     extractor,
     ORBVocabulary*    voc,
     GeometricCamera*  pCamera,
     cv::Mat&          distCoef,
-    const float&      bf,
-    const float&      thDepth,
+    float             bf,
+    float             thDepth,
     Frame*            pPrevF   = nullptr,
     const IMU::Calib& ImuCalib = IMU::Calib()
   );
@@ -141,12 +141,7 @@ public:
   static bool PosInGrid(const cv::KeyPoint& kp, int& posX, int& posY);
 
   [[nodiscard]] std::vector<std::size_t> GetFeaturesInArea(
-    const float& x,
-    const float& y,
-    const float& r,
-    int          minLevel = -1,
-    int          maxLevel = -1,
-    bool         bRight   = false
+    float x, float y, float r, int minLevel = -1, int maxLevel = -1, bool bRight = false
   ) const;
 
   // Search a match for each keypoint in the left image to a keypoint in the right image.
@@ -380,14 +375,14 @@ public:
   Frame(
     const cv::Mat&    imLeft,
     const cv::Mat&    imRight,
-    const double&     timeStamp,
+    double            timeStamp,
     ORBextractor*     extractorLeft,
     ORBextractor*     extractorRight,
     ORBVocabulary*    voc,
     cv::Mat&          K,
     cv::Mat&          distCoef,
-    const float&      bf,
-    const float&      thDepth,
+    float             bf,
+    float             thDepth,
     GeometricCamera*  pCamera,
     GeometricCamera*  pCamera2,
     Sophus::SE3f&     Tlr,
@@ -400,7 +395,7 @@ public:
 
   bool isInFrustumChecks(MapPoint* pMP, float viewingCosLimit, bool bRight = false);
 
-  Eigen::Vector3f UnprojectStereoFishEye(const int& i);
+  Eigen::Vector3f UnprojectStereoFishEye(int i);
 
   cv::Mat imgLeft, imgRight;
 

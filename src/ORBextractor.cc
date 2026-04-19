@@ -556,12 +556,12 @@ static bool compareNodes(std::pair<int, ExtractorNode*>& e1, std::pair<int, Extr
 
 std::vector<cv::KeyPoint> ORBextractor::DistributeOctTree(
   const std::vector<cv::KeyPoint>& vToDistributeKeys,
-  const int&                       minX,
-  const int&                       maxX,
-  const int&                       minY,
-  const int&                       maxY,
-  const int&                       N,
-  const int& /*level*/
+  int                              minX,
+  int                              maxX,
+  int                              minY,
+  int                              maxY,
+  int                              N,
+  int /*level*/
 ) const {
   // Compute how many initial nodes
   const int nIni = std::round(static_cast<float>(maxX - minX) / (maxY - minY));

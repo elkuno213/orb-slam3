@@ -291,7 +291,7 @@ bool KeyFrame::isVelocitySet() {
   return mbHasVelocity;
 }
 
-void KeyFrame::AddConnection(KeyFrame* pKF, const int& weight) {
+void KeyFrame::AddConnection(KeyFrame* pKF, int weight) {
   {
     const std::unique_lock<std::mutex> lock(mMutexConnections);
     if (!mConnectedKeyFrameWeights.contains(pKF)) {
@@ -342,7 +342,7 @@ std::vector<KeyFrame*> KeyFrame::GetVectorCovisibleKeyFrames() {
   return mvpOrderedConnectedKeyFrames;
 }
 
-std::vector<KeyFrame*> KeyFrame::GetBestCovisibilityKeyFrames(const int& N) {
+std::vector<KeyFrame*> KeyFrame::GetBestCovisibilityKeyFrames(int N) {
   const std::unique_lock<std::mutex> lock(mMutexConnections);
   if (static_cast<int>(mvpOrderedConnectedKeyFrames.size()) < N) {
     return mvpOrderedConnectedKeyFrames;
@@ -351,7 +351,7 @@ std::vector<KeyFrame*> KeyFrame::GetBestCovisibilityKeyFrames(const int& N) {
   }
 }
 
-std::vector<KeyFrame*> KeyFrame::GetCovisiblesByWeight(const int& w) {
+std::vector<KeyFrame*> KeyFrame::GetCovisiblesByWeight(int w) {
   const std::unique_lock<std::mutex> lock(mMutexConnections);
 
   if (mvpOrderedConnectedKeyFrames.empty()) {
@@ -395,7 +395,7 @@ void KeyFrame::AddMapPoint(MapPoint* pMP, const std::size_t& idx) {
   mvpMapPoints[idx] = pMP;
 }
 
-void KeyFrame::EraseMapPointMatch(const int& idx) {
+void KeyFrame::EraseMapPointMatch(int idx) {
   const std::unique_lock<std::mutex> lock(mMutexFeatures);
   mvpMapPoints[idx] = nullptr;
 }
@@ -410,7 +410,7 @@ void KeyFrame::EraseMapPointMatch(MapPoint* pMP) {
   }
 }
 
-void KeyFrame::ReplaceMapPointMatch(const int& idx, MapPoint* pMP) {
+void KeyFrame::ReplaceMapPointMatch(int idx, MapPoint* pMP) {
   mvpMapPoints[idx] = pMP;
 }
 
@@ -428,7 +428,7 @@ std::set<MapPoint*> KeyFrame::GetMapPoints() {
   return s;
 }
 
-int KeyFrame::TrackedMapPoints(const int& minObs) {
+int KeyFrame::TrackedMapPoints(int minObs) {
   const std::unique_lock<std::mutex> lock(mMutexFeatures);
 
   int        nPoints   = 0;
@@ -744,9 +744,8 @@ void KeyFrame::EraseConnection(KeyFrame* pKF) {
   }
 }
 
-std::vector<std::size_t> KeyFrame::GetFeaturesInArea(
-  const float& x, const float& y, const float& r, const bool bRight
-) const {
+std::vector<std::size_t> KeyFrame::GetFeaturesInArea(float x, float y, float r, const bool bRight)
+  const {
   std::vector<std::size_t> vIndices;
   vIndices.reserve(N);
 
@@ -801,7 +800,7 @@ std::vector<std::size_t> KeyFrame::GetFeaturesInArea(
   return vIndices;
 }
 
-bool KeyFrame::IsInImage(const float& x, const float& y) const {
+bool KeyFrame::IsInImage(float x, float y) const {
   return (x >= mnMinX && x < mnMaxX && y >= mnMinY && y < mnMaxY);
 }
 

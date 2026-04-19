@@ -147,7 +147,7 @@ public:
   };
 
 protected:
-  static float RadiusByViewingCos(const float& viewCos);
+  static float RadiusByViewingCos(float viewCos);
 
   [[nodiscard]] static ThreeMaxima ComputeThreeMaxima(const std::vector<int>* histo, int L);
 

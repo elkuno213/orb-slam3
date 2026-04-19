@@ -269,7 +269,7 @@ System::System(
 Sophus::SE3f System::TrackStereo(
   const cv::Mat&                 imLeft,
   const cv::Mat&                 imRight,
-  const double&                  timestamp,
+  double                         timestamp,
   const std::vector<IMU::Point>& vImuMeas,
   std::string                    filename
 ) {
@@ -369,7 +369,7 @@ Sophus::SE3f System::TrackStereo(
 Sophus::SE3f System::TrackRGBD(
   const cv::Mat&                 im,
   const cv::Mat&                 depthmap,
-  const double&                  timestamp,
+  double                         timestamp,
   const std::vector<IMU::Point>& vImuMeas,
   std::string                    filename
 ) {
@@ -454,10 +454,7 @@ Sophus::SE3f System::TrackRGBD(
 }
 
 Sophus::SE3f System::TrackMonocular(
-  const cv::Mat&                 im,
-  const double&                  timestamp,
-  const std::vector<IMU::Point>& vImuMeas,
-  std::string                    filename
+  const cv::Mat& im, double timestamp, const std::vector<IMU::Point>& vImuMeas, std::string filename
 ) {
   {
     const std::unique_lock<std::mutex> lock(mMutexReset);
@@ -1302,7 +1299,7 @@ void System::SaveTrajectoryKITTI(const std::string& filename) {
   _logger->info("Trajectory saved at {}", filename);
 }
 
-void System::SaveDebugData(const int& initIdx) {
+void System::SaveDebugData(int initIdx) {
   // 0. Save initialization trajectory
   SaveTrajectoryEuRoC(
     "init_FrameTrajectoy_" + std::to_string(mpLocalMapper->mInitSect) + "_"

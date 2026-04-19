@@ -213,15 +213,15 @@ public:
   void ComputeBoW();
 
   // Covisibility graph functions
-  void AddConnection(KeyFrame* pKF, const int& weight);
+  void AddConnection(KeyFrame* pKF, int weight);
   void EraseConnection(KeyFrame* pKF);
 
   void                   UpdateConnections(bool upParent = true);
   void                   UpdateBestCovisibles();
   std::set<KeyFrame*>    GetConnectedKeyFrames();
   std::vector<KeyFrame*> GetVectorCovisibleKeyFrames();
-  std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(const int& N);
-  std::vector<KeyFrame*> GetCovisiblesByWeight(const int& w);
+  std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(int N);
+  std::vector<KeyFrame*> GetCovisiblesByWeight(int w);
   int                    GetWeight(KeyFrame* pKF);
 
   // Spanning tree functions
@@ -244,22 +244,22 @@ public:
   // MapPoint observation functions
   int                    GetNumberMPs();
   void                   AddMapPoint(MapPoint* pMP, const std::size_t& idx);
-  void                   EraseMapPointMatch(const int& idx);
+  void                   EraseMapPointMatch(int idx);
   void                   EraseMapPointMatch(MapPoint* pMP);
-  void                   ReplaceMapPointMatch(const int& idx, MapPoint* pMP);
+  void                   ReplaceMapPointMatch(int idx, MapPoint* pMP);
   std::set<MapPoint*>    GetMapPoints();
   std::vector<MapPoint*> GetMapPointMatches();
-  int                    TrackedMapPoints(const int& minObs);
+  int                    TrackedMapPoints(int minObs);
   MapPoint*              GetMapPoint(const std::size_t& idx);
 
   // KeyPoint functions
   [[nodiscard]] std::vector<std::size_t> GetFeaturesInArea(
-    const float& x, const float& y, const float& r, bool bRight = false
+    float x, float y, float r, bool bRight = false
   ) const;
   [[nodiscard]] std::optional<Eigen::Vector3f> UnprojectStereo(int i) const;
 
   // Image
-  [[nodiscard]] bool IsInImage(const float& x, const float& y) const;
+  [[nodiscard]] bool IsInImage(float x, float y) const;
 
   // Enable/Disable bad flag changes
   void SetNotErase();
