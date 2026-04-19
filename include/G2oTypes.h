@@ -357,17 +357,17 @@ public:
   }
 
   void computeError() override {
-    const g2o::VertexSBAPointXYZ* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
-    const VertexPose*             VPose  = static_cast<const VertexPose*>(_vertices[1]);
-    const Eigen::Vector2d         obs(_measurement);
+    const auto*           VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
+    const auto*           VPose  = static_cast<const VertexPose*>(_vertices[1]);
+    const Eigen::Vector2d obs(_measurement);
     _error = obs - VPose->estimate().Project(VPoint->estimate(), cam_idx);
   }
 
   void linearizeOplus() override;
 
   bool isDepthPositive() {
-    const g2o::VertexSBAPointXYZ* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
-    const VertexPose*             VPose  = static_cast<const VertexPose*>(_vertices[1]);
+    const auto* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
+    const auto* VPose  = static_cast<const VertexPose*>(_vertices[1]);
     return VPose->estimate().isDepthPositive(VPoint->estimate(), cam_idx);
   }
 
@@ -404,7 +404,7 @@ public:
   }
 
   void computeError() override {
-    const VertexPose*     VPose = static_cast<const VertexPose*>(_vertices[0]);
+    const auto*           VPose = static_cast<const VertexPose*>(_vertices[0]);
     const Eigen::Vector2d obs(_measurement);
     _error = obs - VPose->estimate().Project(Xw, cam_idx);
   }
@@ -412,7 +412,7 @@ public:
   void linearizeOplus() override;
 
   bool isDepthPositive() {
-    const VertexPose* VPose = static_cast<const VertexPose*>(_vertices[0]);
+    const auto* VPose = static_cast<const VertexPose*>(_vertices[0]);
     return VPose->estimate().isDepthPositive(Xw, cam_idx);
   }
 
@@ -439,9 +439,9 @@ public:
   }
 
   void computeError() override {
-    const g2o::VertexSBAPointXYZ* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
-    const VertexPose*             VPose  = static_cast<const VertexPose*>(_vertices[1]);
-    const Eigen::Vector3d         obs(_measurement);
+    const auto*           VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
+    const auto*           VPose  = static_cast<const VertexPose*>(_vertices[1]);
+    const Eigen::Vector3d obs(_measurement);
     _error = obs - VPose->estimate().ProjectStereo(VPoint->estimate(), cam_idx);
   }
 
@@ -480,7 +480,7 @@ public:
   }
 
   void computeError() override {
-    const VertexPose*     VPose = static_cast<const VertexPose*>(_vertices[0]);
+    const auto*           VPose = static_cast<const VertexPose*>(_vertices[0]);
     const Eigen::Vector3d obs(_measurement);
     _error = obs - VPose->estimate().ProjectStereo(Xw, cam_idx);
   }
@@ -646,9 +646,9 @@ public:
   }
 
   void computeError() override {
-    const VertexGyroBias* VG1 = static_cast<const VertexGyroBias*>(_vertices[0]);
-    const VertexGyroBias* VG2 = static_cast<const VertexGyroBias*>(_vertices[1]);
-    _error                    = VG2->estimate() - VG1->estimate();
+    const auto* VG1 = static_cast<const VertexGyroBias*>(_vertices[0]);
+    const auto* VG2 = static_cast<const VertexGyroBias*>(_vertices[1]);
+    _error          = VG2->estimate() - VG1->estimate();
   }
 
   void linearizeOplus() override {
@@ -682,9 +682,9 @@ public:
   }
 
   void computeError() override {
-    const VertexAccBias* VA1 = static_cast<const VertexAccBias*>(_vertices[0]);
-    const VertexAccBias* VA2 = static_cast<const VertexAccBias*>(_vertices[1]);
-    _error                   = VA2->estimate() - VA1->estimate();
+    const auto* VA1 = static_cast<const VertexAccBias*>(_vertices[0]);
+    const auto* VA2 = static_cast<const VertexAccBias*>(_vertices[1]);
+    _error          = VA2->estimate() - VA1->estimate();
   }
 
   void linearizeOplus() override {
@@ -792,8 +792,8 @@ public:
   }
 
   void computeError() override {
-    const VertexAccBias* VA = static_cast<const VertexAccBias*>(_vertices[0]);
-    _error                  = bprior - VA->estimate();
+    const auto* VA = static_cast<const VertexAccBias*>(_vertices[0]);
+    _error         = bprior - VA->estimate();
   }
   void linearizeOplus() override;
 
@@ -818,8 +818,8 @@ public:
   }
 
   void computeError() override {
-    const VertexGyroBias* VG = static_cast<const VertexGyroBias*>(_vertices[0]);
-    _error                   = bprior - VG->estimate();
+    const auto* VG = static_cast<const VertexGyroBias*>(_vertices[0]);
+    _error         = bprior - VG->estimate();
   }
   void linearizeOplus() override;
 
@@ -847,8 +847,8 @@ public:
   }
 
   void computeError() override {
-    const VertexPose4DoF* VPi = static_cast<const VertexPose4DoF*>(_vertices[0]);
-    const VertexPose4DoF* VPj = static_cast<const VertexPose4DoF*>(_vertices[1]);
+    const auto* VPi = static_cast<const VertexPose4DoF*>(_vertices[0]);
+    const auto* VPj = static_cast<const VertexPose4DoF*>(_vertices[1]);
     _error << LogSO3(
       VPi->estimate().Rcw[0] * VPj->estimate().Rcw[0].transpose() * dRij.transpose()
     ),
