@@ -134,8 +134,8 @@ public:
     setEstimate(ImuCamPose(pF));
   }
 
-  bool read(std::istream& is) override;
-  bool write(std::ostream& os) const override;
+  bool read(std::istream& /*is*/) override;
+  bool write(std::ostream& /*os*/) const override;
 
   void setToOriginImpl() override {
   }
@@ -160,10 +160,10 @@ public:
     setEstimate(ImuCamPose(Rwc, twc, pKF));
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -189,10 +189,10 @@ public:
   explicit VertexVelocity(KeyFrame* pKF);
   explicit VertexVelocity(Frame* pF);
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -212,10 +212,10 @@ public:
   explicit VertexGyroBias(KeyFrame* pKF);
   explicit VertexGyroBias(Frame* pF);
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -235,10 +235,10 @@ public:
   explicit VertexAccBias(KeyFrame* pKF);
   explicit VertexAccBias(Frame* pF);
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -276,10 +276,10 @@ public:
     setEstimate(GDirection(pRwg));
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -302,10 +302,10 @@ public:
     setEstimate(ps);
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -326,10 +326,10 @@ public:
     setEstimate(InvDepthPoint(invDepth, u, v, pHostKF));
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -348,10 +348,10 @@ public:
   explicit EdgeMono(int cam_idx_ = 0) : cam_idx(cam_idx_) {
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -395,10 +395,10 @@ public:
     : Xw(Xw_.cast<double>()), cam_idx(cam_idx_) {
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -430,10 +430,10 @@ public:
   explicit EdgeStereo(int cam_idx_ = 0) : cam_idx(cam_idx_) {
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -471,10 +471,10 @@ public:
     : Xw(Xw_.cast<double>()), cam_idx(cam_idx_) {
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -499,10 +499,10 @@ class EdgeInertial : public g2o::BaseMultiEdge<9, Vector9d> {
 public:
   explicit EdgeInertial(IMU::Preintegrated* pInt);
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -554,10 +554,10 @@ public:
   // EdgeInertialGS(IMU::Preintegrated* pInt);
   explicit EdgeInertialGS(IMU::Preintegrated* pInt);
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -637,10 +637,10 @@ class EdgeGyroRW : public g2o::BaseBinaryEdge<3, Eigen::Vector3d, VertexGyroBias
 public:
   EdgeGyroRW() = default;
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -673,10 +673,10 @@ class EdgeAccRW : public g2o::BaseBinaryEdge<3, Eigen::Vector3d, VertexAccBias, 
 public:
   EdgeAccRW() = default;
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -744,10 +744,10 @@ class EdgePriorPoseImu : public g2o::BaseMultiEdge<15, Vector15d> {
 public:
   explicit EdgePriorPoseImu(ConstraintPoseImu* c);
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -783,10 +783,10 @@ public:
   explicit EdgePriorAcc(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -809,10 +809,10 @@ public:
   explicit EdgePriorGyro(const Eigen::Vector3f& bprior_) : bprior(bprior_.cast<double>()) {
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
@@ -838,10 +838,10 @@ public:
     dtij = deltaT.block<3, 1>(0, 3);
   }
 
-  bool read(std::istream& is) override {
+  bool read(std::istream& /*is*/) override {
     return false;
   }
-  bool write(std::ostream& os) const override {
+  bool write(std::ostream& /*os*/) const override {
     return false;
   }
 
