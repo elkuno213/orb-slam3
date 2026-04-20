@@ -173,7 +173,7 @@ void ImuCamPose::SetParam(
 }
 
 Eigen::Vector2d ImuCamPose::Project(const Eigen::Vector3d& Xw, int cam_idx) const {
-  Eigen::Vector3d Xc = Rcw[cam_idx] * Xw + tcw[cam_idx];
+  const Eigen::Vector3d Xc = Rcw[cam_idx] * Xw + tcw[cam_idx];
 
   return pCamera[cam_idx]->project(Xc);
 }
@@ -181,7 +181,7 @@ Eigen::Vector2d ImuCamPose::Project(const Eigen::Vector3d& Xw, int cam_idx) cons
 Eigen::Vector3d ImuCamPose::ProjectStereo(const Eigen::Vector3d& Xw, int cam_idx) const {
   Eigen::Vector3d Pc = Rcw[cam_idx] * Xw + tcw[cam_idx];
   Eigen::Vector3d pc;
-  double          invZ = 1 / Pc(2);
+  const double    invZ = 1 / Pc(2);
   pc.head(2)           = pCamera[cam_idx]->project(Pc);
   pc(2)                = pc(0) - bf * invZ;
   return pc;
@@ -359,9 +359,9 @@ void EdgeMono::linearizeOplus() {
   _jacobianOplusXi                           = -proj_jac * Rcw;
 
   Eigen::Matrix<double, 3, 6> SE3deriv;
-  double                      x = Xb(0);
-  double                      y = Xb(1);
-  double                      z = Xb(2);
+  const double                x = Xb(0);
+  const double                y = Xb(1);
+  const double                z = Xb(2);
 
   SE3deriv << 0.0, z, -y, 1.0, 0.0, 0.0, -z, 0.0, x, 0.0, 1.0, 0.0, y, -x, 0.0, 0.0, 0.0, 1.0;
 
@@ -377,12 +377,12 @@ void EdgeMonoOnlyPose::linearizeOplus() {
   const Eigen::Vector3d  Xb  = VPose->estimate().Rbc[cam_idx] * Xc + VPose->estimate().tbc[cam_idx];
   const Eigen::Matrix3d& Rcb = VPose->estimate().Rcb[cam_idx];
 
-  Eigen::Matrix<double, 2, 3> proj_jac = VPose->estimate().pCamera[cam_idx]->projectJac(Xc);
+  const Eigen::Matrix<double, 2, 3> proj_jac = VPose->estimate().pCamera[cam_idx]->projectJac(Xc);
 
   Eigen::Matrix<double, 3, 6> SE3deriv;
-  double                      x = Xb(0);
-  double                      y = Xb(1);
-  double                      z = Xb(2);
+  const double                x = Xb(0);
+  const double                y = Xb(1);
+  const double                z = Xb(2);
   SE3deriv << 0.0, z, -y, 1.0, 0.0, 0.0, -z, 0.0, x, 0.0, 1.0, 0.0, y, -x, 0.0, 0.0, 0.0, 1.0;
   _jacobianOplusXi = proj_jac * Rcb * SE3deriv; // symbol different becasue of update mode
 }
@@ -407,9 +407,9 @@ void EdgeStereo::linearizeOplus() {
   _jacobianOplusXi = -proj_jac * Rcw;
 
   Eigen::Matrix<double, 3, 6> SE3deriv;
-  double                      x = Xb(0);
-  double                      y = Xb(1);
-  double                      z = Xb(2);
+  const double                x = Xb(0);
+  const double                y = Xb(1);
+  const double                z = Xb(2);
 
   SE3deriv << 0.0, z, -y, 1.0, 0.0, 0.0, -z, 0.0, x, 0.0, 1.0, 0.0, y, -x, 0.0, 0.0, 0.0, 1.0;
 
@@ -433,9 +433,9 @@ void EdgeStereoOnlyPose::linearizeOplus() {
   proj_jac(2, 2)             += bf * inv_z2;
 
   Eigen::Matrix<double, 3, 6> SE3deriv;
-  double                      x = Xb(0);
-  double                      y = Xb(1);
-  double                      z = Xb(2);
+  const double                x = Xb(0);
+  const double                y = Xb(1);
+  const double                z = Xb(2);
   SE3deriv << 0.0, z, -y, 1.0, 0.0, 0.0, -z, 0.0, x, 0.0, 1.0, 0.0, y, -x, 0.0, 0.0, 0.0, 1.0;
   _jacobianOplusXi = proj_jac * Rcb * SE3deriv;
 }
@@ -482,8 +482,8 @@ EdgeInertial::EdgeInertial(IMU::Preintegrated* pInt)
 
   Matrix9d Info = pInt->C.block<9, 9>(0, 0).cast<double>().inverse();
   Info          = (Info + Info.transpose()) / 2;
-  Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 9, 9> > es(Info);
-  Eigen::Matrix<double, 9, 1>                                 eigs = es.eigenvalues();
+  const Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 9, 9> > es(Info);
+  Eigen::Matrix<double, 9, 1>                                       eigs = es.eigenvalues();
   for (int i = 0; i < 9; i++) {
     if (eigs[i] < 1e-12) {
       eigs[i] = 0;
@@ -609,8 +609,8 @@ EdgeInertialGS::EdgeInertialGS(IMU::Preintegrated* pInt)
 
   Matrix9d Info = pInt->C.block<9, 9>(0, 0).cast<double>().inverse();
   Info          = (Info + Info.transpose()) / 2;
-  Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 9, 9> > es(Info);
-  Eigen::Matrix<double, 9, 1>                                 eigs = es.eigenvalues();
+  const Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 9, 9> > es(Info);
+  Eigen::Matrix<double, 9, 1>                                       eigs = es.eigenvalues();
   for (int i = 0; i < 9; i++) {
     if (eigs[i] < 1e-12) {
       eigs[i] = 0;
@@ -805,10 +805,10 @@ Eigen::Matrix3d ExpSO3(const double x, const double y, const double z) {
   Eigen::Matrix3d W;
   W << 0.0, -z, y, z, 0.0, -x, -y, x, 0.0;
   if (d < 1e-5) {
-    Eigen::Matrix3d res = Eigen::Matrix3d::Identity() + W + 0.5 * W * W;
+    const Eigen::Matrix3d res = Eigen::Matrix3d::Identity() + W + 0.5 * W * W;
     return NormalizeRotation(res);
   } else {
-    Eigen::Matrix3d res
+    const Eigen::Matrix3d res
       = Eigen::Matrix3d::Identity() + W * std::sin(d) / d + W * W * (1.0 - std::cos(d)) / d2;
     return NormalizeRotation(res);
   }
