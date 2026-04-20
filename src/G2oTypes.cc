@@ -33,7 +33,7 @@ ImuCamPose::ImuCamPose(KeyFrame* pKF) : its(0) {
   Rwb = pKF->GetImuRotation().cast<double>();
 
   // Load camera poses
-  int num_cams;
+  int num_cams = 0;
   if (pKF->mpCamera2) {
     num_cams = 2;
   } else {
@@ -80,7 +80,7 @@ ImuCamPose::ImuCamPose(Frame* pF) : its(0) {
   Rwb = pF->GetImuRotation().cast<double>();
 
   // Load camera poses
-  int num_cams;
+  int num_cams = 0;
   if (pF->mpCamera2) {
     num_cams = 2;
   } else {
@@ -292,14 +292,14 @@ bool VertexPose::read(std::istream& is) {
       is >> tbc[idx](i);
     }
 
-    float nextParam;
+    float nextParam = 0.0F;
     for (std::size_t i = 0; i < _estimate.pCamera[idx]->size(); i++) {
       is >> nextParam;
       _estimate.pCamera[idx]->setParameter(nextParam, i);
     }
   }
 
-  double bf;
+  double bf = 0.0;
   is >> bf;
   _estimate.SetParam(Rcw, tcw, Rbc, tbc, bf);
   updateCache();
