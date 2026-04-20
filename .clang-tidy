@@ -193,6 +193,8 @@ Checks: >
   cppcoreguidelines-avoid-capturing-lambda-coroutines,
   cppcoreguidelines-avoid-reference-coroutine-parameters,
   cppcoreguidelines-no-suspend-with-lock,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
   bugprone-crtp-constructor-accessibility,
   bugprone-inc-dec-in-conditions,
   bugprone-suspicious-stringview-data-usage,
