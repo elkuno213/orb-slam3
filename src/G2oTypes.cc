@@ -346,8 +346,8 @@ bool VertexPose::write(std::ostream& os) const {
 }
 
 void EdgeMono::linearizeOplus() {
-  const VertexPose*             VPose  = static_cast<const VertexPose*>(_vertices[1]);
-  const g2o::VertexSBAPointXYZ* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
+  const auto* VPose  = static_cast<const VertexPose*>(_vertices[1]);
+  const auto* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
 
   const Eigen::Matrix3d& Rcw = VPose->estimate().Rcw[cam_idx];
   const Eigen::Vector3d& tcw = VPose->estimate().tcw[cam_idx];
@@ -369,7 +369,7 @@ void EdgeMono::linearizeOplus() {
 }
 
 void EdgeMonoOnlyPose::linearizeOplus() {
-  const VertexPose* VPose = static_cast<const VertexPose*>(_vertices[0]);
+  const auto* VPose = static_cast<const VertexPose*>(_vertices[0]);
 
   const Eigen::Matrix3d& Rcw = VPose->estimate().Rcw[cam_idx];
   const Eigen::Vector3d& tcw = VPose->estimate().tcw[cam_idx];
@@ -388,8 +388,8 @@ void EdgeMonoOnlyPose::linearizeOplus() {
 }
 
 void EdgeStereo::linearizeOplus() {
-  const VertexPose*             VPose  = static_cast<const VertexPose*>(_vertices[1]);
-  const g2o::VertexSBAPointXYZ* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
+  const auto* VPose  = static_cast<const VertexPose*>(_vertices[1]);
+  const auto* VPoint = static_cast<const g2o::VertexSBAPointXYZ*>(_vertices[0]);
 
   const Eigen::Matrix3d& Rcw = VPose->estimate().Rcw[cam_idx];
   const Eigen::Vector3d& tcw = VPose->estimate().tcw[cam_idx];
@@ -417,7 +417,7 @@ void EdgeStereo::linearizeOplus() {
 }
 
 void EdgeStereoOnlyPose::linearizeOplus() {
-  const VertexPose* VPose = static_cast<const VertexPose*>(_vertices[0]);
+  const auto* VPose = static_cast<const VertexPose*>(_vertices[0]);
 
   const Eigen::Matrix3d& Rcw = VPose->estimate().Rcw[cam_idx];
   const Eigen::Vector3d& tcw = VPose->estimate().tcw[cam_idx];
@@ -496,13 +496,13 @@ EdgeInertial::EdgeInertial(IMU::Preintegrated* pInt)
 void EdgeInertial::computeError() {
   // TODO Maybe Reintegrate inertial measurments when difference between linearization point and
   // current estimate is too big
-  const VertexPose*     VP1 = static_cast<const VertexPose*>(_vertices[0]);
-  const VertexVelocity* VV1 = static_cast<const VertexVelocity*>(_vertices[1]);
-  const VertexGyroBias* VG1 = static_cast<const VertexGyroBias*>(_vertices[2]);
-  const VertexAccBias*  VA1 = static_cast<const VertexAccBias*>(_vertices[3]);
-  const VertexPose*     VP2 = static_cast<const VertexPose*>(_vertices[4]);
-  const VertexVelocity* VV2 = static_cast<const VertexVelocity*>(_vertices[5]);
-  const IMU::Bias       b1(
+  const auto*     VP1 = static_cast<const VertexPose*>(_vertices[0]);
+  const auto*     VV1 = static_cast<const VertexVelocity*>(_vertices[1]);
+  const auto*     VG1 = static_cast<const VertexGyroBias*>(_vertices[2]);
+  const auto*     VA1 = static_cast<const VertexAccBias*>(_vertices[3]);
+  const auto*     VP2 = static_cast<const VertexPose*>(_vertices[4]);
+  const auto*     VV2 = static_cast<const VertexVelocity*>(_vertices[5]);
+  const IMU::Bias b1(
     VA1->estimate()[0],
     VA1->estimate()[1],
     VA1->estimate()[2],
@@ -527,13 +527,13 @@ void EdgeInertial::computeError() {
 }
 
 void EdgeInertial::linearizeOplus() {
-  const VertexPose*     VP1 = static_cast<const VertexPose*>(_vertices[0]);
-  const VertexVelocity* VV1 = static_cast<const VertexVelocity*>(_vertices[1]);
-  const VertexGyroBias* VG1 = static_cast<const VertexGyroBias*>(_vertices[2]);
-  const VertexAccBias*  VA1 = static_cast<const VertexAccBias*>(_vertices[3]);
-  const VertexPose*     VP2 = static_cast<const VertexPose*>(_vertices[4]);
-  const VertexVelocity* VV2 = static_cast<const VertexVelocity*>(_vertices[5]);
-  const IMU::Bias       b1(
+  const auto*     VP1 = static_cast<const VertexPose*>(_vertices[0]);
+  const auto*     VV1 = static_cast<const VertexVelocity*>(_vertices[1]);
+  const auto*     VG1 = static_cast<const VertexGyroBias*>(_vertices[2]);
+  const auto*     VA1 = static_cast<const VertexAccBias*>(_vertices[3]);
+  const auto*     VP2 = static_cast<const VertexPose*>(_vertices[4]);
+  const auto*     VV2 = static_cast<const VertexVelocity*>(_vertices[5]);
+  const IMU::Bias b1(
     VA1->estimate()[0],
     VA1->estimate()[1],
     VA1->estimate()[2],
@@ -623,15 +623,15 @@ EdgeInertialGS::EdgeInertialGS(IMU::Preintegrated* pInt)
 void EdgeInertialGS::computeError() {
   // TODO Maybe Reintegrate inertial measurments when difference between linearization point and
   // current estimate is too big
-  const VertexPose*     VP1   = static_cast<const VertexPose*>(_vertices[0]);
-  const VertexVelocity* VV1   = static_cast<const VertexVelocity*>(_vertices[1]);
-  const VertexGyroBias* VG    = static_cast<const VertexGyroBias*>(_vertices[2]);
-  const VertexAccBias*  VA    = static_cast<const VertexAccBias*>(_vertices[3]);
-  const VertexPose*     VP2   = static_cast<const VertexPose*>(_vertices[4]);
-  const VertexVelocity* VV2   = static_cast<const VertexVelocity*>(_vertices[5]);
-  const VertexGDir*     VGDir = static_cast<const VertexGDir*>(_vertices[6]);
-  const VertexScale*    VS    = static_cast<const VertexScale*>(_vertices[7]);
-  const IMU::Bias       b(
+  const auto*     VP1   = static_cast<const VertexPose*>(_vertices[0]);
+  const auto*     VV1   = static_cast<const VertexVelocity*>(_vertices[1]);
+  const auto*     VG    = static_cast<const VertexGyroBias*>(_vertices[2]);
+  const auto*     VA    = static_cast<const VertexAccBias*>(_vertices[3]);
+  const auto*     VP2   = static_cast<const VertexPose*>(_vertices[4]);
+  const auto*     VV2   = static_cast<const VertexVelocity*>(_vertices[5]);
+  const auto*     VGDir = static_cast<const VertexGDir*>(_vertices[6]);
+  const auto*     VS    = static_cast<const VertexScale*>(_vertices[7]);
+  const IMU::Bias b(
     VA->estimate()[0],
     VA->estimate()[1],
     VA->estimate()[2],
@@ -658,15 +658,15 @@ void EdgeInertialGS::computeError() {
 }
 
 void EdgeInertialGS::linearizeOplus() {
-  const VertexPose*     VP1   = static_cast<const VertexPose*>(_vertices[0]);
-  const VertexVelocity* VV1   = static_cast<const VertexVelocity*>(_vertices[1]);
-  const VertexGyroBias* VG    = static_cast<const VertexGyroBias*>(_vertices[2]);
-  const VertexAccBias*  VA    = static_cast<const VertexAccBias*>(_vertices[3]);
-  const VertexPose*     VP2   = static_cast<const VertexPose*>(_vertices[4]);
-  const VertexVelocity* VV2   = static_cast<const VertexVelocity*>(_vertices[5]);
-  const VertexGDir*     VGDir = static_cast<const VertexGDir*>(_vertices[6]);
-  const VertexScale*    VS    = static_cast<const VertexScale*>(_vertices[7]);
-  const IMU::Bias       b(
+  const auto*     VP1   = static_cast<const VertexPose*>(_vertices[0]);
+  const auto*     VV1   = static_cast<const VertexVelocity*>(_vertices[1]);
+  const auto*     VG    = static_cast<const VertexGyroBias*>(_vertices[2]);
+  const auto*     VA    = static_cast<const VertexAccBias*>(_vertices[3]);
+  const auto*     VP2   = static_cast<const VertexPose*>(_vertices[4]);
+  const auto*     VV2   = static_cast<const VertexVelocity*>(_vertices[5]);
+  const auto*     VGDir = static_cast<const VertexGDir*>(_vertices[6]);
+  const auto*     VS    = static_cast<const VertexScale*>(_vertices[7]);
+  const IMU::Bias b(
     VA->estimate()[0],
     VA->estimate()[1],
     VA->estimate()[2],
@@ -756,10 +756,10 @@ EdgePriorPoseImu::EdgePriorPoseImu(ConstraintPoseImu* c) {
 }
 
 void EdgePriorPoseImu::computeError() {
-  const VertexPose*     VP = static_cast<const VertexPose*>(_vertices[0]);
-  const VertexVelocity* VV = static_cast<const VertexVelocity*>(_vertices[1]);
-  const VertexGyroBias* VG = static_cast<const VertexGyroBias*>(_vertices[2]);
-  const VertexAccBias*  VA = static_cast<const VertexAccBias*>(_vertices[3]);
+  const auto* VP = static_cast<const VertexPose*>(_vertices[0]);
+  const auto* VV = static_cast<const VertexVelocity*>(_vertices[1]);
+  const auto* VG = static_cast<const VertexGyroBias*>(_vertices[2]);
+  const auto* VA = static_cast<const VertexAccBias*>(_vertices[3]);
 
   const Eigen::Vector3d er  = LogSO3(Rwb.transpose() * VP->estimate().Rwb);
   const Eigen::Vector3d et  = Rwb.transpose() * (VP->estimate().twb - twb);
@@ -771,7 +771,7 @@ void EdgePriorPoseImu::computeError() {
 }
 
 void EdgePriorPoseImu::linearizeOplus() {
-  const VertexPose*     VP = static_cast<const VertexPose*>(_vertices[0]);
+  const auto*           VP = static_cast<const VertexPose*>(_vertices[0]);
   const Eigen::Vector3d er = LogSO3(Rwb.transpose() * VP->estimate().Rwb);
   _jacobianOplus[0].setZero();
   _jacobianOplus[0].block<3, 3>(0, 0) = InverseRightJacobianSO3(er);
