@@ -205,7 +205,7 @@ bool Pinhole::IsEqual(GeometricCamera* pCam) {
     return false;
   }
 
-  auto* pPinholeCam = (Pinhole*)pCam;
+  auto* pPinholeCam = static_cast<Pinhole*>(pCam);
 
   if (size() != pPinholeCam->size()) {
     return false;
