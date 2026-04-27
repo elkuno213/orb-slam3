@@ -31,38 +31,38 @@ long unsigned int Map::nNextId = 0;
 Map::Map()
   : mpFirstRegionKF(nullptr)
   , mbFail(false)
+  , mnId(nNextId++)
   , mbImuInitialized(false)
   , mnMapChange(0)
   , mnMapChangeNotified(0)
   , mnMaxKFid(0)
   , mnBigChangeIdx(0)
+  , mThumbnail(nullptr)
   , mIsInUse(false)
   , mHasTumbnail(false)
   , mbIsInertial(false)
   , mbIMU_BA1(false)
   , mbIMU_BA2(false)
   , _logger(logging::CreateModuleLogger("Map")) {
-  mnId       = nNextId++;
-  mThumbnail = nullptr;
 }
 
 Map::Map(int initKFid)
   : mpFirstRegionKF(nullptr)
   , mbFail(false)
+  , mnId(nNextId++)
   , mbImuInitialized(false)
   , mnMapChange(0)
   , mnMapChangeNotified(0)
   , mnInitKFid(initKFid)
   , mnMaxKFid(initKFid)
   , mnBigChangeIdx(0)
+  , mThumbnail(nullptr)
   , mIsInUse(false)
   , mHasTumbnail(false)
   , mbIsInertial(false)
   , mbIMU_BA1(false)
   , mbIMU_BA2(false)
   , _logger(logging::CreateModuleLogger("Map")) {
-  mnId       = nNextId++;
-  mThumbnail = nullptr;
 }
 
 Map::~Map() {

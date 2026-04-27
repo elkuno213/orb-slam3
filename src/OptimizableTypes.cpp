@@ -205,9 +205,8 @@ void EdgeSE3ProjectXYZToBody::linearizeOplus() {
   _jacobianOplusXj = -pCamera->projectJac(X_r) * mTrl.rotation().toRotationMatrix() * SE3deriv;
 }
 
-VertexSim3Expmap::VertexSim3Expmap() {
+VertexSim3Expmap::VertexSim3Expmap() : _fix_scale(false) {
   _marginalized = false;
-  _fix_scale    = false;
 }
 
 bool VertexSim3Expmap::read(std::istream& is) {

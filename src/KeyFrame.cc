@@ -101,6 +101,7 @@ KeyFrame::KeyFrame()
 
 KeyFrame::KeyFrame(Frame& F, Map* pMap, KeyFrameDatabase* pKFDB)
   : bImu(pMap->isImuInitialized())
+  , mnId(nNextId++)
   , mnFrameId(F.mnId)
   , mTimeStamp(F.mTimeStamp)
   , mnGridCols(kFrameGridCols)
@@ -179,8 +180,6 @@ KeyFrame::KeyFrame(Frame& F, Map* pMap, KeyFrameDatabase* pKFDB)
   , mvKeysRight(F.mvKeysRight)
   , NLeft(F.Nleft)
   , NRight(F.Nright) {
-  mnId = nNextId++;
-
   mGrid.resize(mnGridCols);
   if (F.isDualCamera()) {
     mGridRight.resize(mnGridCols);

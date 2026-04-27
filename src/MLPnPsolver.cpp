@@ -57,8 +57,7 @@
 namespace ORB_SLAM3 {
 
 MLPnPsolver::MLPnPsolver(const Frame& F, const std::vector<MapPoint*>& vpMapPointMatches)
-  : mpCamera(F.mpCamera) {
-  mvpMapPointMatches = vpMapPointMatches;
+  : mvpMapPointMatches(vpMapPointMatches), mpCamera(F.mpCamera) {
   mvBearingVecs.reserve(F.mvpMapPoints.size());
   mvP2D.reserve(F.mvpMapPoints.size());
   mvSigma2.reserve(F.mvpMapPoints.size());

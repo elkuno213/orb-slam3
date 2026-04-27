@@ -48,15 +48,14 @@ LoopClosing::LoopClosing(
   : mpAtlas(pAtlas)
   , mpKeyFrameDB(pDB)
   , mpORBVocabulary(pVoc)
+  , mnCovisibilityConsistencyTh(3)
+  , mpLastCurrentKF(nullptr)
   , mbFixScale(bFixScale)
+  , mstrFolderSubTraj("SubTrajectories/")
+  , mnNumCorrection(0)
+  , mnCorrectionGBA(0)
   , mbActiveLC(bActiveLC)
   , _logger(logging::CreateModuleLogger("LoopClosing")) {
-  mnCovisibilityConsistencyTh = 3;
-  mpLastCurrentKF             = nullptr;
-
-  mstrFolderSubTraj = "SubTrajectories/";
-  mnNumCorrection   = 0;
-  mnCorrectionGBA   = 0;
 }
 
 void LoopClosing::SetTracker(Tracking* pTracker) {

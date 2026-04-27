@@ -30,13 +30,14 @@ using namespace std::chrono_literals;
 
 namespace ORB_SLAM3 {
 
-Atlas::Atlas() : _logger(logging::CreateModuleLogger("Atlas")) {
-  mpCurrentMap = nullptr;
+Atlas::Atlas() : mpCurrentMap(nullptr), _logger(logging::CreateModuleLogger("Atlas")) {
 }
 
 Atlas::Atlas(int initKFid)
-  : mnLastInitKFidMap(initKFid), mHasViewer(false), _logger(logging::CreateModuleLogger("Atlas")) {
-  mpCurrentMap = nullptr;
+  : mpCurrentMap(nullptr)
+  , mnLastInitKFidMap(initKFid)
+  , mHasViewer(false)
+  , _logger(logging::CreateModuleLogger("Atlas")) {
   CreateNewMap();
 }
 
@@ -98,13 +99,15 @@ void Atlas::SetViewer(Viewer* pViewer) {
   mHasViewer = true;
 }
 
-// TODO(elkuno213): These static methods only delegate to Map — consider moving callers to use Map directly.
+// TODO(elkuno213): These static methods only delegate to Map — consider moving callers to use Map
+// directly.
 void Atlas::AddKeyFrame(KeyFrame* pKF) {
   Map* pMapKF = pKF->GetMap();
   pMapKF->AddKeyFrame(pKF);
 }
 
-// TODO(elkuno213): These static methods only delegate to Map — consider moving callers to use Map directly.
+// TODO(elkuno213): These static methods only delegate to Map — consider moving callers to use Map
+// directly.
 void Atlas::AddMapPoint(MapPoint* pMP) {
   Map* pMapMP = pMP->GetMap();
   pMapMP->AddMapPoint(pMP);

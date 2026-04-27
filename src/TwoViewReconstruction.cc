@@ -28,14 +28,8 @@
 #include "Types.h"
 
 namespace ORB_SLAM3 {
-TwoViewReconstruction::TwoViewReconstruction(
-  const Eigen::Matrix3f& k, float sigma, int iterations
-) {
-  mK = k;
-
-  mSigma         = sigma;
-  mSigma2        = sigma * sigma;
-  mMaxIterations = iterations;
+TwoViewReconstruction::TwoViewReconstruction(const Eigen::Matrix3f& k, float sigma, int iterations)
+  : mK(k), mSigma(sigma), mSigma2(sigma * sigma), mMaxIterations(iterations) {
 }
 
 bool TwoViewReconstruction::Reconstruct(

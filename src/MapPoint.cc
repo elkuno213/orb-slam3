@@ -48,13 +48,14 @@ MapPoint::MapPoint()
   , mbBad(false)
   , mpReplaced(nullptr)
   , _logger(logging::CreateModuleLogger("MapPoint")) {
-  mpReplaced = nullptr;
 }
 
 MapPoint::MapPoint(const Eigen::Vector3f& Pos, KeyFrame* pRefKF, Map* pMap)
   : mnFirstKFid(pRefKF->mnId)
   , mnFirstFrame(pRefKF->mnFrameId)
   , nObs(0)
+  , mbTrackInView(false)
+  , mbTrackInViewR(false)
   , mnTrackReferenceForFrame(0)
   , mnLastFrameSeen(0)
   , mnBALocalForKF(0)
@@ -77,9 +78,6 @@ MapPoint::MapPoint(const Eigen::Vector3f& Pos, KeyFrame* pRefKF, Map* pMap)
 
   mNormalVector.setZero();
 
-  mbTrackInViewR = false;
-  mbTrackInView  = false;
-
   // MapPoints can be created from Tracking and Local Mapping. This mutex avoid conflicts with id.
   const std::unique_lock<std::mutex> lock(mpMap->mMutexPointCreation);
   mnId = nNextId++;
@@ -99,6 +97,10 @@ MapPoint::MapPoint(
   , mnCorrectedByKF(0)
   , mnCorrectedReference(0)
   , mnBAGlobalForKF(0)
+  , mInvDepth(invDepth)
+  , mInitU(static_cast<double>(uv_init.x))
+  , mInitV(static_cast<double>(uv_init.y))
+  , mpHostKF(pHostKF)
   , mnOriginMapId(pMap->GetId())
   , mpRefKF(pRefKF)
   , mnVisible(1)
@@ -109,11 +111,6 @@ MapPoint::MapPoint(
   , mfMaxDistance(0)
   , mpMap(pMap)
   , _logger(logging::CreateModuleLogger("MapPoint")) {
-  mInvDepth = invDepth;
-  mInitU    = static_cast<double>(uv_init.x);
-  mInitV    = static_cast<double>(uv_init.y);
-  mpHostKF  = pHostKF;
-
   mNormalVector.setZero();
 
   // Worldpos is not set

@@ -114,9 +114,8 @@ Preintegrated::Preintegrated() = default;
 
 Preintegrated::~Preintegrated() = default;
 
-Preintegrated::Preintegrated(const Bias& b_, const Calib& calib) {
-  Nga     = calib.Cov;
-  NgaWalk = calib.CovWalk;
+Preintegrated::Preintegrated(const Bias& b_, const Calib& calib)
+  : Nga(calib.Cov), NgaWalk(calib.CovWalk) {
   Initialize(b_);
 }
 
@@ -446,17 +445,16 @@ Calib::Calib(const Sophus::SE3f& Tbc, float ng, float na, float ngw, float naw) 
   Set(Tbc, ng, na, ngw, naw);
 }
 
-Calib::Calib() {
-  mbIsSet = false;
+Calib::Calib() : mbIsSet(false) {
 }
 
-Calib::Calib(const Calib& calib) {
-  mbIsSet = calib.mbIsSet;
+Calib::Calib(const Calib& calib)
+  : mTcb(calib.mTcb)
+  , mTbc(calib.mTbc)
+  , Cov(calib.Cov)
+  , CovWalk(calib.CovWalk)
+  , mbIsSet(calib.mbIsSet) {
   // Sophus/Eigen parameters
-  mTbc    = calib.mTbc;
-  mTcb    = calib.mTcb;
-  Cov     = calib.Cov;
-  CovWalk = calib.CovWalk;
 }
 
 } // namespace ORB_SLAM3::IMU

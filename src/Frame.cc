@@ -175,18 +175,19 @@ Frame::Frame(
   , mpImuPreintegrated(nullptr)
   , mpPrevFrame(pPrevF)
   , mpImuPreintegratedFrame(nullptr)
+  , mnId(nNextId++)
   , mpReferenceKF(nullptr)
+  , mnScaleLevels(mpORBextractorLeft->GetLevels())
+  , mfScaleFactor(mpORBextractorLeft->GetScaleFactor())
+  , mfLogScaleFactor(std::log(mfScaleFactor))
   , mbIsSet(false)
   , mbImuPreintegrated(false)
   , mpCamera(pCamera)
   , mpCamera2(nullptr) {
   // Frame ID
-  mnId = nNextId++;
 
   // Scale Level Info
-  mnScaleLevels     = mpORBextractorLeft->GetLevels();
-  mfScaleFactor     = mpORBextractorLeft->GetScaleFactor();
-  mfLogScaleFactor  = std::log(mfScaleFactor);
+
   mvScaleFactors    = mpORBextractorLeft->GetScaleFactors();
   mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
   mvLevelSigma2     = mpORBextractorLeft->GetScaleSigmaSquares();
@@ -283,18 +284,19 @@ Frame::Frame(
   , mpImuPreintegrated(nullptr)
   , mpPrevFrame(pPrevF)
   , mpImuPreintegratedFrame(nullptr)
+  , mnId(nNextId++)
   , mpReferenceKF(nullptr)
+  , mnScaleLevels(mpORBextractorLeft->GetLevels())
+  , mfScaleFactor(mpORBextractorLeft->GetScaleFactor())
+  , mfLogScaleFactor(std::log(mfScaleFactor))
   , mbIsSet(false)
   , mbImuPreintegrated(false)
   , mpCamera(pCamera)
   , mpCamera2(nullptr) {
   // Frame ID
-  mnId = nNextId++;
 
   // Scale Level Info
-  mnScaleLevels     = mpORBextractorLeft->GetLevels();
-  mfScaleFactor     = mpORBextractorLeft->GetScaleFactor();
-  mfLogScaleFactor  = std::log(mfScaleFactor);
+
   mvScaleFactors    = mpORBextractorLeft->GetScaleFactors();
   mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
   mvLevelSigma2     = mpORBextractorLeft->GetScaleSigmaSquares();
@@ -389,18 +391,19 @@ Frame::Frame(
   , mpImuPreintegrated(nullptr)
   , mpPrevFrame(pPrevF)
   , mpImuPreintegratedFrame(nullptr)
+  , mnId(nNextId++)
   , mpReferenceKF(nullptr)
+  , mnScaleLevels(mpORBextractorLeft->GetLevels())
+  , mfScaleFactor(mpORBextractorLeft->GetScaleFactor())
+  , mfLogScaleFactor(std::log(mfScaleFactor))
   , mbIsSet(false)
   , mbImuPreintegrated(false)
   , mpCamera(pCamera)
   , mpCamera2(nullptr) {
   // Frame ID
-  mnId = nNextId++;
 
   // Scale Level Info
-  mnScaleLevels     = mpORBextractorLeft->GetLevels();
-  mfScaleFactor     = mpORBextractorLeft->GetScaleFactor();
-  mfLogScaleFactor  = std::log(mfScaleFactor);
+
   mvScaleFactors    = mpORBextractorLeft->GetScaleFactors();
   mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
   mvLevelSigma2     = mpORBextractorLeft->GetScaleSigmaSquares();
@@ -1141,20 +1144,23 @@ Frame::Frame(
   , mpImuPreintegrated(nullptr)
   , mpPrevFrame(pPrevF)
   , mpImuPreintegratedFrame(nullptr)
+  , mnId(nNextId++)
   , mpReferenceKF(nullptr)
+  , mnScaleLevels(mpORBextractorLeft->GetLevels())
+  , mfScaleFactor(mpORBextractorLeft->GetScaleFactor())
+  , mfLogScaleFactor(std::log(mfScaleFactor))
   , mbImuPreintegrated(false)
   , mpCamera(pCamera)
-  , mpCamera2(pCamera2) {
+  , mpCamera2(pCamera2)
+  , Nleft(mvKeys.size())
+  , Nright(mvKeysRight.size()) {
   imgLeft  = imLeft.clone();
   imgRight = imRight.clone();
 
   // Frame ID
-  mnId = nNextId++;
 
   // Scale Level Info
-  mnScaleLevels     = mpORBextractorLeft->GetLevels();
-  mfScaleFactor     = mpORBextractorLeft->GetScaleFactor();
-  mfLogScaleFactor  = std::log(mfScaleFactor);
+
   mvScaleFactors    = mpORBextractorLeft->GetScaleFactors();
   mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
   mvLevelSigma2     = mpORBextractorLeft->GetScaleSigmaSquares();
@@ -1180,9 +1186,7 @@ Frame::Frame(
   threadLeft.join();
   threadRight.join();
 
-  Nleft  = mvKeys.size();
-  Nright = mvKeysRight.size();
-  N      = Nleft + Nright;
+  N = Nleft + Nright;
 
   if (N == 0) {
     return;

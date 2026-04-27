@@ -49,20 +49,17 @@ LocalMapping::LocalMapping(
   bool        bInertial,
   const std::string& /*_strSeqName*/
 )
-  : mpSystem(pSys)
+  : mnMatchesInliers(0)
+  , mbBadImu(false)
+  , mpSystem(pSys)
   , mbMonocular(bMonocular != 0.0F)
   , mbInertial(bInertial)
   , mpAtlas(pAtlas)
   , infoInertial(Eigen::MatrixXd::Zero(9, 9))
+  , mNumLM(0)
+  , mNumKFCulling(0)
+  , mTinit(0.F)
   , _logger(logging::CreateModuleLogger("LocalMapping")) {
-  mnMatchesInliers = 0;
-
-  mbBadImu = false;
-
-  mTinit = 0.F;
-
-  mNumLM        = 0;
-  mNumKFCulling = 0;
 }
 
 void LocalMapping::SetLoopCloser(LoopClosing* pLoopCloser) {

@@ -121,7 +121,8 @@ ImuCamPose::ImuCamPose(Frame* pF) : its(0) {
   DR.setIdentity();
 }
 
-ImuCamPose::ImuCamPose(Eigen::Matrix3d& Rwc, Eigen::Vector3d& twc, KeyFrame* pKF) : its(0) {
+ImuCamPose::ImuCamPose(Eigen::Matrix3d& Rwc, Eigen::Vector3d& twc, KeyFrame* pKF)
+  : bf(pKF->mbf), its(0) {
   // This is only for posegrpah, we do not care about multicamera
   tcw.resize(1);
   Rcw.resize(1);
@@ -140,7 +141,6 @@ ImuCamPose::ImuCamPose(Eigen::Matrix3d& Rwc, Eigen::Vector3d& twc, KeyFrame* pKF
   Rcw[0]     = Rwc.transpose();
   tcw[0]     = -Rcw[0] * twc;
   pCamera[0] = pKF->mpCamera;
-  bf         = pKF->mbf;
 
   // For posegraph 4DoF
   Rwb0 = Rwb;
@@ -745,13 +745,10 @@ void EdgeInertialGS::linearizeOplus() {
     = Rbw1 * (VP2->estimate().twb - VP1->estimate().twb - VV1->estimate() * dt);
 }
 
-EdgePriorPoseImu::EdgePriorPoseImu(ConstraintPoseImu* c) {
+EdgePriorPoseImu::EdgePriorPoseImu(ConstraintPoseImu* c)
+  : Rwb(c->Rwb), twb(c->twb), vwb(c->vwb), bg(c->bg), ba(c->ba) {
   resize(4);
-  Rwb = c->Rwb;
-  twb = c->twb;
-  vwb = c->vwb;
-  bg  = c->bg;
-  ba  = c->ba;
+
   setInformation(c->H);
 }
 

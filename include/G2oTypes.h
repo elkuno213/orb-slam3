@@ -832,8 +832,7 @@ public:
 
 class Edge4DoF : public g2o::BaseBinaryEdge<6, Vector6d, VertexPose4DoF, VertexPose4DoF> {
 public:
-  explicit Edge4DoF(const Eigen::Matrix4d& deltaT) {
-    dTij = deltaT;
+  explicit Edge4DoF(const Eigen::Matrix4d& deltaT) : dTij(deltaT) {
     dRij = deltaT.block<3, 3>(0, 0);
     dtij = deltaT.block<3, 1>(0, 3);
   }
