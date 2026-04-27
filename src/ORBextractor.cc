@@ -66,7 +66,8 @@ const int PATCH_SIZE      = 31;
 const int HALF_PATCH_SIZE = 15;
 const int EDGE_THRESHOLD  = 19;
 
-static float IC_Angle(const cv::Mat& image, cv::Point2f pt, const std::vector<int>& u_max) {
+namespace {
+float IC_Angle(const cv::Mat& image, cv::Point2f pt, const std::vector<int>& u_max) {
   int m_01 = 0;
   int m_10 = 0;
 
@@ -96,9 +97,9 @@ static float IC_Angle(const cv::Mat& image, cv::Point2f pt, const std::vector<in
 }
 
 const float factorPI = std::numbers::pi_v<float> / 180.F;
-static void computeOrbDescriptor(
-  const cv::KeyPoint& kpt, const cv::Mat& img, const cv::Point* pattern, uchar* desc
-) {
+void        computeOrbDescriptor(
+         const cv::KeyPoint& kpt, const cv::Mat& img, const cv::Point* pattern, uchar* desc
+       ) {
   const auto angle = static_cast<float>(kpt.angle) * factorPI;
   const auto a     = std::cos(angle);
   const auto b     = std::sin(angle);
@@ -146,7 +147,7 @@ static void computeOrbDescriptor(
 #undef GET_VALUE
 }
 
-static int bit_pattern_31_[256 * 4] = {
+const int bit_pattern_31_[256 * 4] = {
   8,   -3,  9,   5 /*mean (0), correlation (0)*/,
   4,   2,   7,   -12 /*mean (1.12461e-05), correlation (0.0437584)*/,
   -11, 9,   -8,  2 /*mean (3.37382e-05), correlation (0.0617409)*/,
@@ -404,6 +405,7 @@ static int bit_pattern_31_[256 * 4] = {
   7,   0,   12,  -2 /*mean (0.127002), correlation (0.537452)*/,
   -1,  -6,  0,   -11 /*mean (0.127148), correlation (0.547401)*/
 };
+} // namespace
 
 ExtractorNode::ExtractorNode() = default;
 
@@ -476,13 +478,15 @@ ORBextractor::ORBextractor(
 
 ORBextractor::~ORBextractor() = default;
 
-static void computeOrientation(
+namespace {
+void computeOrientation(
   const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const std::vector<int>& umax
 ) {
   for (auto& keypoint : keypoints) {
     keypoint.angle = IC_Angle(image, keypoint.pt, umax);
   }
 }
+} // namespace
 
 void ExtractorNode::DivideNode(
   ExtractorNode& n1, ExtractorNode& n2, ExtractorNode& n3, ExtractorNode& n4
@@ -544,7 +548,8 @@ void ExtractorNode::DivideNode(
   }
 }
 
-static bool compareNodes(std::pair<int, ExtractorNode*>& e1, std::pair<int, ExtractorNode*>& e2) {
+namespace {
+bool compareNodes(std::pair<int, ExtractorNode*>& e1, std::pair<int, ExtractorNode*>& e2) {
   if (e1.first < e2.first) {
     return true;
   } else if (e1.first > e2.first) {
@@ -553,6 +558,7 @@ static bool compareNodes(std::pair<int, ExtractorNode*>& e1, std::pair<int, Extr
     return e1.second->UL.x < e2.second->UL.x;
   }
 }
+} // namespace
 
 std::vector<cv::KeyPoint> ORBextractor::DistributeOctTree(
   const std::vector<cv::KeyPoint>& vToDistributeKeys,
@@ -1038,7 +1044,8 @@ void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint>>& a
   }
 }
 
-static void computeDescriptors(
+namespace {
+void computeDescriptors(
   const cv::Mat&                image,
   std::vector<cv::KeyPoint>&    keypoints,
   cv::Mat&                      descriptors,
@@ -1050,6 +1057,7 @@ static void computeDescriptors(
     computeOrbDescriptor(keypoints[i], image, pattern.data(), descriptors.ptr(static_cast<int>(i)));
   }
 }
+} // namespace
 
 int ORBextractor::operator()(
   cv::InputArray _image,
