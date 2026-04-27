@@ -131,7 +131,7 @@ bool MLPnPsolver::iterate(
     std::vector<int> indexes(mRansacMinSet);
 
     // Get min set of points
-    for (short i = 0; i < mRansacMinSet; ++i) {
+    for (int i = 0; i < mRansacMinSet; ++i) {
       const int randi = DUtils::Random::RandomInt(0, vAvailableIndices.size() - 1);
 
       const int idx = vAvailableIndices[randi];
