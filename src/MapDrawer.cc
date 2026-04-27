@@ -357,11 +357,7 @@ void MapDrawer::DrawCurrentCamera(pangolin::OpenGlMatrix& Twc) const {
 
   glPushMatrix();
 
-#ifdef HAVE_GLES
-  glMultMatrixf(Twc.m);
-#else
   glMultMatrixd(Twc.m);
-#endif
 
   glLineWidth(mCameraLineWidth);
   glColor3f(0.0F, 1.0F, 0.0F);
