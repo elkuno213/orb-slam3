@@ -50,7 +50,7 @@ struct Sequence {
 };
 
 /// @brief Dataset type identifier for factory dispatch and validation.
-enum class DatasetType {
+enum class DatasetType : uint8_t {
   EuRoC,
   TUM,
   TumVI
